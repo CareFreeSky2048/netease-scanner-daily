@@ -33,7 +33,7 @@ def _parse_args(argv: Optional[Iterable[str]] = None) -> argparse.Namespace:
     parser.add_argument("--skip-if-slot-exists", action="store_true")
 
     parser.add_argument("--scan-mode", choices=("auto", "regular", "m3", "m3_intersection"), default="auto")
-    parser.add_argument("--threads", type=int, default=7)
+    parser.add_argument("--threads", type=int, default=8)
     parser.add_argument("--external-start-date", default="")
     parser.add_argument("--external-end-date", default="")
     parser.add_argument("--new-start-date", default="")
@@ -159,6 +159,16 @@ def _md_escape(text: Any) -> str:
     return str(text or "").replace("|", "\\|").replace("\r", " ").replace("\n", " ")
 
 
+MAX_SUMMARY_BYTES = 900_000
+
+
+def _is_album_placeholder(hit: Dict[str, Any]) -> bool:
+    return (
+        str(hit.get("song_name") or "").startswith("【新专辑】")
+        and "/album?id=" in str(hit.get("link") or "")
+    )
+
+
 def _group_albums(hits: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     groups: Dict[str, Dict[str, Any]] = {}
     for hit in hits:
@@ -185,6 +195,21 @@ def _group_albums(hits: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         if date_str > group["latest_date"]:
             group["latest_date"] = date_str
         group["tracks"].append(hit)
+
+    for group in groups.values():
+        tracks = group["tracks"]
+        if any(not _is_album_placeholder(t) for t in tracks):
+            tracks = [t for t in tracks if not _is_album_placeholder(t)]
+            group["tracks"] = tracks
+        seen_artists: set[str] = set()
+        artists: List[str] = []
+        for t in tracks:
+            name = str(t.get("name") or "").strip()
+            if name and name not in seen_artists:
+                seen_artists.add(name)
+                artists.append(name)
+        group["artists"] = artists
+
     return sorted(
         groups.values(),
         key=lambda g: (g["heat"], g["latest_date"], g["album_name"].casefold()),
@@ -242,18 +267,24 @@ def _build_scan_summary_md(
         lines.extend(["### 告警信息", "", f"> ⚠️ {scrub_fn(run['warning'])}", ""])
 
     display_hits = run_hits if run_hits else day_hits
-    display_label = "本次新增专辑（Top 30）" if run_hits else "今日累计新增专辑（Top 30）"
-    albums = _group_albums(display_hits)[:30]
+    albums = _group_albums(display_hits)
+    display_label = (
+        f"本次新增专辑（共 {len(albums)} 张）"
+        if run_hits
+        else f"今日累计新增专辑（共 {len(albums)} 张）"
+    )
     if albums:
         lines.extend(
             [
                 f"### {display_label}",
                 "",
-                "| 热度 | 专辑 / 企划 | 发行日期 | 曲目数 | 示例艺人与曲目 |",
-                "| --- | --- | --- | --- | --- |",
+                "| 热度 | 专辑 / 企划 | 发行日期 | 命中艺人 |",
+                "| --- | --- | --- | --- |",
             ]
         )
-        for album in albums:
+        used_bytes = len(("\n".join(lines) + "\n").encode("utf-8"))
+        truncated_count = 0
+        for idx, album in enumerate(albums):
             heat = album["heat"]
             heat_str = f"🔥 {heat}" if heat >= 3 else (str(heat) if heat > 0 else "—")
             title = _md_escape(album["album_name"])
@@ -261,14 +292,27 @@ def _build_scan_summary_md(
                 title_cell = f"[{title}](https://music.163.com/#/album?id={album['album_id']})"
             else:
                 title_cell = title
-            samples = "；".join(
-                f"{_md_escape(t.get('name'))} - 《{_md_escape(t.get('song_name'))}》"
-                for t in album["tracks"][:3]
-            )
-            if len(album["tracks"]) > 3:
-                samples += f" 等共 {len(album['tracks'])} 首"
-            lines.append(
-                f"| {heat_str} | {title_cell} | `{_md_escape(album['latest_date'])}` | {len(album['tracks'])} | {samples} |"
+            unique_artists = album.get("artists") or []
+            if len(unique_artists) > 30:
+                artists_cell = (
+                    "、".join(_md_escape(a) for a in unique_artists[:30])
+                    + f" 等共 {len(unique_artists)} 位"
+                )
+            else:
+                artists_cell = "、".join(_md_escape(a) for a in unique_artists) or "—"
+            row_line = f"| {heat_str} | {title_cell} | `{_md_escape(album['latest_date'])}` | {artists_cell} |"
+            row_bytes = len((row_line + "\n").encode("utf-8"))
+            if used_bytes + row_bytes > MAX_SUMMARY_BYTES:
+                truncated_count = len(albums) - idx
+                break
+            lines.append(row_line)
+            used_bytes += row_bytes
+        if truncated_count > 0:
+            lines.extend(
+                [
+                    "",
+                    f"> ℹ️ 新增专辑数量较多，已截断剩余 {truncated_count} 张专辑以避免超出 GitHub Summary 容量上限；完整结果请下载 Artifacts CSV 或查看静态网页。",
+                ]
             )
     else:
         lines.append("本次扫描及今日暂无新增曲目。")

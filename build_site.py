@@ -32,6 +32,34 @@ def _album_key(link: str, payload: Dict[str, Any]) -> str:
     return f"link:{link}"
 
 
+def _is_album_placeholder(hit: Dict[str, Any]) -> bool:
+    return (
+        str(hit.get("song_name") or "").startswith("【新专辑】")
+        and "/album?id=" in str(hit.get("link") or "")
+    )
+
+
+def _finalize_album_group(group: Dict[str, Any]) -> None:
+    tracks = group["tracks"]
+    if any(not _is_album_placeholder(t) for t in tracks):
+        tracks = [t for t in tracks if not _is_album_placeholder(t)]
+        group["tracks"] = tracks
+        group["track_count"] = len(tracks)
+    # Match Store.album_tracks: date_str DESC, name ASC, song_name NOCASE ASC, link ASC
+    tracks.sort(key=lambda t: t["link"])
+    tracks.sort(key=lambda t: t["song_name"].casefold())
+    tracks.sort(key=lambda t: t["name"])
+    tracks.sort(key=lambda t: t["date_str"], reverse=True)
+    seen_artists: set[str] = set()
+    artists: List[str] = []
+    for t in tracks:
+        name = str(t.get("name") or "").strip()
+        if name and name not in seen_artists:
+            seen_artists.add(name)
+            artists.append(name)
+    group["artists"] = artists
+
+
 def _group_hits_to_albums(rows: List[Tuple[str, Dict[str, Any]]]) -> List[Dict[str, Any]]:
     groups: Dict[str, Dict[str, Any]] = {}
     for link, payload in rows:
@@ -83,20 +111,7 @@ def _group_hits_to_albums(rows: List[Tuple[str, Dict[str, Any]]]) -> List[Dict[s
         )
 
     for group in groups.values():
-        group["tracks"].sort(
-            key=lambda t: (
-                t["date_str"],
-                t["name"],
-                t["song_name"].casefold(),
-                t["link"],
-            ),
-        )
-        # Match Store.album_tracks: date_str DESC, name ASC, song_name NOCASE ASC, link ASC
-        # Sort stably from least to most significant key.
-        group["tracks"].sort(key=lambda t: t["link"])
-        group["tracks"].sort(key=lambda t: t["song_name"].casefold())
-        group["tracks"].sort(key=lambda t: t["name"])
-        group["tracks"].sort(key=lambda t: t["date_str"], reverse=True)
+        _finalize_album_group(group)
 
     ordered = list(groups.values())
     ordered.sort(key=lambda g: g["album_key"])
@@ -255,7 +270,7 @@ def _load_legacy_csv(csv_path: Path, max_albums: int = 500) -> Tuple[Dict[str, A
     ordered.sort(key=lambda g: g["latest_date"], reverse=True)
     top_albums = ordered[:max_albums]
     for g in top_albums:
-        g["tracks"].sort(key=lambda t: (t["name"], t["song_name"].casefold()))
+        _finalize_album_group(g)
     return stats, {"stats": stats, "albums": top_albums}
 
 
@@ -529,7 +544,13 @@ function renderAlbums(emptyText) {{
     }}
     const meta = document.createElement('span');
     meta.className = 'album-meta';
-    meta.textContent = `${{heatLabel(album.heat)}} 热度 · ${{album.track_count}} 首曲目 · 最近发行 ${{album.latest_date || '—'}}`;
+    const artistList = (album.artists && album.artists.length)
+      ? album.artists
+      : Array.from(new Set((album.tracks || []).map(t => t.name).filter(Boolean)));
+    const artistText = artistList.length
+      ? `艺人：${{artistList.slice(0, 8).join('、')}}${{artistList.length > 8 ? ` 等共 ${{artistList.length}} 位` : ''}} · `
+      : '';
+    meta.textContent = `${{heatLabel(album.heat)}} 热度 · ${{artistText}}${{album.track_count}} 首曲目 · 最近发行 ${{album.latest_date || '—'}}`;
     summary.append(title, meta);
     details.append(summary);
     details.addEventListener('toggle', () => {{
@@ -759,11 +780,12 @@ def build_site(
         for r in day_runs:
             combined_hits.extend(hits_by_run.get(r["id"], []))
         albums = _group_hits_to_albums(combined_hits)
+        cleaned_tracks = sum(a["track_count"] for a in albums)
         day_doc = {
             "date": day,
             "timezone": "Asia/Shanghai",
             "runs": day_runs,
-            "total_tracks": len(combined_hits),
+            "total_tracks": cleaned_tracks,
             "total_albums": len(albums),
             "albums": albums,
         }
@@ -776,7 +798,7 @@ def build_site(
             {
                 "date": day,
                 "run_count": len(day_runs),
-                "hit_count": len(combined_hits),
+                "hit_count": cleaned_tracks,
                 "album_count": len(albums),
                 "statuses": sorted({r["status"] for r in day_runs}),
             }
@@ -792,7 +814,7 @@ def build_site(
         run_doc = {
             "run": r,
             "logs": logs_by_run.get(rid, []),
-            "total_tracks": len(run_hits),
+            "total_tracks": sum(a["track_count"] for a in albums),
             "total_albums": len(albums),
             "albums": albums,
         }

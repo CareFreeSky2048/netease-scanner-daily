@@ -763,3 +763,95 @@ def test_probe_falls_back_to_cached_artists_on_sublist_405(tmp_path, monkeypatch
     assert "fallback_tok_888" not in md
 
 
+def test_build_new_album_relations_no_duplicate_placeholder():
+    candidate = {"artist_id": "10", "artist_name": "Artist X", "album_id": "200", "album_name": "Album Z"}
+    detail_with_song = {"album_id": "200", "album_name": "Album Z", "songs": [{"id": "555", "name": "Real Song"}]}
+
+    # Already represented via /artist/songs -> must NOT emit 【新专辑】 placeholder.
+    existing = {("200", "10", "555")}
+    assert engine.build_new_album_relations(candidate, detail_with_song, existing) == []
+
+    # Not in /artist/songs and /album has no songs -> SHOULD still emit fallback placeholder.
+    detail_empty = {"album_id": "201", "album_name": "Empty Pre", "songs": []}
+    cand_empty = {"artist_id": "10", "artist_name": "Artist X", "album_id": "201", "album_name": "Empty Pre"}
+    rels = engine.build_new_album_relations(cand_empty, detail_empty, set())
+    assert len(rels) == 1
+    assert rels[0]["song_name"] == "【新专辑】Empty Pre"
+    assert rels[0]["link"] == "https://music.163.com/#/album?id=201"
+
+
+def test_scan_summary_lists_all_albums_with_artists_only_and_dedup_placeholders():
+    hits = []
+    # Build 35 distinct albums (>30!) plus a redundant 【新专辑】 placeholder on album 1.
+    for idx in range(1, 36):
+        hits.append({
+            "name": f"Artist {idx}",
+            "song_name": f"SongTitle_{idx}",
+            "album_name": f"Album_{idx}",
+            "date_str": "2026-11-24",
+            "link": f"https://music.163.com/#/song?id={1000 + idx}",
+            "album_id": str(2000 + idx),
+            "album_count": 2,
+        })
+    # Duplicate artist on Album_1 + redundant placeholder on Album_1
+    hits.append({
+        "name": "Artist 1",
+        "song_name": "SecondTrack_1",
+        "album_name": "Album_1",
+        "date_str": "2026-11-24",
+        "link": "https://music.163.com/#/song?id=1998",
+        "album_id": "2001",
+        "album_count": 2,
+    })
+    hits.append({
+        "name": "Artist 1",
+        "song_name": "【新专辑】Album_1",
+        "album_name": "Album_1",
+        "date_str": "2026-11-24",
+        "link": "https://music.163.com/#/album?id=2001",
+        "album_id": "2001",
+        "album_count": 2,
+    })
+    # Songless album keeps its placeholder
+    hits.append({
+        "name": "Artist Solo",
+        "song_name": "【新专辑】Songless",
+        "album_name": "Songless",
+        "date_str": "2026-11-24",
+        "link": "https://music.163.com/#/album?id=9999",
+        "album_id": "9999",
+        "album_count": 1,
+    })
+
+    run = {"id": "r1", "status": "success", "source": "manual", "params": {"scanMode": "regular", "threads": 8}, "summary": {}, "metrics": {}}
+    md = ci_scan._build_scan_summary_md(run, "2026-11-24", hits, hits, lambda s: s)
+    assert "本次新增专辑（共 36 张）" in md
+    assert "Top 30" not in md
+    assert "| 热度 | 专辑 / 企划 | 发行日期 | 命中艺人 |" in md
+    assert "示例" not in md
+    assert "SongTitle_" not in md
+    for idx in range(1, 36):
+        assert f"[Album_{idx}]" in md
+    assert "[Songless]" in md
+    # Artist 1 deduplicated on Album_1 row
+    album1_line = next(line for line in md.splitlines() if "[Album_1]" in line)
+    assert album1_line.endswith("| Artist 1 |")
+
+
+def test_build_site_deduplicates_placeholders_and_includes_artists():
+    rows = [
+        ("https://music.163.com/#/song?id=10", {"name": "Alice", "song_name": "Real1", "album_name": "Mix", "date_str": "2026-11-24", "album_id": "500", "album_count": 2}),
+        ("https://music.163.com/#/song?id=11", {"name": "Bob", "song_name": "Real2", "album_name": "Mix", "date_str": "2026-11-24", "album_id": "500", "album_count": 2}),
+        ("https://music.163.com/#/album?id=500", {"name": "Alice", "song_name": "【新专辑】Mix", "album_name": "Mix", "date_str": "2026-11-24", "album_id": "500", "album_count": 2}),
+        ("https://music.163.com/#/album?id=501", {"name": "Solo", "song_name": "【新专辑】EmptyOnly", "album_name": "EmptyOnly", "date_str": "2026-11-24", "album_id": "501", "album_count": 1}),
+    ]
+    albums = build_site._group_hits_to_albums(rows)
+    by_id = {a["album_id"]: a for a in albums}
+    assert by_id["500"]["track_count"] == 2
+    assert all(not t["song_name"].startswith("【新专辑】") for t in by_id["500"]["tracks"])
+    assert by_id["500"]["artists"] == ["Alice", "Bob"]
+    assert by_id["501"]["track_count"] == 1
+    assert by_id["501"]["artists"] == ["Solo"]
+
+
+

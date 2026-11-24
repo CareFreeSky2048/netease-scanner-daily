@@ -1441,7 +1441,8 @@ def build_new_album_relations(candidate: Dict[str, Any], detail: Dict[str, Any],
             "link": f"https://music.163.com/#/song?id={sid}",
             "source": "artist_album_new_probe",
         })
-    if not rels:
+    already_represented = any(k[0] == album_id and k[1] == artist_id for k in existing_keys)
+    if not rels and not already_represented:
         synthetic_id = f"album-{album_id}-{artist_id}"
         key = (album_id, artist_id, synthetic_id)
         if key not in existing_keys:

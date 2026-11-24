@@ -1065,7 +1065,7 @@ def test_real_engine_recovers_artist_stage_failures(environment,monkeypatch,stag
     run_id=runtime.start(default_dates(date(2026,10,7)))
     wait_for(runtime)
     run=runtime.store.get(run_id)
-    assert failed and run['status']=='success' and run['result_count']==2
+    assert failed and run['status']=='success' and run['result_count']==1
     assert run['summary']['slow_retry']['recovered']==1
     assert not any(run['summary'][k] for k in server.FAILURE_KEYS)
     assert {h['album_count'] for h in runtime.store.hits(run_id)}=={1}
@@ -1234,11 +1234,11 @@ def test_real_engine_preserves_dedupe_and_album_cache(environment, monkeypatch):
     assert runtime.store.get(run1)["status"] == "success"
     assert runtime.store.get(run1)["summary"]["relations"] == 1
     assert not engine.ARTIST_ALBUM_PAGE_CACHE
-    # Desktop algorithm also emits an album-level new-release placeholder when
-    # every album track is already represented by recent-song relations.
-    assert runtime.store.get(run1)["result_count"] == 2
+    # Do not emit duplicate album-level placeholder when the artist's track
+    # in this album is already represented by recent-song relations.
+    assert runtime.store.get(run1)["result_count"] == 1
     assert {hit["link"] for hit in runtime.store.hits(run1)} == {
-        "https://music.163.com/#/song?id=100", "https://music.163.com/#/album?id=200"}
+        "https://music.163.com/#/song?id=100"}
     original_csv = engine.CSV_FILE.read_bytes()
     assert json.loads(engine.ALBUM_CACHE_FILE.read_text())["200"]["album_id"] == "200"
     calls.clear()
@@ -1349,7 +1349,7 @@ def test_memory_changes_keep_date_ownership_filters_and_partial_failure(environm
     assert run["summary"]["relations"] == 4
     assert run["summary"]["artist_failures"] == run["summary"]["new_album_probe_failures"] == 1
     assert {hit["link"] for hit in runtime.store.hits(run_id)} == {
-        "https://music.163.com/#/song?id=1200", "https://music.163.com/#/album?id=200",
+        "https://music.163.com/#/song?id=1200",
         "https://music.163.com/#/song?id=1900"}
     assert not engine.ARTIST_ALBUM_PAGE_CACHE
     runtime.close()
