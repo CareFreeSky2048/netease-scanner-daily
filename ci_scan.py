@@ -245,6 +245,12 @@ def _build_scan_summary_md(
     summary = run.get("summary") or {}
     metrics = run.get("metrics") or {}
     elapsed_min = round(float(metrics.get("elapsed_sec") or 0) / 60.0, 1)
+    probe_limit = params.get("newAlbumProbeLimit")
+    probe_desc = (
+        "跳过（快速模式）"
+        if probe_limit == 0
+        else (f"开启（深度 {probe_limit}）" if probe_limit is not None else "—")
+    )
 
     title = (
         f"## 🧪 网易云新曲扫描试跑报告（模拟今日首次扫描）· {today_str}"
@@ -276,6 +282,7 @@ def _build_scan_summary_md(
             + " |",
             f"| 扫描模式 | `{params.get('scanMode', '')}` |",
             f"| 并发线程 | `{params.get('threads', '')}` |",
+            f"| 新专目录兜底 | {probe_desc} |",
             f"| 外部合辑窗口 | `{params.get('externalStartDate', '')}` ~ `{params.get('externalEndDate', '')}` |",
             f"| 新专/新歌窗口 | `{params.get('newStartDate', '')}` ~ `{params.get('newEndDate', '')}` |",
             f"| 耗时 | {elapsed_min} 分钟 |",

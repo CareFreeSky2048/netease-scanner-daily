@@ -202,6 +202,7 @@ jobs:
 
           THREADS="${INPUT_THREADS:-${VAR_THREADS:-8}}"
           SCAN_MODE="${INPUT_SCAN_MODE:-auto}"
+          PROBE_LIMIT="${NEW_ALBUM_PROBE_LIMIT:-20}"
           ARGS=(
             --data-dir ./data
             --api-base http://127.0.0.1:3000
@@ -225,6 +226,7 @@ jobs:
                 ARGS+=(--source scheduled --schedule-slot 04:00 --skip-if-slot-exists)
               else
                 ARGS+=(--source scheduled --schedule-slot 00:03 --skip-if-slot-exists)
+                PROBE_LIMIT="0"
               fi
             else
               ARGS+=(--source manual)
@@ -237,7 +239,7 @@ jobs:
           if [ -n "${INPUT_NEW_END:-}" ]; then ARGS+=(--new-end-date "$INPUT_NEW_END"); fi
           if [ -n "${RECENT_LIMIT:-}" ]; then ARGS+=(--recent-limit "$RECENT_LIMIT"); fi
           if [ -n "${OWNED_LIMIT:-}" ]; then ARGS+=(--owned-limit "$OWNED_LIMIT"); fi
-          if [ -n "${NEW_ALBUM_PROBE_LIMIT:-}" ]; then ARGS+=(--new-album-probe-limit "$NEW_ALBUM_PROBE_LIMIT"); fi
+          ARGS+=(--new-album-probe-limit "$PROBE_LIMIT")
           if [ -n "${INPUT_DEBUG_ALBUM:-}" ]; then ARGS+=(--debug-album "$INPUT_DEBUG_ALBUM"); fi
           if [ -n "${INPUT_RETRY_OF:-}" ]; then ARGS+=(--retry-of "$INPUT_RETRY_OF"); fi
 

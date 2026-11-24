@@ -581,6 +581,19 @@ def test_scan_workflow_respects_github_limits_and_shell_safety():
     assert gate_match is not None
     assert "steps.ctx.outputs.action == 'test_fresh_day'" in gate_match.group(1)
 
+    # First early-morning slot (00:03) skips new-album directory probe for speed; second slot (04:00) enables it.
+    assert 'PROBE_LIMIT="${NEW_ALBUM_PROBE_LIMIT:-20}"' in text
+    assert 'PROBE_LIMIT="0"' in text
+    assert 'ARGS+=(--new-album-probe-limit "$PROBE_LIMIT")' in text
+    slot_block = re.search(
+        r'ARGS\+=\(--source scheduled --schedule-slot 04:00 --skip-if-slot-exists\)\s*\n\s*else\s*\n(.*?)\n\s*fi',
+        text,
+        flags=re.DOTALL,
+    )
+    assert slot_block is not None
+    assert '--schedule-slot 00:03' in slot_block.group(1)
+    assert 'PROBE_LIMIT="0"' in slot_block.group(1)
+
 
 def test_engine_transport_overrides_and_proxy_redaction(monkeypatch):
     monkeypatch.delenv("NETEASE_REAL_IP", raising=False)
@@ -1089,6 +1102,173 @@ def test_ci_scan_fresh_today_dry_run_end_to_end(tmp_path, monkeypatch):
         assert "dryrun_cookie_123" not in summary_text
     finally:
         runtime.close()
+
+
+def test_scan_worker_skips_new_album_probe_when_limit_zero(tmp_path, monkeypatch):
+    data_dir = tmp_path / "fast_engine"
+    (data_dir / "VA_Artist_Caches").mkdir(parents=True)
+
+    monkeypatch.setattr(engine, "SCRIPT_DIR", data_dir)
+    monkeypatch.setattr(engine, "CSV_FILE", data_dir / "VA_Tracks_Output.csv")
+    monkeypatch.setattr(engine, "ALBUM_CACHE_FILE", data_dir / "VA_Album_Date_Cache.json")
+    monkeypatch.setattr(engine, "ARTIST_CACHE_DIR", data_dir / "VA_Artist_Caches")
+    monkeypatch.setattr(engine, "METRICS_FILE", data_dir / "VA_Scan_Metrics.json")
+    monkeypatch.setattr(engine, "REPORT_FILE", data_dir / "VA_Scan_Tuning_Report.txt")
+    monkeypatch.setattr(engine, "CONTROL", engine.ControlState(target_threads=2, baseline_threads=2))
+    monkeypatch.setattr(engine, "METRICS", engine.Metrics())
+
+    events = []
+    monkeypatch.setattr(engine, "emit", lambda msg: events.append(msg))
+
+    now_naive = datetime.now(ci_scan.TZ).replace(tzinfo=None, hour=12, minute=0, second=0, microsecond=0)
+    today_str = now_naive.date().isoformat()
+    pub_ts = int(datetime.now(ci_scan.TZ).timestamp() * 1000)
+
+    monkeypatch.setattr(
+        engine,
+        "fetch_recent_songs_for_artist",
+        lambda artist, cookie, limit: (
+            [
+                {
+                    "artist_id": artist["id"],
+                    "artist_name": artist["name"],
+                    "song_id": "8801",
+                    "song_name": "Fast Track",
+                    "album_id": "5001",
+                    "album_name": "Fast Album",
+                    "song_publish_ts": pub_ts,
+                    "song_artist_ids": [artist["id"]],
+                    "song_artist_names": [artist["name"]],
+                    "link": "https://music.163.com/#/song?id=8801",
+                }
+            ],
+            {"ok": True, "duration": 0.01},
+        ),
+    )
+
+    def fail_if_called(*args, **kwargs):
+        raise AssertionError("fetch_new_albums_for_artist should not be called when limit == 0")
+
+    monkeypatch.setattr(engine, "fetch_new_albums_for_artist", fail_if_called)
+    monkeypatch.setattr(
+        engine,
+        "fetch_album_detail",
+        lambda aid, cookie, need_songs=False, expected_names=None: {
+            "album_id": str(aid),
+            "album_name": "Fast Album",
+            "date_str": today_str,
+            "publish_ts": pub_ts,
+            "artist_ids": ["1"],
+            "artist_names": ["Artist 1"],
+        },
+    )
+    monkeypatch.setattr(
+        engine,
+        "fetch_owned_album_ids_shallow",
+        lambda aid, cookie, limit: ({"5001"}, {"5001": today_str}),
+    )
+
+    engine.scan_worker(
+        "MUSIC_U=fast_tok;",
+        "",
+        now_naive - timedelta(days=30),
+        now_naive,
+        now_naive - timedelta(days=1),
+        now_naive + timedelta(days=3),
+        50,
+        50,
+        0,
+        artists_override=[{"id": "1", "name": "Artist 1"}],
+    )
+
+    logs = [e.get("text", "") for e in events if e.get("type") == "log"]
+    assert any("newAlbumProbeLimit=0" in text for text in logs)
+    assert any("新专目录兜底已跳过(0)" in text for text in logs)
+    done_ev = next(e for e in events if e.get("type") == "done")
+    assert done_ev["summary"]["new_album_probe_failures"] == 0
+    assert len(done_ev["results"]) == 1
+    assert done_ev["results"][0]["song_name"] == "Fast Track"
+
+
+def test_runtime_new_album_probe_zero_validation_and_total_failure(tmp_path, monkeypatch):
+    data_dir = tmp_path / "rt_probe_zero"
+    (data_dir / "VA_Artist_Caches").mkdir(parents=True)
+    cfg_path = ci_scan._prepare_temp_config(
+        tmp_path / "sec_zero",
+        raw_cookie="MUSIC_U=tok_zero;",
+        threads=4,
+        recent_limit=50,
+        owned_limit=50,
+        new_album_probe_limit=0,
+        artist_cache_key="",
+    )
+    monkeypatch.setattr(engine, "SCRIPT_DIR", data_dir)
+    monkeypatch.setattr(engine, "CSV_FILE", data_dir / "VA_Tracks_Output.csv")
+    monkeypatch.setattr(server, "DATA", data_dir)
+    monkeypatch.setattr(server, "verify_login", lambda *a, **kw: None)
+
+    def all_artist_failed_worker(*args, **kwargs):
+        engine.emit({
+            "type": "done",
+            "results": [],
+            "summary": {
+                "artists": 5,
+                "unique_albums": 0,
+                "artist_failures": 5,
+                "new_album_probe_failures": 0,
+                "album_errors": 0,
+                "owned_errors": 0,
+            },
+            "metrics": {"elapsed_sec": 1.0, "results": 0, "csv_skipped": 0},
+        })
+
+    rt = server.Runtime(
+        config=server.Config(cfg_path),
+        db_path=data_dir / "scan_history.sqlite3",
+        worker=all_artist_failed_worker,
+    )
+    try:
+        assert rt.parameters({"newAlbumProbeLimit": 0})["newAlbumProbeLimit"] == 0
+        with pytest.raises(ValueError, match="newAlbumProbeLimit"):
+            rt.parameters({"newAlbumProbeLimit": -1})
+
+        out_dir = tmp_path / "zero_out"
+        args = ci_scan._parse_args([
+            "--data-dir", str(data_dir),
+            "--source", "scheduled",
+            "--schedule-slot", "00:03",
+            "--new-album-probe-limit", "0",
+            "--result-json", str(out_dir / "run_result.json"),
+            "--summary-md", str(out_dir / "summary.md"),
+        ])
+        rc = ci_scan.execute_scan(rt, args, data_dir)
+        assert rc == 2
+
+        res = json.loads((out_dir / "run_result.json").read_text(encoding="utf-8"))
+        assert res["status"] == "failed"
+        assert "所有艺人采样均失败" in res["error"]
+        summary_text = (out_dir / "summary.md").read_text(encoding="utf-8")
+        assert "跳过（快速模式）" in summary_text
+
+        md_enabled = ci_scan._build_scan_summary_md(
+            {
+                "id": "r_on",
+                "status": "success",
+                "source": "scheduled",
+                "schedule_time": "04:00",
+                "params": {"scanMode": "regular", "threads": 8, "newAlbumProbeLimit": 20},
+                "summary": {},
+                "metrics": {},
+            },
+            "2026-11-24",
+            [],
+            [],
+            lambda s: s,
+        )
+        assert "开启（深度 20）" in md_enabled
+    finally:
+        rt.close()
+
 
 
 

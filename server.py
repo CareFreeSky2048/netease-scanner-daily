@@ -129,7 +129,7 @@ class Config:
                 elif not isinstance(value, str) or date.fromisoformat(value).isoformat() != value:
                     raise ValueError(f"{key} 的日期必须使用 YYYY-MM-DD")
         for key, lo, hi in (("recentLimit", 10, 200), ("ownedLimit", 10, 200),
-                            ("newAlbumProbeLimit", 5, 100), ("threads", 1, engine.MANUAL_THREAD_MAX),
+                            ("newAlbumProbeLimit", 0, 100), ("threads", 1, engine.MANUAL_THREAD_MAX),
                             ("backup_retention_days", 1, 365)):
             defaults[key] = int(defaults[key])
             if not lo <= defaults[key] <= hi:
@@ -508,7 +508,7 @@ class Runtime:
             date.fromisoformat(params[key])
         if params["externalStartDate"] > params["externalEndDate"] or params["newStartDate"] > params["newEndDate"]:
             raise ValueError("开始日期不能晚于结束日期")
-        for key, lo, hi in (("recentLimit", 10, 200), ("ownedLimit", 10, 200), ("newAlbumProbeLimit", 5, 100),
+        for key, lo, hi in (("recentLimit", 10, 200), ("ownedLimit", 10, 200), ("newAlbumProbeLimit", 0, 100),
                             ("threads", 1, self.config.thread_limit())):
             params[key] = int(params[key])
             if not lo <= params[key] <= hi:
@@ -844,9 +844,14 @@ class Runtime:
                 self.fatal = "扫描未正常完成，请查看日志"
             elif (summary.get("artists", 0) > 0 and
                   summary.get("artist_failures", 0) >= summary["artists"] and
-                  summary.get("new_album_probe_failures", 0) >= summary["artists"]):
+                  (params.get("newAlbumProbeLimit", 20) <= 0 or
+                   summary.get("new_album_probe_failures", 0) >= summary["artists"])):
                 status = "failed"
-                self.fatal = "所有艺人采样及新专探测均失败"
+                self.fatal = (
+                    "所有艺人采样均失败"
+                    if params.get("newAlbumProbeLimit", 20) <= 0
+                    else "所有艺人采样及新专探测均失败"
+                )
             elif any(summary.get(k, 0) for k in (*FAILURE_KEYS, "task_errors", "m3_round_errors")) or self.warnings:
                 status = "partial"
             else:

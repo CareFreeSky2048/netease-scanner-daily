@@ -1591,7 +1591,8 @@ def scan_worker(scan_cookie: str, artist_source_input: str, external_start_dt: d
             METRICS.artist_total = len(artists)
         else:
             METRICS.artist_total = METRICS.artist_progress_total
-        emit({"type": "log", "level": "success", "text": f"全量扫描启动：艺人 {len(artists)} 位；recent{recent_limit}；Owned验证深度{owned_verify_limit}；新专目录兜底{new_album_probe_limit}；外部合辑范围 {external_start_dt:%Y-%m-%d}~{external_end_dt:%Y-%m-%d}；新专/新歌范围 {new_start_dt:%Y-%m-%d}~{new_end_dt:%Y-%m-%d}；艺人列表来源 {artist_source_mode}:{artist_cache_key}。"})
+        probe_label = f"新专目录兜底{new_album_probe_limit}" if new_album_probe_limit > 0 else "新专目录兜底已跳过(0)"
+        emit({"type": "log", "level": "success", "text": f"全量扫描启动：艺人 {len(artists)} 位；recent{recent_limit}；Owned验证深度{owned_verify_limit}；{probe_label}；外部合辑范围 {external_start_dt:%Y-%m-%d}~{external_end_dt:%Y-%m-%d}；新专/新歌范围 {new_start_dt:%Y-%m-%d}~{new_end_dt:%Y-%m-%d}；艺人列表来源 {artist_source_mode}:{artist_cache_key}。"})
         if debug_album_id:
             emit({"type": "log", "level": "info", "text": f"漏扫诊断开启：album_id={debug_album_id}"})
         emit({"type": "state", "state": CONTROL.snapshot(), "metrics": METRICS.snapshot()})
@@ -1640,40 +1641,43 @@ def scan_worker(scan_cookie: str, artist_source_input: str, external_start_dt: d
         new_album_candidates: List[Dict[str, Any]] = []
         new_album_probe_failures: List[Dict[str, Any]] = []
 
-        def new_album_task(artist: Dict[str, str]) -> Tuple[List[Dict[str, Any]], Dict[str, Any], Dict[str, str]]:
-            found, info = fetch_new_albums_for_artist(artist, scan_cookie, new_album_probe_limit, new_start_dt, new_end_dt)
-            return found, info, artist
+        if new_album_probe_limit > 0:
+            def new_album_task(artist: Dict[str, str]) -> Tuple[List[Dict[str, Any]], Dict[str, Any], Dict[str, str]]:
+                found, info = fetch_new_albums_for_artist(artist, scan_cookie, new_album_probe_limit, new_start_dt, new_end_dt)
+                return found, info, artist
 
-        def new_album_progress(done: int, total: int, item: Any) -> None:
-            if done % 20 == 0 or done == total:
-                emit({"type": "progress", "phase": "兜底扫描新专目录", "current": done, "total": total, "state": CONTROL.snapshot(), "metrics": METRICS.snapshot()})
-                autosave_if_needed(reason="new_album_probe")
+            def new_album_progress(done: int, total: int, item: Any) -> None:
+                if done % 20 == 0 or done == total:
+                    emit({"type": "progress", "phase": "兜底扫描新专目录", "current": done, "total": total, "state": CONTROL.snapshot(), "metrics": METRICS.snapshot()})
+                    autosave_if_needed(reason="new_album_probe")
 
-        new_album_outputs = run_dynamic_pool(artists, new_album_task, "new_album_probe", new_album_progress)
-        for out in new_album_outputs:
-            if isinstance(out, Exception):
-                continue
-            found, info, artist = out
-            if info.get("ok"):
-                new_album_candidates.extend(found)
-            else:
-                new_album_probe_failures.append({"artist": artist, "error": info.get("error")})
-        probe_errors = {x["artist"]["id"]: x for x in new_album_probe_failures}
-        for artist, out in retry_failed([x["artist"] for x in new_album_probe_failures], new_album_task,
-                                        lambda x: x[1].get("ok"), "/artist/album 新专", lambda x: x["id"], retry_budget):
-            if isinstance(out, Exception):
-                probe_errors[artist["id"]]["error"] = redacted_error_text(str(out))
-            elif out[1].get("ok"):
-                new_album_candidates.extend(out[0])
-                probe_errors.pop(artist["id"], None)
-            else:
-                probe_errors[artist["id"]]["error"] = out[1].get("error")
-        new_album_probe_failures = list(probe_errors.values())
-        METRICS.new_album_probe_failed += len(new_album_probe_failures)
-        if CONTROL.snapshot()["stop_requested"]:
-            stopped = True
-            emit({"type": "log", "level": "error", "text": "已停止：新专目录兜底阶段结束前收到停止信号。"})
-            return
+            new_album_outputs = run_dynamic_pool(artists, new_album_task, "new_album_probe", new_album_progress)
+            for out in new_album_outputs:
+                if isinstance(out, Exception):
+                    continue
+                found, info, artist = out
+                if info.get("ok"):
+                    new_album_candidates.extend(found)
+                else:
+                    new_album_probe_failures.append({"artist": artist, "error": info.get("error")})
+            probe_errors = {x["artist"]["id"]: x for x in new_album_probe_failures}
+            for artist, out in retry_failed([x["artist"] for x in new_album_probe_failures], new_album_task,
+                                            lambda x: x[1].get("ok"), "/artist/album 新专", lambda x: x["id"], retry_budget):
+                if isinstance(out, Exception):
+                    probe_errors[artist["id"]]["error"] = redacted_error_text(str(out))
+                elif out[1].get("ok"):
+                    new_album_candidates.extend(out[0])
+                    probe_errors.pop(artist["id"], None)
+                else:
+                    probe_errors[artist["id"]]["error"] = out[1].get("error")
+            new_album_probe_failures = list(probe_errors.values())
+            METRICS.new_album_probe_failed += len(new_album_probe_failures)
+            if CONTROL.snapshot()["stop_requested"]:
+                stopped = True
+                emit({"type": "log", "level": "error", "text": "已停止：新专目录兜底阶段结束前收到停止信号。"})
+                return
+        else:
+            emit({"type": "log", "level": "info", "text": "已跳过新专目录兜底阶段（newAlbumProbeLimit=0），直接进入 album 日期候选池。"})
 
         # 构造全局 album 候选池：recent 曲目 + 新专目录兜底 album
         by_album: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
