@@ -670,6 +670,19 @@ class Runtime:
                     self.emit({"type": "log", "level": "error", "text": "实时拉取失败，回退缓存至已配置的迁移艺人列表"})
                 if mode == "live":
                     meta = engine.load_artist_cache_meta(key)
+                    live_meta = dict(getattr(engine.fetch_artist_sublist, "last_meta", {}) or meta)
+                    if engine.is_artist_sublist_incomplete(artists, live_meta) and fallback_key and fallback_key != key:
+                        fallback_artists = engine.load_artist_cache_by_key(fallback_key)
+                        if fallback_artists and len(fallback_artists) > len(artists):
+                            self.emit({
+                                "type": "log",
+                                "level": "error",
+                                "text": (
+                                    f"实时拉取艺人列表不完整（仅 {len(artists)} 位），"
+                                    f"已回退缓存至已配置的迁移艺人列表 {fallback_key}（{len(fallback_artists)} 位）。"
+                                ),
+                            })
+                            return fallback_artists, fallback_key, "fallback-cache"
                     if meta.get("complete_confirmed") is False:
                         warning = "关注艺人列表的完整性未确认，缓存可能不完整"
                         self.warnings.append(warning)

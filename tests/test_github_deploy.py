@@ -1295,6 +1295,152 @@ def test_runtime_new_album_probe_zero_validation_and_total_failure(tmp_path, mon
         rt.close()
 
 
+def test_resolve_artist_list_protects_cache_from_incomplete_live_fetch(tmp_path, monkeypatch):
+    cache_dir = tmp_path / "artist_caches"
+    cache_dir.mkdir(parents=True)
+    monkeypatch.setattr(engine, "ARTIST_CACHE_DIR", cache_dir)
+    monkeypatch.setattr(engine, "REFRESH_ARTIST_CACHE", True)
+
+    cookie = "MUSIC_U=guard_cookie_123;"
+    key = engine.cookie_fingerprint(cookie)
+    original_artists = [{"id": str(i), "name": f"Artist {i}"} for i in range(1, 6)]
+    engine.save_artist_cache(key, original_artists, {"source": "live-sublist", "count": 5, "complete_confirmed": True})
+
+    events = []
+    monkeypatch.setattr(engine, "emit", lambda msg: events.append(msg))
+
+    # 1. Incomplete fetch (e.g. mid-pagination 405) must NOT overwrite existing 5-artist cache.
+    def incomplete_fetch(_cookie):
+        incomplete_fetch.last_meta = {
+            "method": "GET",
+            "limit": 500,
+            "had_error": True,
+            "complete_confirmed": False,
+            "server_count": 5,
+            "end_reason": "error_offset_500",
+        }
+        return original_artists[:2]
+
+    monkeypatch.setattr(engine, "fetch_artist_sublist", incomplete_fetch)
+    artists, res_key, mode = engine.resolve_artist_list(cookie, "")
+    assert res_key == key
+    assert mode == "fallback-cache"
+    assert len(artists) == 5
+    assert len(engine.load_artist_cache_by_key(key)) == 5
+    assert engine.load_artist_cache_meta(key).get("complete_confirmed") is True
+    assert any("回退缓存" in e.get("text", "") for e in events if e.get("type") == "log")
+
+    # 2. Complete fetch with fewer artists (legitimate unfollow) SHOULD update cache normally.
+    def complete_smaller_fetch(_cookie):
+        complete_smaller_fetch.last_meta = {
+            "method": "GET",
+            "limit": 500,
+            "had_error": False,
+            "complete_confirmed": True,
+            "server_count": 3,
+            "end_reason": "server_count_reached",
+        }
+        return original_artists[:3]
+
+    monkeypatch.setattr(engine, "fetch_artist_sublist", complete_smaller_fetch)
+    artists2, res_key2, mode2 = engine.resolve_artist_list(cookie, "")
+    assert res_key2 == key
+    assert mode2 == "live"
+    assert len(artists2) == 3
+    assert len(engine.load_artist_cache_by_key(key)) == 3
+
+
+def test_runtime_resolve_falls_back_to_configured_cache_key_on_incomplete_live_fetch(tmp_path, monkeypatch):
+    data_dir = tmp_path / "rt_guard"
+    cache_dir = data_dir / "VA_Artist_Caches"
+    cache_dir.mkdir(parents=True)
+
+    fallback_key = "92c430701d65a19f"
+    fallback_artists = [{"id": str(i), "name": f"Migrated {i}"} for i in range(1, 5)]
+
+    monkeypatch.setattr(engine, "SCRIPT_DIR", data_dir)
+    monkeypatch.setattr(engine, "CSV_FILE", data_dir / "VA_Tracks_Output.csv")
+    monkeypatch.setattr(engine, "ARTIST_CACHE_DIR", cache_dir)
+    monkeypatch.setattr(server, "DATA", data_dir)
+    monkeypatch.setattr(server, "verify_login", lambda *a, **kw: None)
+
+    engine.save_artist_cache(
+        fallback_key,
+        fallback_artists,
+        {"source": "migration", "count": 4, "complete_confirmed": True},
+    )
+
+    cfg_path = ci_scan._prepare_temp_config(
+        tmp_path / "sec_guard",
+        raw_cookie="MUSIC_U=new_cookie_diff_fp;",
+        threads=4,
+        recent_limit=50,
+        owned_limit=50,
+        new_album_probe_limit=20,
+        artist_cache_key=fallback_key,
+    )
+
+    def partial_live_fetch(_cookie):
+        partial_live_fetch.last_meta = {
+            "method": "GET",
+            "limit": 500,
+            "had_error": True,
+            "complete_confirmed": False,
+            "server_count": 4,
+            "end_reason": "error_offset_500",
+        }
+        return [fallback_artists[0]]
+
+    monkeypatch.setattr(engine, "fetch_artist_sublist", partial_live_fetch)
+
+    observed = {}
+
+    def fake_worker(cookie, source_input, *args, **kwargs):
+        resolved_artists, resolved_key, resolved_mode = engine.resolve_artist_list(cookie, source_input)
+        observed["artists"] = resolved_artists
+        observed["key"] = resolved_key
+        observed["mode"] = resolved_mode
+        engine.emit({
+            "type": "done",
+            "results": [],
+            "summary": {
+                "artists": len(resolved_artists),
+                "unique_albums": 0,
+                "artist_failures": 0,
+                "new_album_probe_failures": 0,
+                "album_errors": 0,
+                "owned_errors": 0,
+            },
+            "metrics": {"elapsed_sec": 0.5, "results": 0, "csv_skipped": 0},
+        })
+
+    rt = server.Runtime(
+        config=server.Config(cfg_path),
+        db_path=data_dir / "scan_history.sqlite3",
+        worker=fake_worker,
+    )
+    try:
+        out_dir = tmp_path / "guard_out"
+        args = ci_scan._parse_args([
+            "--data-dir", str(data_dir),
+            "--source", "manual",
+            "--result-json", str(out_dir / "run_result.json"),
+        ])
+        rc = ci_scan.execute_scan(rt, args, data_dir)
+        assert rc == 0
+        assert observed["mode"] == "fallback-cache"
+        assert observed["key"] == fallback_key
+        assert len(observed["artists"]) == 4
+
+        res = json.loads((out_dir / "run_result.json").read_text(encoding="utf-8"))
+        assert res["status"] == "partial"
+        assert "回退缓存" in res["warning"]
+        assert "complete_confirmed" not in res["warning"]
+    finally:
+        rt.close()
+
+
+
 
 
 

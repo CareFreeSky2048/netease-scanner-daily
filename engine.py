@@ -1013,6 +1013,20 @@ def fetch_artist_sublist(source_cookie: str) -> List[Dict[str, Any]]:
     raise RuntimeError(f"无法拉取艺人列表；尝试计划：{tried}")
 
 
+def is_artist_sublist_incomplete(artists: List[Dict[str, Any]], meta: Optional[Dict[str, Any]]) -> bool:
+    """判定本次实时拉取艺人列表是否因报错或分页截断而不完整。"""
+    if not isinstance(meta, dict):
+        return False
+    if meta.get("had_error"):
+        return True
+    if meta.get("complete_confirmed") is False:
+        return True
+    server_count = meta.get("server_count")
+    if isinstance(server_count, int) and server_count > 0 and len(artists) < server_count:
+        return True
+    return False
+
+
 def resolve_artist_list(scan_cookie: str, source_input: str) -> Tuple[List[Dict[str, Any]], str, str]:
     source_input = (source_input or "").strip()
     if looks_like_cache_key(source_input):
@@ -1039,6 +1053,18 @@ def resolve_artist_list(scan_cookie: str, source_input: str) -> Tuple[List[Dict[
         # 4500 条结果在下次运行中当成已确认全量而永久复用。
         save_meta = dict(getattr(fetch_artist_sublist, "last_meta", {}) or {})
         save_meta.update({"source": "live-sublist", "count": len(artists)})
+        existing_cached = load_artist_cache_by_key(key)
+        if existing_cached and is_artist_sublist_incomplete(artists, save_meta) and len(artists) < len(existing_cached):
+            emit({
+                "type": "log",
+                "level": "error",
+                "text": (
+                    f"实时拉取艺人列表不完整（仅 {len(artists)} 位，原因："
+                    f"{save_meta.get('end_reason') or 'unknown'}），"
+                    f"已保护并回退缓存 {key}（{len(existing_cached)} 位）。"
+                ),
+            })
+            return existing_cached, key, "fallback-cache"
         save_artist_cache(key, artists, save_meta)
         emit({"type": "log", "level": "success", "text": f"艺人列表已缓存为 {key}，共 {len(artists)} 位。"})
         return artists, key, "live"
