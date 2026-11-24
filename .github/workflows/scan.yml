@@ -5,6 +5,10 @@ on:
     # 00:03 and 04:00 Asia/Shanghai (UTC+8)
     - cron: '3 16 * * *'
     - cron: '0 20 * * *'
+  repository_dispatch:
+    types:
+      - scan_0003
+      - scan_0400
   workflow_dispatch:
     inputs:
       action:
@@ -173,6 +177,7 @@ jobs:
           NEW_ALBUM_PROBE_LIMIT: ${{ vars.NEW_ALBUM_PROBE_LIMIT }}
           EVENT_NAME: ${{ github.event_name }}
           EVENT_SCHEDULE: ${{ github.event.schedule }}
+          EVENT_ACTION: ${{ github.event.action }}
           RUN_ACTION: ${{ steps.ctx.outputs.action }}
           INPUT_SCAN_MODE: ${{ inputs.scan_mode }}
           INPUT_THREADS: ${{ inputs.threads }}
@@ -223,6 +228,13 @@ jobs:
             ARGS+=(--desktop-zip ./artifacts/records-export.zip)
             if [ "$EVENT_NAME" = "schedule" ]; then
               if [ "${EVENT_SCHEDULE:-}" = "0 20 * * *" ]; then
+                ARGS+=(--source scheduled --schedule-slot 04:00 --skip-if-slot-exists)
+              else
+                ARGS+=(--source scheduled --schedule-slot 00:03 --skip-if-slot-exists)
+                PROBE_LIMIT="0"
+              fi
+            elif [ "$EVENT_NAME" = "repository_dispatch" ]; then
+              if [ "${EVENT_ACTION:-}" = "scan_0400" ]; then
                 ARGS+=(--source scheduled --schedule-slot 04:00 --skip-if-slot-exists)
               else
                 ARGS+=(--source scheduled --schedule-slot 00:03 --skip-if-slot-exists)

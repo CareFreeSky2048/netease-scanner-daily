@@ -71,6 +71,7 @@ docker compose -f compose.tunnel.yaml stop scanner
 ### 6. 调度策略与 GitHub Actions 免费额度说明
 
 - 默认工作流 `.github/workflows/scan.yml` 每天于北京时间 **00:03**（UTC `3 16 * * *`）与 **04:00**（UTC `0 20 * * *`）自动执行，并发组锁定保证同一时刻只有一个扫描读写持久状态；支持通过 `workflow_dispatch` 手动选择 `auto` / `regular` / `m3` / `m3_intersection`、日期窗口、并发线程或针对异常任务的 `retry_of`。
+  - **外部准点定时触发（推荐替代/配合 GitHub `schedule` 排队延迟）**：工作流同时监听 `repository_dispatch`（事件类型 `scan_0003` 与 `scan_0400`），可通过 `cron-job.org` 或 Cloudflare Worker 准点向 `POST https://api.github.com/repos/<你的用户名>/<你的仓库名>/dispatches` 发送 `{"event_type":"scan_0003"}` / `{"event_type":"scan_0400"}` 实现秒级启动；原生 `schedule` 继续作为兜底，且依靠 `--skip-if-slot-exists` 自动去重，绝不会同一时段重复扫描。
   - **凌晨两次差异化扫描**：**00:03** 首次扫描自动以快速模式运行（`newAlbumProbeLimit=0`，跳过阶段 1b“兜底扫描新专目录”，减少约 4,700 次 `/artist/album` 请求，耗时节省约 35%–40%）；**04:00** 第二次扫描自动开启完整新专目录兜底（默认深度 `20`，可通过 Repository Variable `NEW_ALBUM_PROBE_LIMIT` 调整），补齐仅上架到专辑页而尚未同步进 `/artist/songs` 的零点新专。
 - **免费额度提示**：GitHub Free 账户对**私有仓库**每月提供 **2,000 分钟** Linux runner 免费额度。按 `SCAN_THREADS=8`、00:03 快速模式约 18–20 分钟 + 04:00 兜底模式约 28–30 分钟估算，每天 2 次约消耗 **1,400–1,500 分钟/月**（明显低于上限）；如需留出更大余量，可将变量 `SCAN_THREADS` 调高至 `10–12`，或在 `.github/workflows/scan.yml` 中暂时注释掉 `04:00` 定时条目。
 

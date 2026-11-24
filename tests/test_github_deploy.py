@@ -594,6 +594,22 @@ def test_scan_workflow_respects_github_limits_and_shell_safety():
     assert '--schedule-slot 00:03' in slot_block.group(1)
     assert 'PROBE_LIMIT="0"' in slot_block.group(1)
 
+    # External accurate trigger via repository_dispatch must route scan_0003 / scan_0400 cleanly.
+    assert "repository_dispatch:" in text
+    assert "- scan_0003" in text
+    assert "- scan_0400" in text
+    assert "EVENT_ACTION: ${{ github.event.action }}" in text
+    dispatch_block = re.search(
+        r'elif \[ "\$EVENT_NAME" = "repository_dispatch" \]; then\s*\n(.*?)\n\s*else\s*\n\s*ARGS\+=\(--source manual\)',
+        text,
+        flags=re.DOTALL,
+    )
+    assert dispatch_block is not None
+    assert 'scan_0400' in dispatch_block.group(1)
+    assert '--schedule-slot 04:00' in dispatch_block.group(1)
+    assert '--schedule-slot 00:03' in dispatch_block.group(1)
+    assert 'PROBE_LIMIT="0"' in dispatch_block.group(1)
+
 
 def test_engine_transport_overrides_and_proxy_redaction(monkeypatch):
     monkeypatch.delenv("NETEASE_REAL_IP", raising=False)
