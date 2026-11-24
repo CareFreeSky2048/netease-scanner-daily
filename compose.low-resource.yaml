@@ -1,0 +1,22 @@
+# Optional overlay for a 1-core / 1-GB host. Host swap is strongly recommended.
+# RAM limits protect the host; they do not guarantee a full scan will fit.
+services:
+  scanner:
+    cpus: "0.60"
+    mem_limit: 448m
+    memswap_limit: 1536m
+    mem_reservation: 256m
+    environment:
+      # Begin at 2; increase only after observing memory across a stable full scan.
+      NETEASE_MAX_THREADS: "8"
+  netease-api:
+    cpus: "0.25"
+    mem_limit: 160m
+    memswap_limit: 320m
+    environment:
+      NODE_OPTIONS: "--max-old-space-size=96"
+  caddy:
+    # bcrypt login verification needs a short CPU burst to keep the UI usable.
+    cpus: "0.50"
+    mem_limit: 64m
+    memswap_limit: 64m

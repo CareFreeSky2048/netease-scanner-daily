@@ -1,0 +1,325 @@
+name: Netease Music Scanner
+
+on:
+  schedule:
+    # 00:03 and 04:00 Asia/Shanghai (UTC+8)
+    - cron: '3 16 * * *'
+    - cron: '0 20 * * *'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        type: choice
+        default: 'scan'
+        options:
+          - scan
+          - probe
+          - rebuild_site
+      scan_mode:
+        description: 'Scan mode (for scan action)'
+        type: choice
+        default: 'auto'
+        options:
+          - auto
+          - regular
+          - m3
+          - m3_intersection
+      threads:
+        description: 'Concurrency threads (empty = vars.SCAN_THREADS or 8)'
+        type: string
+        default: ''
+      external_start_date:
+        description: 'External VA start date (YYYY-MM-DD, optional)'
+        type: string
+        default: ''
+      external_end_date:
+        description: 'External VA end date (YYYY-MM-DD, optional)'
+        type: string
+        default: ''
+      new_start_date:
+        description: 'New release start date (YYYY-MM-DD, optional)'
+        type: string
+        default: ''
+      new_end_date:
+        description: 'New release end date (YYYY-MM-DD, optional)'
+        type: string
+        default: ''
+      debug_album:
+        description: 'Diagnostic album ID or Netease URL (optional)'
+        type: string
+        default: ''
+      retry_of:
+        description: 'Retry an existing failed/partial run ID (optional)'
+        type: string
+        default: ''
+      allow_empty_state:
+        description: 'Allow starting with empty state if release is missing'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: netease-scanner-state
+  cancel-in-progress: false
+
+env:
+  TZ: Asia/Shanghai
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: 'requirements.txt'
+
+      - name: Install Python dependencies
+        run: python -m pip install --upgrade pip && pip install -r requirements.txt
+
+      - name: Resolve workflow action
+        id: ctx
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_ACTION: ${{ inputs.action }}
+        shell: bash
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ -n "${INPUT_ACTION:-}" ]; then
+            echo "action=$INPUT_ACTION" >> "$GITHUB_OUTPUT"
+          else
+            echo "action=scan" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Node.js 22
+        if: steps.ctx.outputs.action != 'rebuild_site'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Stage API package manifests
+        if: steps.ctx.outputs.action != 'rebuild_site'
+        shell: bash
+        run: |
+          mkdir -p /tmp/netease-api
+          cp api-package.json /tmp/netease-api/package.json
+          cp api-package-lock.json /tmp/netease-api/package-lock.json
+
+      - name: Cache NeteaseCloudMusicApi node_modules
+        if: steps.ctx.outputs.action != 'rebuild_site'
+        id: api-cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/netease-api/node_modules
+          key: ${{ runner.os }}-netease-api-${{ hashFiles('api-package-lock.json') }}
+
+      - name: Install NeteaseCloudMusicApi dependencies
+        if: steps.ctx.outputs.action != 'rebuild_site' && steps.api-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: npm ci --omit=dev --prefix /tmp/netease-api
+
+      - name: Restore persistent cache and history from GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          INPUT_ALLOW_EMPTY: ${{ inputs.allow_empty_state }}
+        shell: bash
+        run: |
+          mkdir -p ./data ./artifacts
+          ARGS=(restore --data-dir ./data)
+          if [ "${INPUT_ALLOW_EMPTY:-false}" = "true" ]; then
+            ARGS+=(--allow-empty)
+          fi
+          python state_store.py "${ARGS[@]}"
+
+      - name: Start NeteaseCloudMusicApi service
+        if: steps.ctx.outputs.action != 'rebuild_site'
+        shell: bash
+        run: |
+          NODE_ENV=production HOST=127.0.0.1 PORT=3000 TZ=Asia/Shanghai \
+            node /tmp/netease-api/node_modules/NeteaseCloudMusicApi/app.js \
+            >/tmp/netease_api.log 2>&1 &
+          echo $! > /tmp/netease_api.pid
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3000/ >/dev/null 2>&1; then
+              echo "NeteaseCloudMusicApi is ready."
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "NeteaseCloudMusicApi failed to become ready within 30s:"
+          tail -n 50 /tmp/netease_api.log || true
+          exit 1
+
+      - name: Run probe or scan
+        if: steps.ctx.outputs.action != 'rebuild_site'
+        env:
+          MUSIC_COOKIE: ${{ secrets.MUSIC_COOKIE }}
+          ARTIST_CACHE_KEY: ${{ vars.ARTIST_CACHE_KEY }}
+          VAR_THREADS: ${{ vars.SCAN_THREADS }}
+          RECENT_LIMIT: ${{ vars.RECENT_LIMIT }}
+          OWNED_LIMIT: ${{ vars.OWNED_LIMIT }}
+          NEW_ALBUM_PROBE_LIMIT: ${{ vars.NEW_ALBUM_PROBE_LIMIT }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_SCHEDULE: ${{ github.event.schedule }}
+          RUN_ACTION: ${{ steps.ctx.outputs.action }}
+          INPUT_SCAN_MODE: ${{ inputs.scan_mode }}
+          INPUT_THREADS: ${{ inputs.threads }}
+          INPUT_EXT_START: ${{ inputs.external_start_date }}
+          INPUT_EXT_END: ${{ inputs.external_end_date }}
+          INPUT_NEW_START: ${{ inputs.new_start_date }}
+          INPUT_NEW_END: ${{ inputs.new_end_date }}
+          INPUT_DEBUG_ALBUM: ${{ inputs.debug_album }}
+          INPUT_RETRY_OF: ${{ inputs.retry_of }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${MUSIC_COOKIE:-}" ]; then
+            echo "::error::Secret MUSIC_COOKIE is not configured."
+            exit 1
+          fi
+
+          if [ "$RUN_ACTION" = "probe" ]; then
+            python ci_scan.py \
+              --data-dir ./data \
+              --api-base http://127.0.0.1:3000 \
+              --probe-only \
+              --result-json ./artifacts/run_result.json \
+              --summary-md "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          THREADS="${INPUT_THREADS:-${VAR_THREADS:-8}}"
+          SCAN_MODE="${INPUT_SCAN_MODE:-auto}"
+          ARGS=(
+            --data-dir ./data
+            --api-base http://127.0.0.1:3000
+            --max-threads 16
+            --threads "$THREADS"
+            --scan-mode "$SCAN_MODE"
+            --result-json ./artifacts/run_result.json
+            --today-csv ./artifacts/today.csv
+            --run-csv ./artifacts/run.csv
+            --m3-csv ./artifacts/m3-report.csv
+            --desktop-zip ./artifacts/records-export.zip
+            --summary-md "$GITHUB_STEP_SUMMARY"
+            --no-fail-on-error
+          )
+
+          if [ "$EVENT_NAME" = "schedule" ]; then
+            if [ "${EVENT_SCHEDULE:-}" = "0 20 * * *" ]; then
+              ARGS+=(--source scheduled --schedule-slot 04:00 --skip-if-slot-exists)
+            else
+              ARGS+=(--source scheduled --schedule-slot 00:03 --skip-if-slot-exists)
+            fi
+          else
+            ARGS+=(--source manual)
+          fi
+
+          if [ -n "${INPUT_EXT_START:-}" ]; then ARGS+=(--external-start-date "$INPUT_EXT_START"); fi
+          if [ -n "${INPUT_EXT_END:-}" ]; then ARGS+=(--external-end-date "$INPUT_EXT_END"); fi
+          if [ -n "${INPUT_NEW_START:-}" ]; then ARGS+=(--new-start-date "$INPUT_NEW_START"); fi
+          if [ -n "${INPUT_NEW_END:-}" ]; then ARGS+=(--new-end-date "$INPUT_NEW_END"); fi
+          if [ -n "${RECENT_LIMIT:-}" ]; then ARGS+=(--recent-limit "$RECENT_LIMIT"); fi
+          if [ -n "${OWNED_LIMIT:-}" ]; then ARGS+=(--owned-limit "$OWNED_LIMIT"); fi
+          if [ -n "${NEW_ALBUM_PROBE_LIMIT:-}" ]; then ARGS+=(--new-album-probe-limit "$NEW_ALBUM_PROBE_LIMIT"); fi
+          if [ -n "${INPUT_DEBUG_ALBUM:-}" ]; then ARGS+=(--debug-album "$INPUT_DEBUG_ALBUM"); fi
+          if [ -n "${INPUT_RETRY_OF:-}" ]; then ARGS+=(--retry-of "$INPUT_RETRY_OF"); fi
+
+          python ci_scan.py "${ARGS[@]}"
+
+      - name: Stop NeteaseCloudMusicApi service
+        if: always()
+        shell: bash
+        run: |
+          if [ -f /tmp/netease_api.pid ]; then
+            kill "$(cat /tmp/netease_api.pid)" >/dev/null 2>&1 || true
+            rm -f /tmp/netease_api.pid
+          fi
+
+      - name: Parse run result metadata
+        id: run-meta
+        if: success() && steps.ctx.outputs.action != 'probe'
+        shell: bash
+        run: |
+          python - << 'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from pathlib import Path
+
+          p = Path("artifacts/run_result.json")
+          if not p.is_file():
+              print("status=rebuild")
+              print("skipped=false")
+          else:
+              data = json.loads(p.read_text(encoding="utf-8"))
+              print(f"status={data.get('status', 'unknown')}")
+              print(f"skipped={'true' if data.get('skipped') else 'false'}")
+          PY
+
+      - name: Build static viewer and standalone report
+        if: success() && steps.ctx.outputs.action != 'probe'
+        shell: bash
+        run: |
+          python build_site.py \
+            --data-dir ./data \
+            --out-dir ./site \
+            --standalone ./artifacts/latest-report.html
+
+      - name: Save compacted state to GitHub Release
+        if: success() && steps.ctx.outputs.action == 'scan' && steps.run-meta.outputs.skipped != 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: python state_store.py save --data-dir ./data --keep-m3-reports 10 --keep-latest 3 --daily-retention 14
+
+      - name: Publish squashed static viewer to site branch
+        if: success() && steps.ctx.outputs.action != 'probe' && steps.run-meta.outputs.skipped != 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/site-publish
+          mkdir -p /tmp/site-publish
+          cp -r ./site/. /tmp/site-publish/
+          touch /tmp/site-publish/.nojekyll
+          cd /tmp/site-publish
+          git init -b site
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          STAMP=$(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M:%S')
+          git commit -m "Update static viewer (${STAMP} CST)"
+          AUTH=$(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 -w0)
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic ${AUTH}" \
+            push --force "https://github.com/${GITHUB_REPOSITORY}.git" site
+          rm -rf /tmp/site-publish
+
+      - name: Upload scan artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-artifacts-${{ github.run_number }}
+          path: artifacts/
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Enforce scan status gate
+        if: steps.ctx.outputs.action == 'scan'
+        env:
+          RUN_STATUS: ${{ steps.run-meta.outputs.status }}
+        shell: bash
+        run: |
+          if [ "${RUN_STATUS:-unknown}" = "failed" ] || [ "${RUN_STATUS:-unknown}" = "interrupted" ] || [ "${RUN_STATUS:-unknown}" = "unknown" ]; then
+            echo "::error::Scan finished with terminal status: ${RUN_STATUS:-unknown}"
+            exit 1
+          fi

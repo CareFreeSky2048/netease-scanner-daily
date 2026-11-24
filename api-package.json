@@ -1,0 +1,7 @@
+{
+  "name": "netease-scanner-api",
+  "private": true,
+  "dependencies": {
+    "NeteaseCloudMusicApi": "4.31.0"
+  }
+}

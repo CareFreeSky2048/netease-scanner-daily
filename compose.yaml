@@ -1,0 +1,56 @@
+name: netease-scanner
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+services:
+  netease-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    restart: unless-stopped
+    logging: *logging
+    networks: [backend]
+    security_opt: ["no-new-privileges:true"]
+  scanner:
+    build: .
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 40s
+    logging: *logging
+    depends_on:
+      netease-api:
+        condition: service_healthy
+    volumes:
+      - ./data:/data
+      - ./config:/config:ro
+      - ./secrets:/run/secrets:ro
+    networks: [backend]
+    security_opt: ["no-new-privileges:true"]
+  caddy:
+    image: caddy:2.10.2-alpine
+    restart: unless-stopped
+    logging: *logging
+    depends_on:
+      scanner:
+        condition: service_healthy
+    environment:
+      SCANNER_DOMAIN: ${SCANNER_DOMAIN:?Set SCANNER_DOMAIN in .env}
+      WEB_USER: ${WEB_USER:-scanner}
+      WEB_PASSWORD_HASH: ${WEB_PASSWORD_HASH:?Set WEB_PASSWORD_HASH in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [backend]
+    security_opt: ["no-new-privileges:true"]
+networks:
+  backend:
+volumes:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,8 @@
+:8080 {
+    basic_auth {
+        {$WEB_USER} {$WEB_PASSWORD_HASH}
+    }
+    reverse_proxy scanner:5000 {
+        flush_interval -1
+    }
+}

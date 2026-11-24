@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>网易云扫描记录</title>
+<style>
+:root{font-family:system-ui,"Microsoft YaHei",sans-serif;color:#172332;background:#f3f5f7;font-size:15px}*{box-sizing:border-box}body{margin:0}main{max-width:1360px;margin:auto;padding:32px 24px}header{display:flex;justify-content:space-between;gap:24px;align-items:start;margin-bottom:24px}h1{font-size:27px;letter-spacing:-.5px;margin:0 0 8px}h2{font-size:17px;margin:0 0 18px}p{margin:6px 0;line-height:1.7}.muted{color:#677487}.card{background:white;border:1px solid #dde3e9;border-radius:12px;padding:22px;margin:16px 0}.grid{display:grid;grid-template-columns:repeat(4,minmax(140px,1fr));gap:16px}label{display:flex;flex-direction:column;gap:8px;font-size:13px;color:#596679}input,select{font:inherit;border:1px solid #ccd4de;border-radius:6px;padding:9px;background:#fff;color:#172332;min-width:0}button,.button{font:inherit;display:inline-block;padding:10px 16px;border-radius:7px;border:1px solid #ccd4de;background:#fff;color:#263548;cursor:pointer;text-decoration:none}button.primary{background:#183f50;color:#fff;border-color:#183f50}button.danger{color:#a13737}button:disabled{opacity:.45;cursor:default}.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:18px}.tag{font-size:12px;border:1px solid #cbd8df;background:#edf4f5;color:#31546b;padding:5px 10px;border-radius:20px;white-space:nowrap}.notice{padding:12px 16px;border-radius:7px;background:#fff2db;color:#795718;line-height:1.6;white-space:pre-line;margin-top:10px}.notice:empty{display:none}progress{width:100%;height:8px;accent-color:#2f687b;margin:16px 0 6px}.history{display:grid;grid-template-columns:300px minmax(0,1fr);gap:20px}.run-list{max-height:590px;overflow:auto}.run{display:block;text-align:left;width:100%;border:1px solid #e1e6ec;margin-bottom:8px;padding:12px;font-size:13px;line-height:1.65}.run.selected{background:#eff5f7;border-color:#719bac}.run small{display:block;color:#677487}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:12px 9px;text-align:left;border-bottom:1px solid #e8ecf0;vertical-align:top}th{color:#637287;white-space:nowrap;font-weight:500}td a{color:#215a71;white-space:nowrap}#logs{max-height:220px;overflow:auto;white-space:pre-wrap;font-size:12px;color:#596679;line-height:1.8;background:#f7f9fb;padding:14px;border-radius:7px}details{margin-top:20px}summary{cursor:pointer;color:#596679}.toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.pagination{display:flex;justify-content:flex-end;gap:10px;align-items:center;margin-top:16px}#summary{white-space:pre-line}.error{color:#9a3838}@media(max-width:900px){.history{grid-template-columns:1fr}.run-list{max-height:240px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{flex-direction:column}main{padding:20px 12px}.card{padding:16px}}
+</style>
+<style>.history>*{min-width:0}.pagination{flex-wrap:wrap}td{overflow-wrap:anywhere}.album-list{border-top:1px solid #e3e8ed}.album{margin:0;border-bottom:1px solid #e3e8ed}.album summary{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:15px 8px;list-style:none;color:#172332}.album summary::-webkit-details-marker{display:none}.album summary::before{content:'+';grid-column:2;grid-row:1;color:#557181;font-size:18px;text-align:center;width:20px}.album[open] summary::before{content:'−'}.album-title{grid-column:1;grid-row:1;font-weight:600;overflow-wrap:anywhere}.album-meta{grid-column:1/-1;color:#677487;font-size:13px}.album summary:focus-visible{outline:2px solid #2f687b;outline-offset:2px}.album-tracks{padding:0 8px 12px}.album-tracks table{margin-bottom:4px}.album-tracks th,.album-tracks td{padding:9px 7px}.album-empty{padding:12px 8px;color:#677487}@media(max-width:480px){.grid input{width:100%}.tag{white-space:normal}.album summary{padding:13px 4px}.album-tracks{padding:0 2px 8px}}
+</style>
+<style>.album-title a{color:#215a71;text-decoration:underline;text-decoration-color:#a8c1cb;text-underline-offset:3px}.album-title a:hover{color:#163f50;text-decoration-color:currentColor}</style>
+</head>
+<body><main>
+<header><div><h1>网易云扫描记录</h1><p class="muted">服务器每日扫描 · 结果与历史持续保存</p></div><span class="tag" id="schedule">正在连接服务器</span></header>
+<div id="connection" class="notice" role="status"></div>
+<section class="card"><div class="toolbar"><h2>扫描设置</h2><span class="muted" id="credential"></span></div>
+<div class="grid">
+<label>扫描模式<select id="scanMode"><option value="auto">自动（截至 2026-11-25 使用 M3 双轮）</option><option value="regular">常规扫描</option><option value="m3">M3 特供双轮</option><option value="m3_intersection">仅 M3 交集（手动）</option></select></label>
+<label>外部合辑 · 开始<input id="externalStartDate" type="date"></label><label>外部合辑 · 结束<input id="externalEndDate" type="date"></label>
+<label>新专／新歌 · 开始<input id="newStartDate" type="date"></label><label>新专／新歌 · 结束<input id="newEndDate" type="date"></label>
+<label>每位艺人最近曲目数<input id="recentLimit" type="number" min="10" max="200"></label>
+<label>归属验证深度<input id="ownedLimit" type="number" min="10" max="200"></label>
+<label>新专目录探测深度<input id="newAlbumProbeLimit" type="number" min="5" max="100"></label>
+<label>本次并发（手动／运行调整）<input id="threads" type="number" min="1" max="16"></label>
+</div><details><summary>漏扫诊断</summary><label style="margin-top:12px">专辑 ID 或网易云专辑链接<input id="debugAlbum" placeholder="可选"></label></details>
+<p id="scheduleSettings" class="muted"></p>
+<div class="actions"><button id="start" class="primary">手动扫描</button><button id="defaults">恢复默认设置</button><button data-action="pause">暂停</button><button data-action="resume">继续</button><button class="danger" data-action="stop">停止</button><button id="applyThreads">调整运行并发</button></div>
+<progress id="progress" value="0" max="100"></progress><p id="progressText" class="muted">当前没有运行中的扫描</p><div id="feedback" class="notice" role="status"></div>
+</section>
+<section class="card history"><aside><div class="toolbar"><h2>扫描历史</h2><button id="refresh">刷新</button></div><button id="today" class="run selected">今日扫描结果<small>北京时间今天的自动与手动扫描新增</small></button><button id="preMigration" class="run">迁移前累计结果<small>保留迁移时的 CSV，不包含后续新增</small></button><button id="legacy" class="run">全部累计结果<small>含迁移前 CSV 与上线后的新增记录</small></button><div class="run-list" id="runs"></div><button id="older">加载更早任务</button></aside>
+<div><div class="toolbar"><div><h2 id="resultTitle">今日扫描结果</h2><p id="summary" class="muted">正在读取今日扫描记录</p></div><div class="actions"><a class="button" id="download" href="/api/today/csv">下载 CSV</a><a class="button" id="m3Report" href="#" hidden>下载 M3 配对报告</a></div></div><div id="runWarning" class="notice"></div>
+<div id="retryActions" hidden><button id="retryRun">按原窗口与模式补扫</button><p class="muted">沿用本次扫描模式、日期窗口与当前定时默认并发，重新扫描该模式覆盖的全部艺人；仅 M3 交集模式不扩大到其他关注艺人。历史 CSV 去重，仅追加未记录结果。新扫描会自动低速重试失败对象。</p></div>
+<div class="album-list" id="resultList" style="scroll-margin-top:16px" aria-live="polite"></div>
+<p class="muted">按专辑热度与最近发行日期排序。展开专辑可查看艺人、曲目、日期和网易云链接；迁移前 CSV 未保存热度。</p>
+<div class="pagination"><button id="previous">上一页</button><span id="page"></span><button id="next">下一页</button></div>
+<details><summary>本次扫描日志</summary><div id="logs"></div></details></div></section>
+<section class="card"><h2>记录回传本地</h2><p class="muted">将服务器当前 CSV、专辑缓存、艺人缓存、指标与报告保存回电脑。覆盖前请关闭本地扫描器；选择 C:\Users\32461\Music，原记录会先备份到该目录下的 netease_sync_backups。服务器和本地 Cookie 均不参与回传。</p><div class="actions"><button id="syncRecords" class="primary">回传并覆盖本地音乐文件夹</button><button id="exportRecords">下载记录包 ZIP</button></div><p id="syncHint" class="muted"></p><div id="syncFeedback" class="notice" role="status"></div></section>
+<p class="muted">所有调度与日期窗口均使用北京时间。扫描结果为空与扫描失败会分别记录；部分完成的结果可能存在遗漏。</p>
+</main>
+<script src="/static/records.js"></script>
+<script>
+const $=id=>document.getElementById(id), statusNames={queued:'等待扫描',running:'扫描中',success:'完成',partial:'部分完成',failed:'失败',stopped:'已停止',interrupted:'已中断'};
+const modeNames={auto:'自动',regular:'常规',m3:'M3 特供双轮',m3_intersection:'仅 M3 交集'};
+const keys=['scanMode','externalStartDate','externalEndDate','newStartDate','newEndDate','recentLimit','ownedLimit','newAlbumProbeLimit','threads'];
+let selected='today',offset=0,total=0,runLimit=30,currentId=null,initialized=false,loading=false,todayDate=null;const expandedAlbums=new Set();
+async function api(path,payload){const options=payload===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json','X-Scanner-Request':'1'},body:JSON.stringify(payload)};const r=await fetch(path,options);const data=await r.json();if(!r.ok)throw new Error(data.msg||'请求失败');return data;}
+function localTime(value){return value?new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',dateStyle:'short',timeStyle:'medium',hour12:false}).format(new Date(value)):'—';}
+function sourceName(r){const base=r.params?.retry_of?'补扫':r.source==='scheduled'?`自动扫描 ${r.schedule_time||'00:03'}`:'手动扫描';return `${base} · ${modeNames[r.params?.scanMode]||'常规'}`;}
+function feedback(error){$('feedback').textContent=error instanceof Error?error.message:String(error);}
+function fillDefaults(data,mode){const values=data.mode_defaults?.[mode]||data.defaults;keys.filter(k=>k!=='scanMode').forEach(k=>{if(values[k]!==undefined)$(k).value=values[k];});$('scanMode').value=mode;}
+function scheduleDescription(s){
+const slots=s.schedule_details||(s.schedule_times||[]).map(time=>({time,mode:s.schedule_modes?.[time]||s.scan_mode,start_date:s.schedule_start_dates?.[time],end_date:s.schedule_end_dates?.[time],active:true}));
+const labels=[];let i=0;while(i<slots.length){let end=i+1;const minutes=x=>Number(x.time.slice(0,2))*60+Number(x.time.slice(3));while(end<slots.length&&minutes(slots[end])-minutes(slots[end-1])===15&&['mode','end_date','active'].every(k=>slots[end][k]===slots[i][k]))end++;const first=slots[i],last=slots[end-1],range=end-i>=3?`${first.time}–${last.time} 每15分钟`:`${first.time}${end-i===2?'、'+last.time:''}`;const startLabel=end-i>=3?(first.start_date===last.start_date&&first.start_date?' · 从 '+first.start_date+' 起':' · 按各时段生效日启用'):(first.start_date?' · 从 '+first.start_date+' 起':'');labels.push(`${range} ${modeNames[first.mode]||first.mode}${startLabel}${first.end_date?' · 截至 '+first.end_date+'（含）':''}${first.active?'':' · 当前不在生效期'}`);i=end;}return labels.join('；');
+}
+async function updateStatus(){const s=await api('/api/status');$('threads').max=s.thread_limit||16;currentId=s.current?.id||null;if(!initialized){fillDefaults(s,s.defaults.scanMode||s.scan_mode||'auto');initialized=true;}$('schedule').textContent=`北京时间 ${s.schedule} · ${s.schedule_enabled?'自动扫描已启用':'自动扫描未启用'}`;$('scheduleSettings').textContent=`定时默认 ${s.defaults.threads} 线程 · 自动模式 ${modeNames[s.scan_mode]||'自动'}（截止日期由服务器配置） · 服务器上限 ${s.thread_limit} 线程${currentId?(s.metrics?.phase==='slow_retry'?` · 当前低速补扫 1 线程（任务并发设置 ${s.state.target_threads}，创建时 ${s.current.params.threads}）`:` · 当前任务实际 ${s.state.target_threads} 线程（创建时 ${s.current.params.threads}）`):''}${scheduleDescription(s)?' · 时段：'+scheduleDescription(s):''}。下方并发输入与运行调整只影响本次任务，不保存为定时默认值。`;$('credential').textContent=s.cookie_configured?'账号凭据已配置':'账号凭据尚未配置';$('start').disabled=!!currentId||!!s.pending.length||!s.cookie_configured||s.accepting_scans===false;$('retryRun').disabled=$('start').disabled;document.querySelectorAll('[data-action]').forEach(b=>b.disabled=!currentId);$('applyThreads').disabled=!currentId;const m=s.metrics;$('progress').value=m&&m.phase_total?100*m.phase_done/m.phase_total:0;$('progressText').textContent=m?`${s.state?.paused?'已暂停 · ':''}${m.phase_display} ${m.phase_done}/${m.phase_total} · 新增 ${m.results} 条 · 已去重 ${m.csv_skipped} 条 · ${Math.round(m.elapsed_sec/60)} 分钟`:'当前没有运行中的扫描';if(s.pending.length)$('progressText').textContent+=' · 定时任务等待中';$('connection').textContent=s.scheduler_error||'';return s;}
+async function updateRuns(){const data=await api(`/api/runs?limit=${runLimit}`),fragment=document.createDocumentFragment();for(const run of data.runs){const button=document.createElement('button');button.className='run'+(selected===run.id?' selected':'');const title=document.createElement('div');title.textContent=`${localTime(run.started_at||run.created_at)} · ${statusNames[run.status]||run.status}`;const detail=document.createElement('small');detail.textContent=`${sourceName(run)} · 创建时 ${run.params.threads??'—'} 线程 · 新增 ${run.result_count} 条`;button.append(title,detail);button.onclick=()=>choose(run.id);fragment.append(button);}$('runs').replaceChildren(fragment);$('older').disabled=data.runs.length<runLimit;return data.runs;}
+function heatText(value){const count=Number(value);return value!==null&&value!==undefined&&value!==''&&Number.isSafeInteger(count)&&count>0?(count>=3?`🔥 ${count}`:String(count)):'—';}
+function trackTable(rows){const table=document.createElement('table'),head=table.createTHead().insertRow();for(const label of ['艺人','曲目','发行日期','链接']){const th=document.createElement('th');th.textContent=label;head.append(th);}const body=table.createTBody();for(const row of rows){const tr=body.insertRow();for(const key of ['name','song_name','date_str']){const td=tr.insertCell();td.textContent=row[key]||'';}const td=tr.insertCell();if(/^https?:\/\/(music\.163\.com|y\.music\.163\.com)(\/|$)/i.test(row.link||'')){const a=document.createElement('a');a.href=row.link;a.target='_blank';a.rel='noopener noreferrer';a.textContent='网易云 ↗';td.append(a);}}return table;}
+function drawAlbums(albums,emptyMessage='当前没有结果记录'){const fragment=document.createDocumentFragment();if(!albums.length){const empty=document.createElement('p');empty.className='album-empty';empty.textContent=emptyMessage;fragment.append(empty);}for(const album of albums){const details=document.createElement('details');details.className='album';const expandKey=`${selected}|${todayDate||''}|${album.album_key}`;const summary=document.createElement('summary'),title=document.createElement('span'),meta=document.createElement('span');title.className='album-title';const albumId=String(album.album_id||'');if(/^\d+$/.test(albumId)){const link=document.createElement('a');link.href=`https://music.163.com/#/album?id=${encodeURIComponent(albumId)}`;link.target='_blank';link.rel='noopener noreferrer';link.textContent=album.album_name||'（未命名专辑）';link.title='在网易云打开专辑';link.addEventListener('click',event=>event.stopPropagation());title.append(link);}else title.textContent=album.album_name||'（未命名专辑）';meta.className='album-meta';meta.textContent=`${heatText(album.heat)} 热度 · ${album.track_count} 首曲目 · 最近发行 ${album.latest_date||'—'}`;summary.append(title,meta);details.append(summary);details.addEventListener('toggle',async()=>{if(details.open)expandedAlbums.add(expandKey);else expandedAlbums.delete(expandKey);if(!details.open||details.dataset.loaded||details.dataset.loading)return;details.dataset.loading='1';const area=document.createElement('div');area.className='album-tracks';area.textContent='正在读取曲目';details.append(area);try{const params=new URLSearchParams({source:albumSource(),album:album.album_key});if(selected!=='today'&&selected!=='legacy'&&selected!=='pre-migration')params.set('run_id',selected);if(selected==='today'&&todayDate)params.set('date',todayDate);const data=await api(`/api/album-tracks?${params}`);area.replaceChildren(...(data.results.length?[trackTable(data.results)]:[Object.assign(document.createElement('p'),{className:'album-empty',textContent:'该专辑没有可显示的曲目'})]));details.dataset.loaded='1';}catch(error){area.textContent=`曲目读取失败：${error.message}`;}finally{delete details.dataset.loading;}});details.open=expandedAlbums.has(expandKey);fragment.append(details);}$('resultList').replaceChildren(fragment);$('page').textContent=`${total?offset+1:0}–${Math.min(offset+50,total)} / ${total} 张专辑`;$('previous').disabled=offset===0;$('next').disabled=offset+50>=total;}
+function albumSource(){if(selected==='today')return'today';if(selected==='legacy')return'legacy';if(selected==='pre-migration')return'pre-migration';return'run';}
+function runWarnings(r){const count=['artist_failures','new_album_probe_failures','album_errors','owned_errors','task_errors'].reduce((n,k)=>n+(r.summary[k]||0),0);return [r.error,r.warning,count?`存在 ${count} 项失败或降级，结果可能遗漏。`:''].filter(Boolean).join('；');}
+function hideM3(){ $('m3Report').hidden=true; $('m3Report').removeAttribute('href'); }
+async function loadToday(){
+hideM3();
+$('retryActions').hidden=true;
+let data=await api(`/api/today?album_limit=50&album_offset=${offset}`);
+if(todayDate&&todayDate!==data.date&&offset){offset=0;data=await api('/api/today?album_limit=50&album_offset=0');}
+todayDate=data.date;total=data.total_albums;const runs=data.runs,counts={};runs.forEach(r=>counts[r.status]=(counts[r.status]||0)+1);
+const active=counts.running||counts.queued,abnormal=runs.some(r=>['failed','partial','stopped','interrupted'].includes(r.status));
+let message;if(!runs.length)message='今天尚未开始扫描';else if(active)message=counts.running?'今日扫描正在进行，已找到的结果持续更新':'今日扫描等待执行';else if(abnormal)message='今日扫描存在失败、部分完成或中断，不能据此判断没有新增';else message=total?'今日扫描已完成':'今日扫描已完成，无新增记录';
+$('resultTitle').textContent=`今日扫描结果 · ${data.date}`;
+$('summary').textContent=`${message}\n北京时间 · ${runs.length} 次任务 · 新增 ${total} 条`+(runs.length?'\n'+Object.entries(counts).map(([s,n])=>`${statusNames[s]||s} ${n} 次`).join(' · '):'');
+$('runWarning').textContent=runs.map(r=>{const warning=runWarnings(r);return warning?`${localTime(r.started_at||r.created_at)} · ${statusNames[r.status]}：${warning}`:'';}).filter(Boolean).join('\n');
+$('download').href=`/api/today/csv?date=${data.date}`;
+ $('logs').textContent='今日视图汇总所有当日任务的新增结果。点击左侧具体任务可查看日期窗口、失败详情和扫描日志。';drawAlbums(data.albums,offset?'本页没有专辑':message);
+}
+async function loadResults(){
+if(selected==='today'){await loadToday();return;}
+hideM3();
+if(selected==='legacy'||selected==='pre-migration'){
+const isLegacy=selected==='legacy',path=isLegacy?'/api/legacy':'/api/pre-migration';
+const data=await api(`${path}?album_limit=50&album_offset=${offset}`);total=data.total_albums;
+$('retryActions').hidden=true;$('resultTitle').textContent=isLegacy?'全部累计结果':'迁移前累计结果';
+$('summary').textContent=`${isLegacy?'服务器当前累计记录':'迁移前 CSV 快照'}\n共 ${total} 条记录`; $('runWarning').textContent='';
+ $('download').href=`${path}/csv`;$('logs').textContent='累计 CSV 只保存歌曲记录，不包含逐次扫描任务状态。';drawAlbums(data.albums,'当前累计记录为空');return;
+}
+const data=await api(`/api/runs/${selected}?album_limit=50&album_offset=${offset}`),r=data.run;
+total=data.total_albums;$('retryActions').hidden=!['partial','failed','stopped','interrupted'].includes(r.status);
+$('resultTitle').textContent=`${sourceName(r)} · ${localTime(r.started_at||r.created_at)}`;
+$('summary').textContent=`${statusNames[r.status]||r.status} · 新增 ${r.result_count} 条 · 创建时 ${r.params.threads??'—'} 线程`;
+if(r.params.externalStartDate||r.params.externalEndDate)$('summary').textContent+=`\n外部合辑 ${r.params.externalStartDate||'—'} 至 ${r.params.externalEndDate||'—'}`;
+if(r.params.newStartDate||r.params.newEndDate)$('summary').textContent+=`\n新专／新歌 ${r.params.newStartDate||'—'} 至 ${r.params.newEndDate||'—'}`;
+if(r.summary.m3_scan){const m=r.summary.m3_scan;const accounts=m.matched_account_count&&m.matched_account_count!==m.match_count?`，覆盖网易云账号 ${m.matched_account_count} 个`:'';$('summary').textContent+=m.intersection_only?`\n仅扫描 M3 交集 ${m.match_count} 位${accounts}，排除其余 ${m.excluded_count} 位（含歧义 ${m.ambiguous_count} 位），不执行第二轮`:`\nM3 第一轮 ${m.match_count} 位${accounts}，第二轮 ${m.second_round_count} 位，歧义 ${m.ambiguous_count} 位`;$('m3Report').href=`/api/runs/${selected}/m3.csv`;$('m3Report').hidden=false;}
+if(r.summary.slow_retry?.attempted)$('summary').textContent+=`\n低速补扫 ${r.summary.slow_retry.attempted} 次 · 恢复 ${r.summary.slow_retry.recovered} 项`;
+$('runWarning').textContent=runWarnings(r);$('download').href=`/api/runs/${selected}/csv`;$('logs').textContent=data.logs.map(l=>`${localTime(l.created_at)} [${l.level}] ${l.text}`).join('\n');drawAlbums(data.albums);
+}
+async function choose(id){selected=id;offset=0;await refresh();}
+async function changePage(delta){
+if(loading)return;
+const previousOffset=offset;loading=true;
+$('previous').disabled=true;$('next').disabled=true;
+try{offset=Math.max(0,offset+delta);await loadResults();$('resultList').scrollIntoView({block:'start',inline:'nearest',behavior:'instant'});}
+catch(e){offset=previousOffset;feedback(e);}
+finally{loading=false;$('previous').disabled=offset===0;$('next').disabled=offset+50>=total;}
+}
+async function refresh(){if(loading)return;loading=true;try{await Promise.all([updateStatus(),updateRuns(),loadResults()]);$('today').classList.toggle('selected',selected==='today');$('legacy').classList.toggle('selected',selected==='legacy');$('preMigration').classList.toggle('selected',selected==='pre-migration');}catch(e){$('connection').textContent=`连接或读取失败：${e.message}`;}finally{loading=false;}}
+$('scanMode').onchange=async()=>{try{const mode=$('scanMode').value;const values=(await api('/api/status')).mode_defaults[mode];keys.filter(k=>k!=='scanMode').forEach(k=>{if(values[k]!==undefined)$(k).value=values[k];});}catch(e){feedback(e);}};
+$('start').onclick=async()=>{try{$('feedback').textContent='';const payload={};keys.forEach(k=>payload[k]=$(k).value);payload.debugAlbum=$('debugAlbum').value;const data=await api('/api/start',payload);selected=data.run_id;offset=0;await refresh();}catch(e){feedback(e);}};
+document.querySelectorAll('[data-action]').forEach(b=>b.onclick=async()=>{try{await api('/api/control',{action:b.dataset.action});await refresh();}catch(e){feedback(e);}});
+$('retryRun').onclick=async()=>{try{$('retryRun').disabled=true;const data=await api(`/api/runs/${selected}/retry`,{});selected=data.run_id;offset=0;await refresh();}catch(e){feedback(e);await refresh();}};
+$('applyThreads').onclick=async()=>{try{await api('/api/control',{action:'threads',value:$('threads').value});await refresh();}catch(e){feedback(e);}};
+$('defaults').onclick=async()=>{try{const s=await api('/api/status');fillDefaults(s,$('scanMode').value);}catch(e){feedback(e);}};
+$('refresh').onclick=refresh;$('today').onclick=()=>choose('today');$('legacy').onclick=()=>choose('legacy');$('preMigration').onclick=()=>choose('pre-migration');$('older').onclick=()=>{runLimit=Math.min(500,runLimit+30);refresh();};$('previous').onclick=()=>changePage(-50);$('next').onclick=()=>changePage(50);
+// Remove credentials left by the desktop edition when using the same origin.
+try{localStorage.removeItem('neteaseScannerRecentCredentialsV1');}catch(_){}
+const events=new EventSource('/api/stream');let eventRefresh=null;events.onmessage=()=>{if(!eventRefresh)eventRefresh=setTimeout(()=>{eventRefresh=null;refresh();},1500);};events.onerror=()=>{$('connection').textContent='实时连接暂时中断，正在重连；扫描仍由服务器继续执行。';};
+refresh();setInterval(refresh,15000);
+let recordBusy=false;
+function setRecordBusy(value){recordBusy=value;$('syncRecords').disabled=value||!window.showDirectoryPicker;$('exportRecords').disabled=value;}
+async function recordResponse(url){const response=await fetch(url);if(!response.ok){const data=await response.json();throw new Error(data.msg||'下载失败');}return response;}
+async function releaseRecords(snapshot){if(snapshot)try{await api(`/api/records/${snapshot.export_id}/release`,{});}catch(_){} }
+$('syncHint').textContent=window.showDirectoryPicker?'直接覆盖支持电脑端 Chrome／Edge；需在浏览器中授权所选目录。只覆盖回传包内的同名文件，本地其他记录保留。':'当前浏览器不支持直接写入电脑文件夹，可下载 ZIP 保存；电脑端请使用 Chrome／Edge 并通过 localhost 或 HTTPS 打开网页。';
+setRecordBusy(false);
+$('syncRecords').onclick=async()=>{
+if(recordBusy)return;
+let snapshot=null;
+try{
+if(!confirm('请先关闭本地扫描器。接下来选择本地音乐文件夹，服务器记录将覆盖其中的同名 CSV、缓存与报告；覆盖前会自动备份。Cookie 不会覆盖。是否继续？'))return;
+setRecordBusy(true);
+const folder=await window.showDirectoryPicker({id:'netease-music-records',mode:'readwrite'});
+// Require an existing desktop record so a stray folder is not used silently.
+try{await folder.getFileHandle('VA_Tracks_Output.csv');}catch(_){throw new Error('所选目录没有 VA_Tracks_Output.csv，请选择原音乐文件夹');}
+setRecordBusy(true);$('syncFeedback').textContent='正在生成服务器记录快照';
+snapshot=await api('/api/records/export',{});
+const result=await RecordSync.restore(folder,snapshot,async path=>(await recordResponse(`/api/records/${snapshot.export_id}/file/${path}`)).blob(),message=>$('syncFeedback').textContent=message);
+$('syncFeedback').textContent=`回传完成：${result.count} 个文件已保存到所选 ${folder.name} 文件夹。\n覆盖前的本地备份：${result.backupPath}\nCookie 未覆盖。`;
+}catch(e){$('syncFeedback').textContent=e.name==='AbortError'?'已取消回传':`回传未完成：${e.message}`;}finally{await releaseRecords(snapshot);setRecordBusy(false);}
+};
+$('exportRecords').onclick=async()=>{
+if(recordBusy)return;let snapshot=null;
+try{setRecordBusy(true);$('syncFeedback').textContent='正在生成记录包';snapshot=await api('/api/records/export',{});const blob=await (await recordResponse(`/api/records/${snapshot.export_id}/zip`)).blob(),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`netease-records-${snapshot.export_id.slice(0,8)}.zip`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);$('syncFeedback').textContent='记录包已交给浏览器下载，内含 SHA-256 清单。下载 ZIP 不会自动覆盖本地文件，Cookie 不在包内。';}catch(e){$('syncFeedback').textContent=e.message;}finally{await releaseRecords(snapshot);setRecordBusy(false);}
+};
+</script></body></html>

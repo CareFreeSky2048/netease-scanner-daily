@@ -1,0 +1,7890 @@
+{
+  "schema_version": 1,
+  "source": "m3_music_library.json",
+  "generated_from": "m3_music_library.json: stable artist IDs, names, and aliases",
+  "artist_count": 1440,
+  "artists": [
+    {
+      "name": "(べvべ)",
+      "aliases": [],
+      "m3_artist_id": "artist_1d2daed192977a81"
+    },
+    {
+      "name": "*-Teris.",
+      "aliases": [],
+      "m3_artist_id": "artist_2773aa33d4275b56"
+    },
+    {
+      "name": "*Yuu",
+      "aliases": [],
+      "m3_artist_id": "artist_18abfc16bf3ea215"
+    },
+    {
+      "name": "10den",
+      "aliases": [],
+      "m3_artist_id": "artist_d93d1f20924da6c3"
+    },
+    {
+      "name": "10kkey",
+      "aliases": [],
+      "m3_artist_id": "artist_41320b52f2662dc8"
+    },
+    {
+      "name": "230kgの鶏そぼろ",
+      "aliases": [],
+      "m3_artist_id": "artist_a63a8eb526be4338"
+    },
+    {
+      "name": "3R2",
+      "aliases": [],
+      "m3_artist_id": "artist_eca4975ca50183b4"
+    },
+    {
+      "name": "3rdeye",
+      "aliases": [],
+      "m3_artist_id": "artist_3813a9dfc1380e5f"
+    },
+    {
+      "name": "411",
+      "aliases": [],
+      "m3_artist_id": "artist_52f14fc33ef45dd8"
+    },
+    {
+      "name": "449",
+      "aliases": [
+        "ヨシキ",
+        "ysk_449_jp"
+      ],
+      "m3_artist_id": "artist_4a30a219a9d7663f"
+    },
+    {
+      "name": "4D BASS ARTIFACT",
+      "aliases": [],
+      "m3_artist_id": "artist_f622cd088fb50cb8"
+    },
+    {
+      "name": "4ri",
+      "aliases": [],
+      "m3_artist_id": "artist_65a7a6cc9405406b"
+    },
+    {
+      "name": "7mai",
+      "aliases": [],
+      "m3_artist_id": "artist_e863388bc4f27cc5"
+    },
+    {
+      "name": "839",
+      "aliases": [],
+      "m3_artist_id": "artist_7f3ee9fe1fbf452b"
+    },
+    {
+      "name": "???????[匿名]",
+      "aliases": [],
+      "m3_artist_id": "artist_e3488a26ae05dcb1"
+    },
+    {
+      "name": "A.D.A.M",
+      "aliases": [],
+      "m3_artist_id": "artist_0900bab2986bb415"
+    },
+    {
+      "name": "AALYX",
+      "aliases": [],
+      "m3_artist_id": "artist_afdb80fa2762ec2f"
+    },
+    {
+      "name": "ADA",
+      "aliases": [],
+      "m3_artist_id": "artist_8a15fea9a8880c22"
+    },
+    {
+      "name": "AIKA",
+      "aliases": [],
+      "m3_artist_id": "artist_4c5918c12686a08d"
+    },
+    {
+      "name": "AIKATYPE",
+      "aliases": [],
+      "m3_artist_id": "artist_1669377a0fd53d04"
+    },
+    {
+      "name": "AKA",
+      "aliases": [],
+      "m3_artist_id": "artist_83818ad101e1b4de"
+    },
+    {
+      "name": "AOZUKI",
+      "aliases": [],
+      "m3_artist_id": "artist_9f084f451c587476"
+    },
+    {
+      "name": "AQUASINE",
+      "aliases": [],
+      "m3_artist_id": "artist_117fd7c8a0192bfa"
+    },
+    {
+      "name": "ARForest",
+      "aliases": [],
+      "m3_artist_id": "artist_1440280863a4763e"
+    },
+    {
+      "name": "ARKI",
+      "aliases": [],
+      "m3_artist_id": "artist_b45afdcf5c70eb13"
+    },
+    {
+      "name": "ASTRO MELLOW",
+      "aliases": [],
+      "m3_artist_id": "artist_5497915a7c667016"
+    },
+    {
+      "name": "ATMK",
+      "aliases": [],
+      "m3_artist_id": "artist_e2ee04343865e398"
+    },
+    {
+      "name": "ATRAN",
+      "aliases": [],
+      "m3_artist_id": "artist_0ae8797ad9e046d9"
+    },
+    {
+      "name": "AXURA",
+      "aliases": [],
+      "m3_artist_id": "artist_349bc594c5e429e0"
+    },
+    {
+      "name": "AYFW",
+      "aliases": [],
+      "m3_artist_id": "artist_26156cc5c47c5a1f"
+    },
+    {
+      "name": "AddFon",
+      "aliases": [],
+      "m3_artist_id": "artist_3fa9bc01e1843075"
+    },
+    {
+      "name": "Aerbreak",
+      "aliases": [],
+      "m3_artist_id": "artist_f333f1ce662c8617"
+    },
+    {
+      "name": "Aethral",
+      "aliases": [],
+      "m3_artist_id": "artist_f64e275b31149974"
+    },
+    {
+      "name": "Affected Light",
+      "aliases": [],
+      "m3_artist_id": "artist_8e4fce8830a3db20"
+    },
+    {
+      "name": "Afflected Light",
+      "aliases": [],
+      "m3_artist_id": "artist_cb794e068ce58616"
+    },
+    {
+      "name": "AiSS",
+      "aliases": [],
+      "m3_artist_id": "artist_b3d96097c73ad397"
+    },
+    {
+      "name": "Aikapin",
+      "aliases": [],
+      "m3_artist_id": "artist_656e1611f19fed95"
+    },
+    {
+      "name": "Aira Arere",
+      "aliases": [],
+      "m3_artist_id": "artist_0488d7424f12e6c4"
+    },
+    {
+      "name": "AisE",
+      "aliases": [],
+      "m3_artist_id": "artist_a25806373cd7815b"
+    },
+    {
+      "name": "Akagitune",
+      "aliases": [],
+      "m3_artist_id": "artist_7f700bca704ebb5e"
+    },
+    {
+      "name": "Aki Sz",
+      "aliases": [],
+      "m3_artist_id": "artist_41f1ae44771f2f7d"
+    },
+    {
+      "name": "Alicemetix",
+      "aliases": [],
+      "m3_artist_id": "artist_83fae857227307d4"
+    },
+    {
+      "name": "Alinut",
+      "aliases": [],
+      "m3_artist_id": "artist_e5a111c4e80ce1ef"
+    },
+    {
+      "name": "Altair",
+      "aliases": [],
+      "m3_artist_id": "artist_07822c0dff5749c3"
+    },
+    {
+      "name": "Altermis",
+      "aliases": [],
+      "m3_artist_id": "artist_55997d1f7ecfa2c8"
+    },
+    {
+      "name": "Amine",
+      "aliases": [],
+      "m3_artist_id": "artist_fb2f7281548882e1"
+    },
+    {
+      "name": "Anplode",
+      "aliases": [],
+      "m3_artist_id": "artist_55d6fcc6b045eeae"
+    },
+    {
+      "name": "Ant Electronix",
+      "aliases": [],
+      "m3_artist_id": "artist_509a46c4d2dcdae4"
+    },
+    {
+      "name": "Antares P",
+      "aliases": [],
+      "m3_artist_id": "artist_2e1fcbc945fb95f5"
+    },
+    {
+      "name": "AoMeroiNe",
+      "aliases": [],
+      "m3_artist_id": "artist_dc7a593770f507a9"
+    },
+    {
+      "name": "Aoi",
+      "aliases": [],
+      "m3_artist_id": "artist_c4439a3841378b63"
+    },
+    {
+      "name": "Aoi Nemaki",
+      "aliases": [],
+      "m3_artist_id": "artist_8ee0d96376c0cd50"
+    },
+    {
+      "name": "Apitoxer a.k.a. Bee.Bee.",
+      "aliases": [],
+      "m3_artist_id": "artist_0b58e506d032d116"
+    },
+    {
+      "name": "AraiYozuki",
+      "aliases": [],
+      "m3_artist_id": "artist_ad24ff8864d9ed8f"
+    },
+    {
+      "name": "Ark-Z",
+      "aliases": [],
+      "m3_artist_id": "artist_a01642195a303ac1"
+    },
+    {
+      "name": "Arrow",
+      "aliases": [],
+      "m3_artist_id": "artist_05800e70aa10c86f"
+    },
+    {
+      "name": "Asatsumei",
+      "aliases": [],
+      "m3_artist_id": "artist_3b811c4341d29444"
+    },
+    {
+      "name": "Asayami",
+      "aliases": [],
+      "m3_artist_id": "artist_7ed589a933145ecd"
+    },
+    {
+      "name": "Ashrount",
+      "aliases": [],
+      "m3_artist_id": "artist_bcf1b341b0623c6e"
+    },
+    {
+      "name": "Ask.A",
+      "aliases": [],
+      "m3_artist_id": "artist_ee71cf2e75e75509"
+    },
+    {
+      "name": "Aspect",
+      "aliases": [],
+      "m3_artist_id": "artist_0d608d98ebc6bb93"
+    },
+    {
+      "name": "Assertive",
+      "aliases": [],
+      "m3_artist_id": "artist_ca91cb8acdae3c7a"
+    },
+    {
+      "name": "Aut0",
+      "aliases": [],
+      "m3_artist_id": "artist_7c3710d0b46d3455"
+    },
+    {
+      "name": "Author wind",
+      "aliases": [],
+      "m3_artist_id": "artist_014164306bbf369c"
+    },
+    {
+      "name": "Authroom",
+      "aliases": [],
+      "m3_artist_id": "artist_da508d2ade7bbd78"
+    },
+    {
+      "name": "Autodepth",
+      "aliases": [],
+      "m3_artist_id": "artist_2305309f2e5b5fc6"
+    },
+    {
+      "name": "Axel⇒Show.T & [V2]NITRO CUSTOM",
+      "aliases": [],
+      "m3_artist_id": "artist_614eb11937921825"
+    },
+    {
+      "name": "Azali",
+      "aliases": [],
+      "m3_artist_id": "artist_800ffb3b4864485d"
+    },
+    {
+      "name": "Azurux",
+      "aliases": [],
+      "m3_artist_id": "artist_d3387dadea72a011"
+    },
+    {
+      "name": "B-maybe",
+      "aliases": [],
+      "m3_artist_id": "artist_ef86aff54bf09a50"
+    },
+    {
+      "name": "BASSKNIVES",
+      "aliases": [],
+      "m3_artist_id": "artist_01e961f71c0b627a"
+    },
+    {
+      "name": "BEC8723",
+      "aliases": [],
+      "m3_artist_id": "artist_a32d0d6b012128d1"
+    },
+    {
+      "name": "BHM",
+      "aliases": [],
+      "m3_artist_id": "artist_56b09c6ff9777602"
+    },
+    {
+      "name": "BOMAYE",
+      "aliases": [
+        "ボマイェ"
+      ],
+      "m3_artist_id": "artist_bf20a06455562642"
+    },
+    {
+      "name": "BUBU ZELA",
+      "aliases": [],
+      "m3_artist_id": "artist_b166ea66ac68cb60"
+    },
+    {
+      "name": "Balalaika",
+      "aliases": [],
+      "m3_artist_id": "artist_2f12ff1a63f84686"
+    },
+    {
+      "name": "Banyonex",
+      "aliases": [],
+      "m3_artist_id": "artist_2270bea587990ddf"
+    },
+    {
+      "name": "Bernis",
+      "aliases": [],
+      "m3_artist_id": "artist_f87311825e346f89"
+    },
+    {
+      "name": "BilliumMoto",
+      "aliases": [],
+      "m3_artist_id": "artist_806509a559670270"
+    },
+    {
+      "name": "BlackY",
+      "aliases": [],
+      "m3_artist_id": "artist_9d543eecca7e88e7"
+    },
+    {
+      "name": "Blacklolita",
+      "aliases": [],
+      "m3_artist_id": "artist_8fec9f3bd5cf616d"
+    },
+    {
+      "name": "Blue tree",
+      "aliases": [],
+      "m3_artist_id": "artist_8d4e1cc6abc4f762"
+    },
+    {
+      "name": "B面",
+      "aliases": [],
+      "m3_artist_id": "artist_201e84803ccd73e5"
+    },
+    {
+      "name": "C0C0Ä*",
+      "aliases": [],
+      "m3_artist_id": "artist_2306c3fcf4e249c5"
+    },
+    {
+      "name": "COCOLO*",
+      "aliases": [],
+      "m3_artist_id": "artist_1f168f37f3dcbb9f"
+    },
+    {
+      "name": "COPYRiGHT JOKER",
+      "aliases": [],
+      "m3_artist_id": "artist_b870aedeb75b9d7c"
+    },
+    {
+      "name": "CS4W",
+      "aliases": [],
+      "m3_artist_id": "artist_158fc5c6ba79f6e2"
+    },
+    {
+      "name": "CYNTHESZR",
+      "aliases": [],
+      "m3_artist_id": "artist_17009f4afccdc56d"
+    },
+    {
+      "name": "Caffeine",
+      "aliases": [],
+      "m3_artist_id": "artist_a9a15db4d1c33374"
+    },
+    {
+      "name": "Capchii",
+      "aliases": [],
+      "m3_artist_id": "artist_65bcd57345b0350a"
+    },
+    {
+      "name": "Capturelight",
+      "aliases": [],
+      "m3_artist_id": "artist_eba8f22a33a7436b"
+    },
+    {
+      "name": "Carbonic acid",
+      "aliases": [],
+      "m3_artist_id": "artist_add9d2d302ab80a9"
+    },
+    {
+      "name": "Casual Killer",
+      "aliases": [],
+      "m3_artist_id": "artist_34a3dbd72fe58cd4"
+    },
+    {
+      "name": "Cd",
+      "aliases": [],
+      "m3_artist_id": "artist_008389cb8af523fe"
+    },
+    {
+      "name": "Chester Park",
+      "aliases": [
+        "ChesterPark_"
+      ],
+      "m3_artist_id": "artist_ae29f8b11853410c"
+    },
+    {
+      "name": "Chiyoko",
+      "aliases": [],
+      "m3_artist_id": "artist_08e0ab2ccf7a003d"
+    },
+    {
+      "name": "Clion",
+      "aliases": [],
+      "m3_artist_id": "artist_959e3700a0b236db"
+    },
+    {
+      "name": "Co3k",
+      "aliases": [],
+      "m3_artist_id": "artist_4a524064ed068c01"
+    },
+    {
+      "name": "Codly",
+      "aliases": [],
+      "m3_artist_id": "artist_56d7de91dd549a48"
+    },
+    {
+      "name": "Connexio",
+      "aliases": [],
+      "m3_artist_id": "artist_52f53ed8dc22b380"
+    },
+    {
+      "name": "Cosmic Butterfly 34",
+      "aliases": [],
+      "m3_artist_id": "artist_609c39aa404f91f0"
+    },
+    {
+      "name": "Coyuki",
+      "aliases": [],
+      "m3_artist_id": "artist_e0a40ca29cac22a6"
+    },
+    {
+      "name": "D-D-Dice",
+      "aliases": [],
+      "m3_artist_id": "artist_1add0f466d5972a3"
+    },
+    {
+      "name": "D.watt",
+      "aliases": [],
+      "m3_artist_id": "artist_30b6fd7cf54f03d8"
+    },
+    {
+      "name": "DAYOx2",
+      "aliases": [],
+      "m3_artist_id": "artist_252b6f37388ab878"
+    },
+    {
+      "name": "DAZE",
+      "aliases": [],
+      "m3_artist_id": "artist_866afb142d2227de"
+    },
+    {
+      "name": "DJ AIR-G",
+      "aliases": [],
+      "m3_artist_id": "artist_5d45f3c76e665761"
+    },
+    {
+      "name": "DJ Genki",
+      "aliases": [],
+      "m3_artist_id": "artist_fd429f24fb354070"
+    },
+    {
+      "name": "DJ KANISAN",
+      "aliases": [],
+      "m3_artist_id": "artist_fea3164cd2566396"
+    },
+    {
+      "name": "DJ Kayokosuki",
+      "aliases": [],
+      "m3_artist_id": "artist_d52c8c83fc748763"
+    },
+    {
+      "name": "DJ Myosuke",
+      "aliases": [],
+      "m3_artist_id": "artist_56846ba45a55112c"
+    },
+    {
+      "name": "DJ Noriken",
+      "aliases": [],
+      "m3_artist_id": "artist_b8f9d1d8f43e06ea"
+    },
+    {
+      "name": "DJ Raisei",
+      "aliases": [],
+      "m3_artist_id": "artist_48150284b0a35f3f"
+    },
+    {
+      "name": "DJ Shimamura",
+      "aliases": [],
+      "m3_artist_id": "artist_cd8b9bff231e8d2c"
+    },
+    {
+      "name": "DJ TECHNORCH",
+      "aliases": [],
+      "m3_artist_id": "artist_809f8ce1bbe27e47"
+    },
+    {
+      "name": "DJ Wesker[匿名]",
+      "aliases": [],
+      "m3_artist_id": "artist_14711925b90f96a2"
+    },
+    {
+      "name": "DJKurara",
+      "aliases": [],
+      "m3_artist_id": "artist_bcf39d8a28d19144"
+    },
+    {
+      "name": "DJとげとげ丸",
+      "aliases": [],
+      "m3_artist_id": "artist_03a3f0fb233978b2"
+    },
+    {
+      "name": "DRIVE.",
+      "aliases": [],
+      "m3_artist_id": "artist_ab5f99a53248c140"
+    },
+    {
+      "name": "Delorean",
+      "aliases": [],
+      "m3_artist_id": "artist_220036e29e4ddb5f"
+    },
+    {
+      "name": "DevAdelso",
+      "aliases": [],
+      "m3_artist_id": "artist_a1b098306970b28d"
+    },
+    {
+      "name": "Dogsix",
+      "aliases": [],
+      "m3_artist_id": "artist_cec6a4be4ade8446"
+    },
+    {
+      "name": "Double-G",
+      "aliases": [],
+      "m3_artist_id": "artist_7e1a3867e374b2a1"
+    },
+    {
+      "name": "Douji Wiix",
+      "aliases": [],
+      "m3_artist_id": "artist_aa40d7656e0395cf"
+    },
+    {
+      "name": "Dr.MJ",
+      "aliases": [],
+      "m3_artist_id": "artist_5117af2a66e976b4"
+    },
+    {
+      "name": "Dragon_Klub",
+      "aliases": [],
+      "m3_artist_id": "artist_fcfbd21d6d30b283"
+    },
+    {
+      "name": "Dubscribe",
+      "aliases": [],
+      "m3_artist_id": "artist_b03ee56947efe8e3"
+    },
+    {
+      "name": "Dynamax",
+      "aliases": [],
+      "m3_artist_id": "artist_8f7d779d80ff4710"
+    },
+    {
+      "name": "DÉ DÉ MOUSE",
+      "aliases": [],
+      "m3_artist_id": "artist_9db397588f276c1c"
+    },
+    {
+      "name": "E0ri4",
+      "aliases": [],
+      "m3_artist_id": "artist_493c7f2c30795361"
+    },
+    {
+      "name": "EBIMAYO",
+      "aliases": [],
+      "m3_artist_id": "artist_19e8d04c9580518c"
+    },
+    {
+      "name": "ECLAIR",
+      "aliases": [],
+      "m3_artist_id": "artist_eefb9b64f7504f0e"
+    },
+    {
+      "name": "EGOEND Sound Team \"鏡琴\"",
+      "aliases": [],
+      "m3_artist_id": "artist_82b39490a2a8f691"
+    },
+    {
+      "name": "EGOEND Sound Team [Spectators.]",
+      "aliases": [],
+      "m3_artist_id": "artist_6e664dc3c60e14b4"
+    },
+    {
+      "name": "ELECTR",
+      "aliases": [],
+      "m3_artist_id": "artist_bd929102f1941801"
+    },
+    {
+      "name": "ELFENSJóN",
+      "aliases": [],
+      "m3_artist_id": "artist_d3920df554bfa1ac"
+    },
+    {
+      "name": "ESAI",
+      "aliases": [],
+      "m3_artist_id": "artist_b88677df9cb81089"
+    },
+    {
+      "name": "ETH4N",
+      "aliases": [],
+      "m3_artist_id": "artist_e5026e50f3f0abcd"
+    },
+    {
+      "name": "EageMea",
+      "aliases": [],
+      "m3_artist_id": "artist_294a525f8e6d1a30"
+    },
+    {
+      "name": "Echomorphosis",
+      "aliases": [],
+      "m3_artist_id": "artist_8bfeeee45a938c82"
+    },
+    {
+      "name": "Edelritter",
+      "aliases": [],
+      "m3_artist_id": "artist_306364894b127c66"
+    },
+    {
+      "name": "EigHt",
+      "aliases": [],
+      "m3_artist_id": "artist_3024685df285a91c"
+    },
+    {
+      "name": "Embers Melody",
+      "aliases": [],
+      "m3_artist_id": "artist_9bd4e9ad45cf08f1"
+    },
+    {
+      "name": "Emmy",
+      "aliases": [],
+      "m3_artist_id": "artist_be68eba6c6172953"
+    },
+    {
+      "name": "EmoCosine",
+      "aliases": [],
+      "m3_artist_id": "artist_3d67ebe18f9c7c97"
+    },
+    {
+      "name": "Emrion",
+      "aliases": [],
+      "m3_artist_id": "artist_6242067e2a20e8d1"
+    },
+    {
+      "name": "Eno",
+      "aliases": [],
+      "m3_artist_id": "artist_7935685b3c104231"
+    },
+    {
+      "name": "Epsilon",
+      "aliases": [],
+      "m3_artist_id": "artist_b1e645a8c213eada"
+    },
+    {
+      "name": "Eri",
+      "aliases": [],
+      "m3_artist_id": "artist_4e29f5107d294b62"
+    },
+    {
+      "name": "Erixa",
+      "aliases": [],
+      "m3_artist_id": "artist_ddc8e1f04c669e22"
+    },
+    {
+      "name": "Esosupa",
+      "aliases": [],
+      "m3_artist_id": "artist_784af1a59cfd741c"
+    },
+    {
+      "name": "Essbee",
+      "aliases": [],
+      "m3_artist_id": "artist_3279c06cb6805c3d"
+    },
+    {
+      "name": "Euk",
+      "aliases": [],
+      "m3_artist_id": "artist_abe786d5922a8fa2"
+    },
+    {
+      "name": "Evin a'k",
+      "aliases": [],
+      "m3_artist_id": "artist_0996b4cfc380af93"
+    },
+    {
+      "name": "Evin a’k",
+      "aliases": [],
+      "m3_artist_id": "artist_bd8eb45e92a2572d"
+    },
+    {
+      "name": "EvsU",
+      "aliases": [],
+      "m3_artist_id": "artist_1fa0c70e06eae9e6"
+    },
+    {
+      "name": "Explorers of the Internet",
+      "aliases": [],
+      "m3_artist_id": "artist_ffe12b9d547ae8b2"
+    },
+    {
+      "name": "Exteria",
+      "aliases": [],
+      "m3_artist_id": "artist_beccc5726729b1a0"
+    },
+    {
+      "name": "Ezame",
+      "aliases": [],
+      "m3_artist_id": "artist_732d1cf7b5c0030b"
+    },
+    {
+      "name": "FL0PPY",
+      "aliases": [],
+      "m3_artist_id": "artist_9eb0f0fc7046b694"
+    },
+    {
+      "name": "FR4CT4L",
+      "aliases": [],
+      "m3_artist_id": "artist_49b697e957110b1d"
+    },
+    {
+      "name": "FUT3R",
+      "aliases": [],
+      "m3_artist_id": "artist_e69f76d49d3ecc8a"
+    },
+    {
+      "name": "Felysrator",
+      "aliases": [],
+      "m3_artist_id": "artist_9049447540072bff"
+    },
+    {
+      "name": "Ferumi",
+      "aliases": [],
+      "m3_artist_id": "artist_2662c88834da8038"
+    },
+    {
+      "name": "Feryquitous",
+      "aliases": [],
+      "m3_artist_id": "artist_2bdc4380db091671"
+    },
+    {
+      "name": "Fiyóld",
+      "aliases": [],
+      "m3_artist_id": "artist_b6d9889fabffdeb8"
+    },
+    {
+      "name": "Forged Reigns",
+      "aliases": [],
+      "m3_artist_id": "artist_62bb0d8f3c32df55"
+    },
+    {
+      "name": "Fortune Echo",
+      "aliases": [],
+      "m3_artist_id": "artist_3eb6f37f84276f02"
+    },
+    {
+      "name": "Fracus",
+      "aliases": [],
+      "m3_artist_id": "artist_ecefc073ea49d700"
+    },
+    {
+      "name": "Freezer",
+      "aliases": [],
+      "m3_artist_id": "artist_828548095bb0a42d"
+    },
+    {
+      "name": "Fu've",
+      "aliases": [],
+      "m3_artist_id": "artist_d7ef944b818ca5f2"
+    },
+    {
+      "name": "FullMoon",
+      "aliases": [
+        "FullMoon_ruro",
+        "フルムーン"
+      ],
+      "m3_artist_id": "artist_1b4d35c62a52077d"
+    },
+    {
+      "name": "Fuminosaq",
+      "aliases": [],
+      "m3_artist_id": "artist_5837aac64eb01f60"
+    },
+    {
+      "name": "Fura",
+      "aliases": [],
+      "m3_artist_id": "artist_3f6c93897642f40f"
+    },
+    {
+      "name": "GARBAGECAN",
+      "aliases": [],
+      "m3_artist_id": "artist_96ab8127610eb50c"
+    },
+    {
+      "name": "GO+",
+      "aliases": [],
+      "m3_artist_id": "artist_6e1d1bb1016ba044"
+    },
+    {
+      "name": "GOETIA",
+      "aliases": [],
+      "m3_artist_id": "artist_032e074239b802f3"
+    },
+    {
+      "name": "Gardens",
+      "aliases": [],
+      "m3_artist_id": "artist_0670e06927819e2f"
+    },
+    {
+      "name": "Getty",
+      "aliases": [],
+      "m3_artist_id": "artist_457b9195c7ba18b7"
+    },
+    {
+      "name": "GiGA",
+      "aliases": [],
+      "m3_artist_id": "artist_ae1636923ff4c27c"
+    },
+    {
+      "name": "Glancia",
+      "aliases": [],
+      "m3_artist_id": "artist_2f113fc92ac9b45b"
+    },
+    {
+      "name": "Glimghost",
+      "aliases": [],
+      "m3_artist_id": "artist_27790e2e116d0b65"
+    },
+    {
+      "name": "Go^Ma",
+      "aliases": [],
+      "m3_artist_id": "artist_f753d9714d4aa919"
+    },
+    {
+      "name": "GoldenEggs",
+      "aliases": [],
+      "m3_artist_id": "artist_1072cdec950a1af3"
+    },
+    {
+      "name": "Gomadare",
+      "aliases": [],
+      "m3_artist_id": "artist_cd7b61a5d2e79cae"
+    },
+    {
+      "name": "Gram",
+      "aliases": [],
+      "m3_artist_id": "artist_ff702b24ebcbc0b5"
+    },
+    {
+      "name": "Guernica Helvetica",
+      "aliases": [],
+      "m3_artist_id": "artist_254c1dd1d52346c2"
+    },
+    {
+      "name": "Guos",
+      "aliases": [],
+      "m3_artist_id": "artist_cd93ac1b0b24a66b"
+    },
+    {
+      "name": "Gyousya",
+      "aliases": [
+        "業者",
+        "Gyousya_man"
+      ],
+      "m3_artist_id": "artist_82fa59615fad215c"
+    },
+    {
+      "name": "Gyr0",
+      "aliases": [],
+      "m3_artist_id": "artist_88e1f66e70d722d9"
+    },
+    {
+      "name": "HAGISOPH",
+      "aliases": [],
+      "m3_artist_id": "artist_a88a709374793e88"
+    },
+    {
+      "name": "HOUJIROU",
+      "aliases": [],
+      "m3_artist_id": "artist_eb758a9cfb5f9631"
+    },
+    {
+      "name": "Hackatek",
+      "aliases": [],
+      "m3_artist_id": "artist_7d38025f18600fcd"
+    },
+    {
+      "name": "Haganesawa",
+      "aliases": [],
+      "m3_artist_id": "artist_2b0dfac157a23311"
+    },
+    {
+      "name": "Haluna",
+      "aliases": [],
+      "m3_artist_id": "artist_720b218bcf91489d"
+    },
+    {
+      "name": "Halv",
+      "aliases": [],
+      "m3_artist_id": "artist_7886ebd265183d54"
+    },
+    {
+      "name": "Hamuza",
+      "aliases": [],
+      "m3_artist_id": "artist_d8189883d6922fec"
+    },
+    {
+      "name": "Hatami.",
+      "aliases": [],
+      "m3_artist_id": "artist_ed661636231911ec"
+    },
+    {
+      "name": "Hayato",
+      "aliases": [],
+      "m3_artist_id": "artist_cb28be37e7026547"
+    },
+    {
+      "name": "Hedonist",
+      "aliases": [],
+      "m3_artist_id": "artist_0a89cda6eb0e6461"
+    },
+    {
+      "name": "Hexacube",
+      "aliases": [],
+      "m3_artist_id": "artist_27726daecf86cf79"
+    },
+    {
+      "name": "Heycee",
+      "aliases": [],
+      "m3_artist_id": "artist_f8f71087698ad059"
+    },
+    {
+      "name": "Hiro",
+      "aliases": [],
+      "m3_artist_id": "artist_f00d91e57763914d"
+    },
+    {
+      "name": "Hiyo",
+      "aliases": [],
+      "m3_artist_id": "artist_2d8562dfa48d3f5a"
+    },
+    {
+      "name": "Hocshin",
+      "aliases": [],
+      "m3_artist_id": "artist_0ab303eb23ef7d08"
+    },
+    {
+      "name": "Hommarju",
+      "aliases": [
+        "hommarju"
+      ],
+      "m3_artist_id": "artist_a15ac5988f64b384"
+    },
+    {
+      "name": "Horologii",
+      "aliases": [],
+      "m3_artist_id": "artist_fc107df9ea341395"
+    },
+    {
+      "name": "HyeNRG",
+      "aliases": [],
+      "m3_artist_id": "artist_e775d038e7ddf05d"
+    },
+    {
+      "name": "Hylen",
+      "aliases": [
+        "Hylen Lab"
+      ],
+      "m3_artist_id": "artist_4672d35754d8a050"
+    },
+    {
+      "name": "I.S.E.",
+      "aliases": [],
+      "m3_artist_id": "artist_cf1150328b3cc50e"
+    },
+    {
+      "name": "ILusMin",
+      "aliases": [],
+      "m3_artist_id": "artist_e278afddaec90222"
+    },
+    {
+      "name": "IMaKoKoRo",
+      "aliases": [],
+      "m3_artist_id": "artist_41335d1435a67d47"
+    },
+    {
+      "name": "INuya",
+      "aliases": [],
+      "m3_artist_id": "artist_d9f4da7d2c1d05f6"
+    },
+    {
+      "name": "IQYU",
+      "aliases": [],
+      "m3_artist_id": "artist_8058fba685ce2235"
+    },
+    {
+      "name": "ITSU",
+      "aliases": [],
+      "m3_artist_id": "artist_165310916d244065"
+    },
+    {
+      "name": "Ichii",
+      "aliases": [],
+      "m3_artist_id": "artist_91f5e8efa9ebe11b"
+    },
+    {
+      "name": "Impedance",
+      "aliases": [],
+      "m3_artist_id": "artist_08cf512b3099a362"
+    },
+    {
+      "name": "Inaori",
+      "aliases": [
+        "@Inaori_"
+      ],
+      "m3_artist_id": "artist_ef09f7db80608ecc"
+    },
+    {
+      "name": "Iridium",
+      "aliases": [],
+      "m3_artist_id": "artist_3113c496c4544abb"
+    },
+    {
+      "name": "Irona",
+      "aliases": [],
+      "m3_artist_id": "artist_23451c4d484417ba"
+    },
+    {
+      "name": "Ivory_Paper",
+      "aliases": [],
+      "m3_artist_id": "artist_938f807d3ffde85f"
+    },
+    {
+      "name": "Iwacchi",
+      "aliases": [],
+      "m3_artist_id": "artist_fa84c132a171cc9c"
+    },
+    {
+      "name": "JAKAZiD",
+      "aliases": [],
+      "m3_artist_id": "artist_fdadb3c9b682329a"
+    },
+    {
+      "name": "Jasmin T.",
+      "aliases": [],
+      "m3_artist_id": "artist_870c1fd4cf67fde8"
+    },
+    {
+      "name": "Jayiei",
+      "aliases": [
+        "ジェイアイイーアイ"
+      ],
+      "m3_artist_id": "artist_d98336706b5878a9"
+    },
+    {
+      "name": "Jonah Hodges",
+      "aliases": [],
+      "m3_artist_id": "artist_f28bc0ebd02981ad"
+    },
+    {
+      "name": "Jorts",
+      "aliases": [],
+      "m3_artist_id": "artist_933728434709130a"
+    },
+    {
+      "name": "Juggernaut.",
+      "aliases": [],
+      "m3_artist_id": "artist_4b65cd8a23f49697"
+    },
+    {
+      "name": "Juka_Box",
+      "aliases": [],
+      "m3_artist_id": "artist_b1bb1de134319224"
+    },
+    {
+      "name": "Juwubi",
+      "aliases": [],
+      "m3_artist_id": "artist_b93baaaca89abb76"
+    },
+    {
+      "name": "K's-traX",
+      "aliases": [],
+      "m3_artist_id": "artist_6321f54fdfafb776"
+    },
+    {
+      "name": "K,O",
+      "aliases": [],
+      "m3_artist_id": "artist_a302247bfbba43d4a570e21856245a46"
+    },
+    {
+      "name": "K-NEXT",
+      "aliases": [],
+      "m3_artist_id": "artist_055125baa342460b"
+    },
+    {
+      "name": "K-forest",
+      "aliases": [],
+      "m3_artist_id": "artist_539158444d90c481"
+    },
+    {
+      "name": "K.zune",
+      "aliases": [],
+      "m3_artist_id": "artist_99606c0e9cf1f9d7"
+    },
+    {
+      "name": "K0Sho",
+      "aliases": [],
+      "m3_artist_id": "artist_4750de6f8055f099"
+    },
+    {
+      "name": "K3nto",
+      "aliases": [],
+      "m3_artist_id": "artist_f2d4b183a03e516a"
+    },
+    {
+      "name": "KAH",
+      "aliases": [],
+      "m3_artist_id": "artist_a101c16d78288926"
+    },
+    {
+      "name": "KAJI",
+      "aliases": [],
+      "m3_artist_id": "artist_5e63ab609c5bb852"
+    },
+    {
+      "name": "KARUT",
+      "aliases": [],
+      "m3_artist_id": "artist_732c4a74eae688da"
+    },
+    {
+      "name": "KAzZ",
+      "aliases": [],
+      "m3_artist_id": "artist_44aa12ee33d795dd"
+    },
+    {
+      "name": "KBSNK",
+      "aliases": [
+        "カボスニキ"
+      ],
+      "m3_artist_id": "artist_de133519078fd586"
+    },
+    {
+      "name": "KINKYU",
+      "aliases": [],
+      "m3_artist_id": "artist_0c727f9f1b176d80"
+    },
+    {
+      "name": "KMNZ TINA",
+      "aliases": [],
+      "m3_artist_id": "artist_63d3b8019a212978"
+    },
+    {
+      "name": "KO3",
+      "aliases": [],
+      "m3_artist_id": "artist_fc347f0b77b79137"
+    },
+    {
+      "name": "KYURO3",
+      "aliases": [],
+      "m3_artist_id": "artist_c7532fcbc24fe030"
+    },
+    {
+      "name": "KaKi",
+      "aliases": [],
+      "m3_artist_id": "artist_c5ae14b975130a69"
+    },
+    {
+      "name": "Kaede Hiyama",
+      "aliases": [],
+      "m3_artist_id": "artist_01484e6215bd3c6a"
+    },
+    {
+      "name": "Kagen",
+      "aliases": [],
+      "m3_artist_id": "artist_d3ba54f74a114d18"
+    },
+    {
+      "name": "Kagetora.",
+      "aliases": [],
+      "m3_artist_id": "artist_17c2ad39078aa67d"
+    },
+    {
+      "name": "Kakuly",
+      "aliases": [],
+      "m3_artist_id": "artist_d3164817c8f63758"
+    },
+    {
+      "name": "Kakun",
+      "aliases": [],
+      "m3_artist_id": "artist_ba805317d60cdd6a"
+    },
+    {
+      "name": "Kapoo",
+      "aliases": [],
+      "m3_artist_id": "artist_0fd5882338b19a83"
+    },
+    {
+      "name": "Kashiwade",
+      "aliases": [],
+      "m3_artist_id": "artist_ba0d70c582bbde0f"
+    },
+    {
+      "name": "Katali",
+      "aliases": [],
+      "m3_artist_id": "artist_f465719c7aa3a703"
+    },
+    {
+      "name": "Kenuno",
+      "aliases": [],
+      "m3_artist_id": "artist_912c0bfa9522ee21"
+    },
+    {
+      "name": "Keton",
+      "aliases": [],
+      "m3_artist_id": "artist_c3a218f3068f7805"
+    },
+    {
+      "name": "KettenKrad",
+      "aliases": [
+        "Kettenkrad"
+      ],
+      "m3_artist_id": "artist_e58b3bf3ce1e80ce"
+    },
+    {
+      "name": "Keyvell.",
+      "aliases": [],
+      "m3_artist_id": "artist_9cb5689157650e0a"
+    },
+    {
+      "name": "Kinosia",
+      "aliases": [],
+      "m3_artist_id": "artist_137d475681eff4b5"
+    },
+    {
+      "name": "Kloser",
+      "aliases": [],
+      "m3_artist_id": "artist_c62a9a6248bde44a"
+    },
+    {
+      "name": "Klub Drug",
+      "aliases": [],
+      "m3_artist_id": "artist_5e08e975b474ce1e"
+    },
+    {
+      "name": "Ko-Shan",
+      "aliases": [],
+      "m3_artist_id": "artist_a3c4e0c707950f13"
+    },
+    {
+      "name": "KoZiR4w",
+      "aliases": [],
+      "m3_artist_id": "artist_77eb6103645c2af3"
+    },
+    {
+      "name": "Kobaryo",
+      "aliases": [],
+      "m3_artist_id": "artist_c9c6b200d1bb9319"
+    },
+    {
+      "name": "Kohta Imafuku",
+      "aliases": [],
+      "m3_artist_id": "artist_67ab3901683706dc"
+    },
+    {
+      "name": "Kokehara",
+      "aliases": [],
+      "m3_artist_id": "artist_42f261bb09a54a0a"
+    },
+    {
+      "name": "Kokomochi",
+      "aliases": [],
+      "m3_artist_id": "artist_87abe6367e062048"
+    },
+    {
+      "name": "Kolaa",
+      "aliases": [],
+      "m3_artist_id": "artist_27532f09c1782d81"
+    },
+    {
+      "name": "Kotori",
+      "aliases": [],
+      "m3_artist_id": "artist_0a5fd482f1c8f6cf"
+    },
+    {
+      "name": "Kotosthesia&桜羽ファミリア COEIROINK:つくよみちゃん",
+      "aliases": [],
+      "m3_artist_id": "artist_6f25920ffb06de16"
+    },
+    {
+      "name": "KreScent",
+      "aliases": [],
+      "m3_artist_id": "artist_1a175fcdaa36656d"
+    },
+    {
+      "name": "Krimek",
+      "aliases": [],
+      "m3_artist_id": "artist_5deb76a771614b8d"
+    },
+    {
+      "name": "Kuma The Kami",
+      "aliases": [],
+      "m3_artist_id": "artist_110ba49418e62c97"
+    },
+    {
+      "name": "Kumaika",
+      "aliases": [],
+      "m3_artist_id": "artist_9e0d25ac67c488eb"
+    },
+    {
+      "name": "Kumamin",
+      "aliases": [],
+      "m3_artist_id": "artist_662b9ef9c400b751"
+    },
+    {
+      "name": "Kur@ra",
+      "aliases": [],
+      "m3_artist_id": "artist_b7b1120c290c428f"
+    },
+    {
+      "name": "Kuri Vodka",
+      "aliases": [],
+      "m3_artist_id": "artist_1d4879cde584464b"
+    },
+    {
+      "name": "Kurobara",
+      "aliases": [],
+      "m3_artist_id": "artist_6d899e265bf988b6"
+    },
+    {
+      "name": "Kurokotei",
+      "aliases": [],
+      "m3_artist_id": "artist_dec1313268db12b8"
+    },
+    {
+      "name": "Kyiku",
+      "aliases": [],
+      "m3_artist_id": "artist_6e92c524946ee0d1"
+    },
+    {
+      "name": "KθZyo",
+      "aliases": [],
+      "m3_artist_id": "artist_91e59fdf436fd255"
+    },
+    {
+      "name": "K→CHOH",
+      "aliases": [],
+      "m3_artist_id": "artist_49b4ecd567decbf0"
+    },
+    {
+      "name": "L3AF",
+      "aliases": [],
+      "m3_artist_id": "artist_a95af54974466637"
+    },
+    {
+      "name": "LE46",
+      "aliases": [],
+      "m3_artist_id": "artist_3938e142a3a16401"
+    },
+    {
+      "name": "LEQURIA",
+      "aliases": [],
+      "m3_artist_id": "artist_d2799199e0683ce2"
+    },
+    {
+      "name": "LOLIPO",
+      "aliases": [],
+      "m3_artist_id": "artist_e0764b3bed8b0418"
+    },
+    {
+      "name": "LU-I",
+      "aliases": [],
+      "m3_artist_id": "artist_4573e9159654951d"
+    },
+    {
+      "name": "LUNE",
+      "aliases": [],
+      "m3_artist_id": "artist_d7aad6220eb139fc"
+    },
+    {
+      "name": "LV.4",
+      "aliases": [],
+      "m3_artist_id": "artist_850e5e214e6b9d65"
+    },
+    {
+      "name": "Lab4",
+      "aliases": [],
+      "m3_artist_id": "artist_851bd15e6e970ae1"
+    },
+    {
+      "name": "Lactar1uz",
+      "aliases": [],
+      "m3_artist_id": "artist_a7563f0ce11189a0"
+    },
+    {
+      "name": "LanPage",
+      "aliases": [],
+      "m3_artist_id": "artist_037a23c1da06b533"
+    },
+    {
+      "name": "Laur",
+      "aliases": [],
+      "m3_artist_id": "artist_38637baf7a1fc60e"
+    },
+    {
+      "name": "LeeSaM",
+      "aliases": [],
+      "m3_artist_id": "artist_62b285da83e83c24"
+    },
+    {
+      "name": "Lemm",
+      "aliases": [],
+      "m3_artist_id": "artist_f09dabca3319f980"
+    },
+    {
+      "name": "Letsu",
+      "aliases": [],
+      "m3_artist_id": "artist_9ba052173c2b9787"
+    },
+    {
+      "name": "Levare",
+      "aliases": [],
+      "m3_artist_id": "artist_01a99c06490f32ce"
+    },
+    {
+      "name": "Lillie Virgo",
+      "aliases": [],
+      "m3_artist_id": "artist_88e4eb3efa9685ff"
+    },
+    {
+      "name": "LillyRazy",
+      "aliases": [],
+      "m3_artist_id": "artist_4d66ec683e6823a7"
+    },
+    {
+      "name": "Lime",
+      "aliases": [],
+      "m3_artist_id": "artist_c9665c96a8678e03"
+    },
+    {
+      "name": "Link\"0",
+      "aliases": [
+        "Link”0"
+      ],
+      "m3_artist_id": "artist_c20340b06ab84216"
+    },
+    {
+      "name": "Lonouc",
+      "aliases": [],
+      "m3_artist_id": "artist_95a4aad8a4fa1786"
+    },
+    {
+      "name": "Low_Clocoo",
+      "aliases": [],
+      "m3_artist_id": "artist_c70523b160f1e42d"
+    },
+    {
+      "name": "LucaProject",
+      "aliases": [],
+      "m3_artist_id": "artist_8c90c61fdfdbe6f3"
+    },
+    {
+      "name": "Lunabitt",
+      "aliases": [],
+      "m3_artist_id": "artist_da7b75b39e826cb9"
+    },
+    {
+      "name": "Lunabitt.",
+      "aliases": [],
+      "m3_artist_id": "artist_639ad664d64cefde"
+    },
+    {
+      "name": "LuzeriA",
+      "aliases": [],
+      "m3_artist_id": "artist_1131f9028c06a567"
+    },
+    {
+      "name": "M2U",
+      "aliases": [],
+      "m3_artist_id": "artist_b2c430d9b8fa808b"
+    },
+    {
+      "name": "M4G&N3T",
+      "aliases": [],
+      "m3_artist_id": "artist_dc01ee97d27f89d6"
+    },
+    {
+      "name": "MAID TWIST",
+      "aliases": [],
+      "m3_artist_id": "artist_51aa97b52a42b597"
+    },
+    {
+      "name": "MALVA.",
+      "aliases": [],
+      "m3_artist_id": "artist_6b27fc32e5015283"
+    },
+    {
+      "name": "ME10N",
+      "aliases": [],
+      "m3_artist_id": "artist_d1103a53ee11b236"
+    },
+    {
+      "name": "ME1ON",
+      "aliases": [],
+      "m3_artist_id": "artist_b13be9dc491777f0"
+    },
+    {
+      "name": "MEMODEMO",
+      "aliases": [],
+      "m3_artist_id": "artist_680d28dec917b720"
+    },
+    {
+      "name": "MIDy",
+      "aliases": [],
+      "m3_artist_id": "artist_31a9cad82cf78151"
+    },
+    {
+      "name": "MIWAFOX",
+      "aliases": [],
+      "m3_artist_id": "artist_7086e7c226ed197a"
+    },
+    {
+      "name": "MJHD",
+      "aliases": [],
+      "m3_artist_id": "artist_d03e033f785a4321"
+    },
+    {
+      "name": "MK",
+      "aliases": [
+        "Shadw",
+        "mkshadw"
+      ],
+      "m3_artist_id": "artist_b2690faaaa9351ec"
+    },
+    {
+      "name": "MO-MEN",
+      "aliases": [],
+      "m3_artist_id": "artist_22fbbc81f838af4d"
+    },
+    {
+      "name": "MOM$",
+      "aliases": [],
+      "m3_artist_id": "artist_5696a5305301dd83"
+    },
+    {
+      "name": "MUKKURi",
+      "aliases": [],
+      "m3_artist_id": "artist_4033ac8abf13e249"
+    },
+    {
+      "name": "MURA",
+      "aliases": [],
+      "m3_artist_id": "artist_fd9184b13125fce5"
+    },
+    {
+      "name": "MY4",
+      "aliases": [],
+      "m3_artist_id": "artist_af888b5757108c10"
+    },
+    {
+      "name": "MYTK",
+      "aliases": [],
+      "m3_artist_id": "artist_14680469d7a12fd2"
+    },
+    {
+      "name": "MYUKKE.",
+      "aliases": [],
+      "m3_artist_id": "artist_7f00bdc2dc640eed"
+    },
+    {
+      "name": "Macaron",
+      "aliases": [],
+      "m3_artist_id": "artist_ec2035ada05d5a67"
+    },
+    {
+      "name": "Malcha",
+      "aliases": [],
+      "m3_artist_id": "artist_7560392e610cbf39"
+    },
+    {
+      "name": "Maozon",
+      "aliases": [],
+      "m3_artist_id": "artist_c72cac58e00edcd2"
+    },
+    {
+      "name": "Maquin",
+      "aliases": [],
+      "m3_artist_id": "artist_b5900e1df3846bf0"
+    },
+    {
+      "name": "Maqµin",
+      "aliases": [],
+      "m3_artist_id": "artist_b89c6051aeb5deb8"
+    },
+    {
+      "name": "Maqμin",
+      "aliases": [],
+      "m3_artist_id": "artist_cf787788271d7f71"
+    },
+    {
+      "name": "Massive New Krew",
+      "aliases": [],
+      "m3_artist_id": "artist_0b4193d0273f48f4"
+    },
+    {
+      "name": "Matsui.K",
+      "aliases": [],
+      "m3_artist_id": "artist_27d595b4bbd136f4"
+    },
+    {
+      "name": "MaxOTT",
+      "aliases": [],
+      "m3_artist_id": "artist_d9eab9acf8535fa3"
+    },
+    {
+      "name": "MaySoMusician",
+      "aliases": [],
+      "m3_artist_id": "artist_2737b4eb8ff6836a"
+    },
+    {
+      "name": "Medic Fumo",
+      "aliases": [],
+      "m3_artist_id": "artist_89833f5d88567895"
+    },
+    {
+      "name": "Mestoride",
+      "aliases": [],
+      "m3_artist_id": "artist_1aba893bf2567c31"
+    },
+    {
+      "name": "Mi7s3",
+      "aliases": [
+        "水無瀬"
+      ],
+      "m3_artist_id": "artist_009a1345a3d144b1"
+    },
+    {
+      "name": "MiYAjY",
+      "aliases": [],
+      "m3_artist_id": "artist_45634def7b30cd28"
+    },
+    {
+      "name": "MiaplaK",
+      "aliases": [],
+      "m3_artist_id": "artist_5a60843443c4933b"
+    },
+    {
+      "name": "Militack",
+      "aliases": [],
+      "m3_artist_id": "artist_fb2fbe9880e73f2d"
+    },
+    {
+      "name": "Miyo Takashiro",
+      "aliases": [
+        "高城みよ"
+      ],
+      "m3_artist_id": "artist_376fcd347ecb2ade"
+    },
+    {
+      "name": "MoAE",
+      "aliases": [],
+      "m3_artist_id": "artist_e3eb7c7445091b4c"
+    },
+    {
+      "name": "MoAE:.",
+      "aliases": [],
+      "m3_artist_id": "artist_6fef64a0e84a830e"
+    },
+    {
+      "name": "MobKinakoxSh.r-Y feat.翠京",
+      "aliases": [],
+      "m3_artist_id": "artist_8bc7e60ce695a32d"
+    },
+    {
+      "name": "Moetek",
+      "aliases": [],
+      "m3_artist_id": "artist_f95ae3490061b9c4"
+    },
+    {
+      "name": "Mogaki",
+      "aliases": [],
+      "m3_artist_id": "artist_70e02fcd4760b597"
+    },
+    {
+      "name": "Mono.",
+      "aliases": [],
+      "m3_artist_id": "artist_41e9b8549b5ba193"
+    },
+    {
+      "name": "Morimori Atsushi",
+      "aliases": [],
+      "m3_artist_id": "artist_dbc20d59945ea318"
+    },
+    {
+      "name": "Morrigan (WAVE)",
+      "aliases": [],
+      "m3_artist_id": "artist_dae3adcbb02bcc79"
+    },
+    {
+      "name": "Ms.",
+      "aliases": [],
+      "m3_artist_id": "artist_7cfb46258a6f545f"
+    },
+    {
+      "name": "Mtell",
+      "aliases": [],
+      "m3_artist_id": "artist_81140189a35dd374"
+    },
+    {
+      "name": "Mu9",
+      "aliases": [],
+      "m3_artist_id": "artist_e04aa092ad3cf5c6"
+    },
+    {
+      "name": "Mused",
+      "aliases": [],
+      "m3_artist_id": "artist_a82c4081ee8fc0fd"
+    },
+    {
+      "name": "Musicarus",
+      "aliases": [],
+      "m3_artist_id": "artist_569f558643e4c053"
+    },
+    {
+      "name": "Mylta",
+      "aliases": [],
+      "m3_artist_id": "artist_be4a6cf31b2292d2"
+    },
+    {
+      "name": "Myx4",
+      "aliases": [],
+      "m3_artist_id": "artist_08ba7f1c8fda909d"
+    },
+    {
+      "name": "MΣG²",
+      "aliases": [],
+      "m3_artist_id": "artist_c325d247c93aa632"
+    },
+    {
+      "name": "N0uk1n",
+      "aliases": [],
+      "m3_artist_id": "artist_8d05610e57fd38c4"
+    },
+    {
+      "name": "N4Gi",
+      "aliases": [],
+      "m3_artist_id": "artist_3b8908a7bcd8faa4"
+    },
+    {
+      "name": "NAMV",
+      "aliases": [
+        "nama_goma_",
+        "なま"
+      ],
+      "m3_artist_id": "artist_e84a872e234a1df7"
+    },
+    {
+      "name": "NANOMICS",
+      "aliases": [],
+      "m3_artist_id": "artist_82889336a4e15fae"
+    },
+    {
+      "name": "NATUKI",
+      "aliases": [],
+      "m3_artist_id": "artist_27db898233ad7b89"
+    },
+    {
+      "name": "NECROSiS",
+      "aliases": [],
+      "m3_artist_id": "artist_46c92f46aad49745"
+    },
+    {
+      "name": "NEO-Kaishin",
+      "aliases": [],
+      "m3_artist_id": "artist_a5c21c9e5166ba17"
+    },
+    {
+      "name": "NEON",
+      "aliases": [],
+      "m3_artist_id": "artist_5905b7a0cd6bdafb"
+    },
+    {
+      "name": "NGHTHYP",
+      "aliases": [],
+      "m3_artist_id": "artist_e4570237d5c39e57"
+    },
+    {
+      "name": "NILMA",
+      "aliases": [],
+      "m3_artist_id": "artist_4098dc641b765f8b"
+    },
+    {
+      "name": "NOuk1n",
+      "aliases": [],
+      "m3_artist_id": "artist_d955307c15675336"
+    },
+    {
+      "name": "NOxxx",
+      "aliases": [],
+      "m3_artist_id": "artist_00267ed684e4e066"
+    },
+    {
+      "name": "NTG",
+      "aliases": [],
+      "m3_artist_id": "artist_9c2add0a8efcc6a8"
+    },
+    {
+      "name": "N_dog",
+      "aliases": [],
+      "m3_artist_id": "artist_075ee134f193820e"
+    },
+    {
+      "name": "Nachick",
+      "aliases": [],
+      "m3_artist_id": "artist_fc1f925398ac2961"
+    },
+    {
+      "name": "Nagazaki",
+      "aliases": [],
+      "m3_artist_id": "artist_9d800e1e6549f8a6"
+    },
+    {
+      "name": "Nago",
+      "aliases": [],
+      "m3_artist_id": "artist_67d83a93f992f3da"
+    },
+    {
+      "name": "Namitape",
+      "aliases": [],
+      "m3_artist_id": "artist_fd5d959b289858d1"
+    },
+    {
+      "name": "NariHa",
+      "aliases": [],
+      "m3_artist_id": "artist_b94669b8523bd871"
+    },
+    {
+      "name": "Nekoribo",
+      "aliases": [],
+      "m3_artist_id": "artist_2f5223610f1535fb"
+    },
+    {
+      "name": "Nemaki Aoi",
+      "aliases": [],
+      "m3_artist_id": "artist_e67691214812d829"
+    },
+    {
+      "name": "New Japan Dev.",
+      "aliases": [],
+      "m3_artist_id": "artist_1dc10b3017c828b3"
+    },
+    {
+      "name": "Newlisk",
+      "aliases": [],
+      "m3_artist_id": "artist_864ed072e0afe015"
+    },
+    {
+      "name": "NezMayo",
+      "aliases": [],
+      "m3_artist_id": "artist_e61386426c4fe9a8"
+    },
+    {
+      "name": "Nezire",
+      "aliases": [],
+      "m3_artist_id": "artist_f914f7cd205c1fda"
+    },
+    {
+      "name": "Nhato",
+      "aliases": [],
+      "m3_artist_id": "artist_23803185b13b69a0"
+    },
+    {
+      "name": "NiActivity",
+      "aliases": [],
+      "m3_artist_id": "artist_59ba98b815300cbb"
+    },
+    {
+      "name": "Nia",
+      "aliases": [],
+      "m3_artist_id": "artist_957cafedcf90e0e7"
+    },
+    {
+      "name": "Night Yard",
+      "aliases": [],
+      "m3_artist_id": "artist_0782569193c60f8f"
+    },
+    {
+      "name": "Nizikawa",
+      "aliases": [],
+      "m3_artist_id": "artist_aa84dd66b7de69b7"
+    },
+    {
+      "name": "No_oZ",
+      "aliases": [],
+      "m3_artist_id": "artist_17e43e40e41f5e39"
+    },
+    {
+      "name": "NoaNoke",
+      "aliases": [],
+      "m3_artist_id": "artist_0dd77ba175937c48"
+    },
+    {
+      "name": "Noah",
+      "aliases": [],
+      "m3_artist_id": "artist_678202b3c0c345ef"
+    },
+    {
+      "name": "Noboro.",
+      "aliases": [],
+      "m3_artist_id": "artist_8c5577f0d87f2a77"
+    },
+    {
+      "name": "Noir",
+      "aliases": [],
+      "m3_artist_id": "artist_363e04e91a4c97d8"
+    },
+    {
+      "name": "Noizenecio",
+      "aliases": [],
+      "m3_artist_id": "artist_1dcadf2abc2d67d1"
+    },
+    {
+      "name": "Normal1zer",
+      "aliases": [],
+      "m3_artist_id": "artist_b2e05ce1d499e018"
+    },
+    {
+      "name": "Nos",
+      "aliases": [],
+      "m3_artist_id": "artist_9058659e9af434ea"
+    },
+    {
+      "name": "NotWo",
+      "aliases": [],
+      "m3_artist_id": "artist_098b0752fa68706f"
+    },
+    {
+      "name": "Notrum",
+      "aliases": [],
+      "m3_artist_id": "artist_8e0f3ce90147f184"
+    },
+    {
+      "name": "Nqsi",
+      "aliases": [],
+      "m3_artist_id": "artist_c9e3a333df7d5f25"
+    },
+    {
+      "name": "Numb'n'dub",
+      "aliases": [],
+      "m3_artist_id": "artist_3f305020d5f00edf"
+    },
+    {
+      "name": "Nyacktas",
+      "aliases": [],
+      "m3_artist_id": "artist_4361cfca2ad38b11"
+    },
+    {
+      "name": "O1RA",
+      "aliases": [],
+      "m3_artist_id": "artist_e39c04a4fe174bbd"
+    },
+    {
+      "name": "OCU TECHNO CLUB",
+      "aliases": [],
+      "m3_artist_id": "artist_35b1205ab5b86b90"
+    },
+    {
+      "name": "OLDUCT",
+      "aliases": [],
+      "m3_artist_id": "artist_3815b840905cc5d7"
+    },
+    {
+      "name": "OTIKA",
+      "aliases": [],
+      "m3_artist_id": "artist_6ba6e01ff7209dc4"
+    },
+    {
+      "name": "OWALI",
+      "aliases": [],
+      "m3_artist_id": "artist_0bfc8e96eb4aa833"
+    },
+    {
+      "name": "OZIGIRI",
+      "aliases": [],
+      "m3_artist_id": "artist_8e7273e8f95944d9"
+    },
+    {
+      "name": "Oblongar",
+      "aliases": [],
+      "m3_artist_id": "artist_e492a7e216c03551"
+    },
+    {
+      "name": "Odeta",
+      "aliases": [],
+      "m3_artist_id": "artist_49d8d432ef629a4e"
+    },
+    {
+      "name": "Oga(c)han",
+      "aliases": [],
+      "m3_artist_id": "artist_ada2446536471a06"
+    },
+    {
+      "name": "Opal Winds",
+      "aliases": [],
+      "m3_artist_id": "artist_0751bcb544a2d9d6"
+    },
+    {
+      "name": "OrutO",
+      "aliases": [],
+      "m3_artist_id": "artist_e52715046b9ea943"
+    },
+    {
+      "name": "OsushiFreak",
+      "aliases": [],
+      "m3_artist_id": "artist_5b13eae4d09cba4b"
+    },
+    {
+      "name": "Overhead Champion",
+      "aliases": [],
+      "m3_artist_id": "artist_21cae18c7e2e2af3"
+    },
+    {
+      "name": "Oversleep",
+      "aliases": [],
+      "m3_artist_id": "artist_e6cd0ac4cacd1f18"
+    },
+    {
+      "name": "Owen",
+      "aliases": [],
+      "m3_artist_id": "artist_baa31bcd2580deb3"
+    },
+    {
+      "name": "P&K",
+      "aliases": [],
+      "m3_artist_id": "artist_a056e2d5d75fec3d"
+    },
+    {
+      "name": "P*Light",
+      "aliases": [],
+      "m3_artist_id": "artist_a2953527736bb642"
+    },
+    {
+      "name": "P.Ocket",
+      "aliases": [],
+      "m3_artist_id": "artist_9623d73998a519dc"
+    },
+    {
+      "name": "P0cket",
+      "aliases": [],
+      "m3_artist_id": "artist_07b8efb7a8298e2a"
+    },
+    {
+      "name": "P1u5miNuS",
+      "aliases": [],
+      "m3_artist_id": "artist_65ffacd7956a2c92"
+    },
+    {
+      "name": "PEYODA",
+      "aliases": [
+        "peyoda",
+        "ペヨダ"
+      ],
+      "m3_artist_id": "artist_66f9ee3282a12a48"
+    },
+    {
+      "name": "PHRYG",
+      "aliases": [],
+      "m3_artist_id": "artist_df5f67a3418e4050"
+    },
+    {
+      "name": "PODA",
+      "aliases": [],
+      "m3_artist_id": "artist_0b6983dcd43baefe"
+    },
+    {
+      "name": "PRIDASK",
+      "aliases": [],
+      "m3_artist_id": "artist_d66e98704769d116"
+    },
+    {
+      "name": "PTB10",
+      "aliases": [],
+      "m3_artist_id": "artist_ec2041d411cad487"
+    },
+    {
+      "name": "PV1N",
+      "aliases": [],
+      "m3_artist_id": "artist_8e868e207625f81a"
+    },
+    {
+      "name": "Palami",
+      "aliases": [],
+      "m3_artist_id": "artist_0adf1e376731603c"
+    },
+    {
+      "name": "Palimach",
+      "aliases": [],
+      "m3_artist_id": "artist_a5bc830e04494f23"
+    },
+    {
+      "name": "Parang",
+      "aliases": [],
+      "m3_artist_id": "artist_6025b662cd11a310"
+    },
+    {
+      "name": "Pelko",
+      "aliases": [],
+      "m3_artist_id": "artist_ff832ac96e6bd24c"
+    },
+    {
+      "name": "Pernelle.",
+      "aliases": [],
+      "m3_artist_id": "artist_0eabfd0da7371a98"
+    },
+    {
+      "name": "Phatboí",
+      "aliases": [],
+      "m3_artist_id": "artist_ece9b3559dfe0801"
+    },
+    {
+      "name": "PlaNEta",
+      "aliases": [],
+      "m3_artist_id": "artist_c8ad73488f3e0b21"
+    },
+    {
+      "name": "Podzol",
+      "aliases": [],
+      "m3_artist_id": "artist_34ed875067013037"
+    },
+    {
+      "name": "Pokku'n",
+      "aliases": [],
+      "m3_artist_id": "artist_ffb61ab2cfee948d"
+    },
+    {
+      "name": "Pokkun",
+      "aliases": [],
+      "m3_artist_id": "artist_55aa05a98e65552a"
+    },
+    {
+      "name": "Powerless",
+      "aliases": [],
+      "m3_artist_id": "artist_b4dc000f0bcabc24"
+    },
+    {
+      "name": "Presti",
+      "aliases": [],
+      "m3_artist_id": "artist_e7e4b24fb1646215"
+    },
+    {
+      "name": "PudZ",
+      "aliases": [],
+      "m3_artist_id": "artist_9233861199480615"
+    },
+    {
+      "name": "QOM3T",
+      "aliases": [],
+      "m3_artist_id": "artist_05d4c6b26e0be809"
+    },
+    {
+      "name": "QUEST4ME",
+      "aliases": [],
+      "m3_artist_id": "artist_1858db14fbf252f8"
+    },
+    {
+      "name": "Qutabire",
+      "aliases": [],
+      "m3_artist_id": "artist_f285ee643cb02b36"
+    },
+    {
+      "name": "R1cefarm",
+      "aliases": [
+        "r1cefarm",
+        "Ricefarm"
+      ],
+      "m3_artist_id": "artist_2e701f9b579f35d1"
+    },
+    {
+      "name": "RAWPVCK",
+      "aliases": [],
+      "m3_artist_id": "artist_1da111952e63f473"
+    },
+    {
+      "name": "RE:LEE",
+      "aliases": [],
+      "m3_artist_id": "artist_89f8bb0e9cc1cf4c"
+    },
+    {
+      "name": "REDALiCE",
+      "aliases": [],
+      "m3_artist_id": "artist_cb755383951fa284"
+    },
+    {
+      "name": "RIZARDI",
+      "aliases": [],
+      "m3_artist_id": "artist_0e38d231a84ea791"
+    },
+    {
+      "name": "ROUNDEX RECORD",
+      "aliases": [],
+      "m3_artist_id": "artist_5aa8f4273a378c12"
+    },
+    {
+      "name": "RU",
+      "aliases": [],
+      "m3_artist_id": "artist_f37e3358243de943"
+    },
+    {
+      "name": "RUQOA",
+      "aliases": [],
+      "m3_artist_id": "artist_cdf7a65208ebf0f6"
+    },
+    {
+      "name": "RURI_niki",
+      "aliases": [],
+      "m3_artist_id": "artist_bc947fb7d218fcc2"
+    },
+    {
+      "name": "RYOQUCHA",
+      "aliases": [],
+      "m3_artist_id": "artist_0a74cdd01b196b23"
+    },
+    {
+      "name": "Rabbit House",
+      "aliases": [],
+      "m3_artist_id": "artist_ca907cde5295eb1d"
+    },
+    {
+      "name": "Rabbitex",
+      "aliases": [],
+      "m3_artist_id": "artist_64e94b51d04181e2"
+    },
+    {
+      "name": "Radianth",
+      "aliases": [],
+      "m3_artist_id": "artist_5de0ea9b62716ae5"
+    },
+    {
+      "name": "Rafutsuri",
+      "aliases": [],
+      "m3_artist_id": "artist_69900b8501051bc7"
+    },
+    {
+      "name": "Rakuno.α",
+      "aliases": [],
+      "m3_artist_id": "artist_e5bc75d454cead1f"
+    },
+    {
+      "name": "Ranaccy",
+      "aliases": [],
+      "m3_artist_id": "artist_7d18d0ea0906ba0f"
+    },
+    {
+      "name": "Raphiiel",
+      "aliases": [],
+      "m3_artist_id": "artist_5fb58e2576fa56c8"
+    },
+    {
+      "name": "Ratith",
+      "aliases": [],
+      "m3_artist_id": "artist_eb15b27a4b58c599"
+    },
+    {
+      "name": "Ray_Oh",
+      "aliases": [],
+      "m3_artist_id": "artist_a8e5996a7d059787"
+    },
+    {
+      "name": "RedOrge",
+      "aliases": [],
+      "m3_artist_id": "artist_95f39644108dcaa7"
+    },
+    {
+      "name": "Redsign",
+      "aliases": [],
+      "m3_artist_id": "artist_19ae333cfe22dab1"
+    },
+    {
+      "name": "Reku Mochizuki",
+      "aliases": [],
+      "m3_artist_id": "artist_27e75fbdb738165b"
+    },
+    {
+      "name": "Relect",
+      "aliases": [],
+      "m3_artist_id": "artist_fa7b17475e2ae069"
+    },
+    {
+      "name": "Renko",
+      "aliases": [],
+      "m3_artist_id": "artist_90f395e448f0a169"
+    },
+    {
+      "name": "Rhino Betatron",
+      "aliases": [],
+      "m3_artist_id": "artist_cfab2e62b4314342"
+    },
+    {
+      "name": "Rhino kawara",
+      "aliases": [],
+      "m3_artist_id": "artist_f51352ea2b89b903"
+    },
+    {
+      "name": "RhukiA",
+      "aliases": [],
+      "m3_artist_id": "artist_d82d2a81c83717f5"
+    },
+    {
+      "name": "Ri-Nergy",
+      "aliases": [
+        "Ri-nergy"
+      ],
+      "m3_artist_id": "artist_f019ee32f5a7718e"
+    },
+    {
+      "name": "RiTurner",
+      "aliases": [],
+      "m3_artist_id": "artist_c7ddc230587d9ebd"
+    },
+    {
+      "name": "Riku",
+      "aliases": [],
+      "m3_artist_id": "artist_ed010a461b0bf303"
+    },
+    {
+      "name": "Rin",
+      "aliases": [],
+      "m3_artist_id": "artist_24f683ad1940d162"
+    },
+    {
+      "name": "RiraN",
+      "aliases": [],
+      "m3_artist_id": "artist_d68d4b0b142f07e7"
+    },
+    {
+      "name": "Ririarone",
+      "aliases": [],
+      "m3_artist_id": "artist_8471a0e5768105e1"
+    },
+    {
+      "name": "Risa Yuzuki",
+      "aliases": [],
+      "m3_artist_id": "artist_5cf4ca004b765a80"
+    },
+    {
+      "name": "Risen",
+      "aliases": [],
+      "m3_artist_id": "artist_aeb52e5f1eb12ea9"
+    },
+    {
+      "name": "Rizpect",
+      "aliases": [],
+      "m3_artist_id": "artist_85e2a17d05eea1d2"
+    },
+    {
+      "name": "Rootplant",
+      "aliases": [],
+      "m3_artist_id": "artist_3c69d4f01644ba9e"
+    },
+    {
+      "name": "RoughSketch",
+      "aliases": [],
+      "m3_artist_id": "artist_be5d1b70025055b0"
+    },
+    {
+      "name": "Round Wave Crusher",
+      "aliases": [],
+      "m3_artist_id": "artist_c8ec1df2dc783f67"
+    },
+    {
+      "name": "Roya",
+      "aliases": [],
+      "m3_artist_id": "artist_c836a4fc7ad43d25"
+    },
+    {
+      "name": "RuYA",
+      "aliases": [],
+      "m3_artist_id": "artist_83bb5de069822c60"
+    },
+    {
+      "name": "RudBag",
+      "aliases": [],
+      "m3_artist_id": "artist_421b499ddd2e25c7"
+    },
+    {
+      "name": "Rugcie",
+      "aliases": [],
+      "m3_artist_id": "artist_d27ec3e10ff15fc3"
+    },
+    {
+      "name": "Ryo Arue",
+      "aliases": [],
+      "m3_artist_id": "artist_f544c8ec1e9471a6"
+    },
+    {
+      "name": "Ryo Mishima",
+      "aliases": [],
+      "m3_artist_id": "artist_c4af242dcf6de357"
+    },
+    {
+      "name": "Ryo Nakamura",
+      "aliases": [],
+      "m3_artist_id": "artist_a5310cf68fcd7116"
+    },
+    {
+      "name": "Ryuja Cat",
+      "aliases": [],
+      "m3_artist_id": "artist_464aaaaef30bb401"
+    },
+    {
+      "name": "S2i8",
+      "aliases": [],
+      "m3_artist_id": "artist_566963d971ce7987"
+    },
+    {
+      "name": "SANY-ON",
+      "aliases": [],
+      "m3_artist_id": "artist_aa3df29d6eefae9b"
+    },
+    {
+      "name": "SCHNE1DER",
+      "aliases": [],
+      "m3_artist_id": "artist_3cf1a0908ac24f6a"
+    },
+    {
+      "name": "SDF",
+      "aliases": [],
+      "m3_artist_id": "artist_3539795a98914f17"
+    },
+    {
+      "name": "SHGRR",
+      "aliases": [],
+      "m3_artist_id": "artist_b8729a1b9f2208d5"
+    },
+    {
+      "name": "SHIMADA",
+      "aliases": [],
+      "m3_artist_id": "artist_9d791c8ad28645f6"
+    },
+    {
+      "name": "SMWLAYY",
+      "aliases": [],
+      "m3_artist_id": "artist_765b32bdf9de7734"
+    },
+    {
+      "name": "Saku",
+      "aliases": [],
+      "m3_artist_id": "artist_2de0731eab6d9634"
+    },
+    {
+      "name": "Salt",
+      "aliases": [],
+      "m3_artist_id": "artist_150fe5514030b143"
+    },
+    {
+      "name": "Salt.",
+      "aliases": [],
+      "m3_artist_id": "artist_c1a7d3ba55315551"
+    },
+    {
+      "name": "Saltless",
+      "aliases": [],
+      "m3_artist_id": "artist_266d07359aab4171"
+    },
+    {
+      "name": "San",
+      "aliases": [],
+      "m3_artist_id": "artist_a2e6bdd3f1e66d87"
+    },
+    {
+      "name": "Sana Logic",
+      "aliases": [],
+      "m3_artist_id": "artist_470f51a6c50bf3d3"
+    },
+    {
+      "name": "Sanaas",
+      "aliases": [],
+      "m3_artist_id": "artist_ef5fcbb3cfd726f0"
+    },
+    {
+      "name": "Sanotch",
+      "aliases": [],
+      "m3_artist_id": "artist_d342d3ad4ad37d3f"
+    },
+    {
+      "name": "Sate11a",
+      "aliases": [],
+      "m3_artist_id": "artist_8ed9c3900719bafe"
+    },
+    {
+      "name": "Sauce",
+      "aliases": [],
+      "m3_artist_id": "artist_d4f122c9947e3739"
+    },
+    {
+      "name": "Save Me The Trouble",
+      "aliases": [],
+      "m3_artist_id": "artist_5e6e495bcd005530"
+    },
+    {
+      "name": "ScALL",
+      "aliases": [],
+      "m3_artist_id": "artist_f985cfffd53456f7"
+    },
+    {
+      "name": "Sceno Ichiro",
+      "aliases": [],
+      "m3_artist_id": "artist_1716eb84f13b55e6"
+    },
+    {
+      "name": "Schwank",
+      "aliases": [],
+      "m3_artist_id": "artist_003626c5b35941fc"
+    },
+    {
+      "name": "Scutoid",
+      "aliases": [],
+      "m3_artist_id": "artist_ccc28813edae70cd"
+    },
+    {
+      "name": "Se-U-Ra",
+      "aliases": [],
+      "m3_artist_id": "artist_af423b98dbc7ca25"
+    },
+    {
+      "name": "Se1ene",
+      "aliases": [],
+      "m3_artist_id": "artist_84cc1685e75aaca9"
+    },
+    {
+      "name": "Sennzai",
+      "aliases": [],
+      "m3_artist_id": "artist_2d940c509b323acc"
+    },
+    {
+      "name": "Serji",
+      "aliases": [],
+      "m3_artist_id": "artist_7b80fa3d30f72f35"
+    },
+    {
+      "name": "Settled Edge",
+      "aliases": [],
+      "m3_artist_id": "artist_5ed3829c3effe3b2"
+    },
+    {
+      "name": "Sh0wtime",
+      "aliases": [],
+      "m3_artist_id": "artist_1cb340825c4db1a1"
+    },
+    {
+      "name": "Sheeno Mirin",
+      "aliases": [],
+      "m3_artist_id": "artist_6d13e157439613f4"
+    },
+    {
+      "name": "Sherkel",
+      "aliases": [],
+      "m3_artist_id": "artist_6c8069100dd5e091"
+    },
+    {
+      "name": "Shibahune",
+      "aliases": [
+        "しばふね"
+      ],
+      "m3_artist_id": "artist_9dee1a6d2b8cdd18"
+    },
+    {
+      "name": "Shikaku Dot",
+      "aliases": [],
+      "m3_artist_id": "artist_70cf4404fbcbe6bb"
+    },
+    {
+      "name": "Shimo Hisae",
+      "aliases": [],
+      "m3_artist_id": "artist_7e6c830dcd94c1b8"
+    },
+    {
+      "name": "Shimoui",
+      "aliases": [],
+      "m3_artist_id": "artist_3b0dcee0fd15df6a"
+    },
+    {
+      "name": "Shirase",
+      "aliases": [],
+      "m3_artist_id": "artist_88464ba5938bbdf0"
+    },
+    {
+      "name": "Shiria",
+      "aliases": [],
+      "m3_artist_id": "artist_66bc27f74ee98e78"
+    },
+    {
+      "name": "Shogo Nomura",
+      "aliases": [],
+      "m3_artist_id": "artist_e3baf85f558addca"
+    },
+    {
+      "name": "Shoujo",
+      "aliases": [],
+      "m3_artist_id": "artist_6fec73284cfd55ba"
+    },
+    {
+      "name": "Shouya Namai",
+      "aliases": [],
+      "m3_artist_id": "artist_a3b268f6c8fa6797"
+    },
+    {
+      "name": "Sikkoku a.k.a. Ken Plus Ichiro(NISH)",
+      "aliases": [],
+      "m3_artist_id": "artist_79b9860b1613d79f"
+    },
+    {
+      "name": "Skynap",
+      "aliases": [],
+      "m3_artist_id": "artist_198e95ec34818ab4"
+    },
+    {
+      "name": "SoU",
+      "aliases": [],
+      "m3_artist_id": "artist_8609434fe0674789"
+    },
+    {
+      "name": "Soba",
+      "aliases": [],
+      "m3_artist_id": "artist_f6e764ef3feebf9b"
+    },
+    {
+      "name": "Solvrae",
+      "aliases": [],
+      "m3_artist_id": "artist_de35977749b24f6e"
+    },
+    {
+      "name": "Somari",
+      "aliases": [],
+      "m3_artist_id": "artist_a1a41aa0486c943f"
+    },
+    {
+      "name": "Sonance",
+      "aliases": [],
+      "m3_artist_id": "artist_933c04adbe3b6c22"
+    },
+    {
+      "name": "SoraMa_0",
+      "aliases": [],
+      "m3_artist_id": "artist_a981da42b8290088"
+    },
+    {
+      "name": "Sou Enomoto",
+      "aliases": [],
+      "m3_artist_id": "artist_93e2efac01fe67b6"
+    },
+    {
+      "name": "Spehs",
+      "aliases": [],
+      "m3_artist_id": "artist_a258bfd14bffb14a"
+    },
+    {
+      "name": "SpiralFlip",
+      "aliases": [],
+      "m3_artist_id": "artist_f2e74caa75d48cea"
+    },
+    {
+      "name": "Spongebob Squarewave",
+      "aliases": [],
+      "m3_artist_id": "artist_257364b6520e349c"
+    },
+    {
+      "name": "Srav3R",
+      "aliases": [],
+      "m3_artist_id": "artist_f75b9cf81d93ca9c"
+    },
+    {
+      "name": "Stringamp",
+      "aliases": [],
+      "m3_artist_id": "artist_4694b8a901ac74b6"
+    },
+    {
+      "name": "Sukima Altera",
+      "aliases": [],
+      "m3_artist_id": "artist_5a416dc43a139906"
+    },
+    {
+      "name": "Sunajiro",
+      "aliases": [],
+      "m3_artist_id": "artist_5088d70a4694f50b"
+    },
+    {
+      "name": "Sunkt8",
+      "aliases": [],
+      "m3_artist_id": "artist_f10292aaa7dd779c"
+    },
+    {
+      "name": "Supire",
+      "aliases": [],
+      "m3_artist_id": "artist_bd12c0e91fc3cdfd"
+    },
+    {
+      "name": "SyRan",
+      "aliases": [],
+      "m3_artist_id": "artist_fef25f4b2caa34c5"
+    },
+    {
+      "name": "Symitt",
+      "aliases": [],
+      "m3_artist_id": "artist_a0a615f05b90aeec"
+    },
+    {
+      "name": "Synthion",
+      "aliases": [],
+      "m3_artist_id": "artist_0f29b04436199d56"
+    },
+    {
+      "name": "Syntho",
+      "aliases": [],
+      "m3_artist_id": "artist_65064414b6cfb4a5"
+    },
+    {
+      "name": "T-J",
+      "aliases": [],
+      "m3_artist_id": "artist_db4468137e355ece"
+    },
+    {
+      "name": "TAG",
+      "aliases": [],
+      "m3_artist_id": "artist_158f5b26d5e1d0de"
+    },
+    {
+      "name": "TAKI",
+      "aliases": [],
+      "m3_artist_id": "artist_a7ad0bbab805c933"
+    },
+    {
+      "name": "TAKIO",
+      "aliases": [],
+      "m3_artist_id": "artist_3e8e313fa531e108"
+    },
+    {
+      "name": "TAKU1175",
+      "aliases": [],
+      "m3_artist_id": "artist_3abffdf06531ba9e"
+    },
+    {
+      "name": "TANUKI",
+      "aliases": [],
+      "m3_artist_id": "artist_bfe1f5445e851e5c"
+    },
+    {
+      "name": "TO-MAX",
+      "aliases": [],
+      "m3_artist_id": "artist_082b8e3d35ee8568"
+    },
+    {
+      "name": "TOMOYU",
+      "aliases": [],
+      "m3_artist_id": "artist_e8fe9717435284b7"
+    },
+    {
+      "name": "TRIAL",
+      "aliases": [],
+      "m3_artist_id": "artist_02af1180fe7197c1"
+    },
+    {
+      "name": "TSAR",
+      "aliases": [],
+      "m3_artist_id": "artist_f320be5dba8d8f52"
+    },
+    {
+      "name": "TYPE-RUKU",
+      "aliases": [],
+      "m3_artist_id": "artist_a88b0109da7dc701"
+    },
+    {
+      "name": "TaKo",
+      "aliases": [],
+      "m3_artist_id": "artist_62cb172271364c7c"
+    },
+    {
+      "name": "Taishi",
+      "aliases": [],
+      "m3_artist_id": "artist_6bb2ecf8bff1ee24"
+    },
+    {
+      "name": "Takahiro Aoki",
+      "aliases": [],
+      "m3_artist_id": "artist_afd9ad9f901ff5b3"
+    },
+    {
+      "name": "Takna",
+      "aliases": [],
+      "m3_artist_id": "artist_5a51cad4989ec3e9"
+    },
+    {
+      "name": "Talich Helfen",
+      "aliases": [],
+      "m3_artist_id": "artist_c801d457984243cd"
+    },
+    {
+      "name": "Tanchiky",
+      "aliases": [
+        "tanchiky",
+        "Tanchiky.com"
+      ],
+      "m3_artist_id": "artist_d04c70fd406add63"
+    },
+    {
+      "name": "Task",
+      "aliases": [],
+      "m3_artist_id": "artist_4bc74b21357c6cf5"
+    },
+    {
+      "name": "Tatsh",
+      "aliases": [],
+      "m3_artist_id": "artist_b3efb541f2bc5877"
+    },
+    {
+      "name": "Tatsunoshin",
+      "aliases": [],
+      "m3_artist_id": "artist_8d7c0c29bb1883ff"
+    },
+    {
+      "name": "TeRes DTM Project",
+      "aliases": [],
+      "m3_artist_id": "artist_09ff6fda7115c8d5"
+    },
+    {
+      "name": "Team Grimoire",
+      "aliases": [],
+      "m3_artist_id": "artist_011d5cbd02e7d2c3"
+    },
+    {
+      "name": "Tektheist",
+      "aliases": [],
+      "m3_artist_id": "artist_1acd4c15eb8e410a"
+    },
+    {
+      "name": "Telematic Visions",
+      "aliases": [],
+      "m3_artist_id": "artist_fc7d1b1d8b55028e"
+    },
+    {
+      "name": "Temma",
+      "aliases": [],
+      "m3_artist_id": "artist_d75959678e7b60da"
+    },
+    {
+      "name": "Templ8z",
+      "aliases": [],
+      "m3_artist_id": "artist_50c6356896dbe3b1"
+    },
+    {
+      "name": "TendonCutter",
+      "aliases": [],
+      "m3_artist_id": "artist_aa13990a4747af23"
+    },
+    {
+      "name": "Tengyou",
+      "aliases": [],
+      "m3_artist_id": "artist_af26731d301ec9db"
+    },
+    {
+      "name": "Terasu",
+      "aliases": [],
+      "m3_artist_id": "artist_17eaafec02f066b2"
+    },
+    {
+      "name": "Tezuka",
+      "aliases": [],
+      "m3_artist_id": "artist_766976b764bad33f"
+    },
+    {
+      "name": "Thanatos",
+      "aliases": [],
+      "m3_artist_id": "artist_fc2b93379b0b3560"
+    },
+    {
+      "name": "The Herb Shop",
+      "aliases": [],
+      "m3_artist_id": "artist_2c0b7109a185f23f"
+    },
+    {
+      "name": "The Nudja Conspiracy",
+      "aliases": [],
+      "m3_artist_id": "artist_55fac0e3f054bbba"
+    },
+    {
+      "name": "The_oNE_Ts_D.C.",
+      "aliases": [],
+      "m3_artist_id": "artist_18bc18b5afb91bbc"
+    },
+    {
+      "name": "Thunders",
+      "aliases": [],
+      "m3_artist_id": "artist_d4c58a1320a11b31"
+    },
+    {
+      "name": "Toccoyaki",
+      "aliases": [],
+      "m3_artist_id": "artist_5577551bc849996b"
+    },
+    {
+      "name": "Todayday",
+      "aliases": [],
+      "m3_artist_id": "artist_ba47e271bf480de7"
+    },
+    {
+      "name": "ToffU",
+      "aliases": [],
+      "m3_artist_id": "artist_3774ad795ef71ff3"
+    },
+    {
+      "name": "Tohrchu",
+      "aliases": [],
+      "m3_artist_id": "artist_aa7f6eb6cdd3d5e5"
+    },
+    {
+      "name": "Tokage",
+      "aliases": [],
+      "m3_artist_id": "artist_5ca3483bb8c92954"
+    },
+    {
+      "name": "Tom-i",
+      "aliases": [],
+      "m3_artist_id": "artist_346cbb1a6b3bc36f"
+    },
+    {
+      "name": "Tomoego",
+      "aliases": [],
+      "m3_artist_id": "artist_35ebf52d2cc65b4b"
+    },
+    {
+      "name": "Tomohiko Togashi",
+      "aliases": [],
+      "m3_artist_id": "artist_8b59fcc2adf0e309"
+    },
+    {
+      "name": "Tomoyuki Sakakida",
+      "aliases": [],
+      "m3_artist_id": "artist_fe786f5b784bb93c"
+    },
+    {
+      "name": "Tonoyama",
+      "aliases": [],
+      "m3_artist_id": "artist_f25bacf86d12afe5"
+    },
+    {
+      "name": "Toroz",
+      "aliases": [],
+      "m3_artist_id": "artist_5d0410e6a06a6c75"
+    },
+    {
+      "name": "Totz",
+      "aliases": [],
+      "m3_artist_id": "artist_061bdf22f60e46d7"
+    },
+    {
+      "name": "Trifory",
+      "aliases": [],
+      "m3_artist_id": "artist_8f7884ba48ccb89a"
+    },
+    {
+      "name": "TrippyGrunt",
+      "aliases": [],
+      "m3_artist_id": "artist_8e82441045b34d7b"
+    },
+    {
+      "name": "Tsukasa",
+      "aliases": [],
+      "m3_artist_id": "artist_2bbe2cf277090a68"
+    },
+    {
+      "name": "Tsukidono",
+      "aliases": [],
+      "m3_artist_id": "artist_0f75d361f6f5d302"
+    },
+    {
+      "name": "Tsuyoshi A.",
+      "aliases": [],
+      "m3_artist_id": "artist_91655b28f622371e"
+    },
+    {
+      "name": "Type R",
+      "aliases": [],
+      "m3_artist_id": "artist_7b6f9a63703c4c01"
+    },
+    {
+      "name": "U27",
+      "aliases": [],
+      "m3_artist_id": "artist_ab4ebb4240a54603"
+    },
+    {
+      "name": "UMARu",
+      "aliases": [],
+      "m3_artist_id": "artist_329f6c468c66741a"
+    },
+    {
+      "name": "USAO",
+      "aliases": [],
+      "m3_artist_id": "artist_bd10401c31c2e78d"
+    },
+    {
+      "name": "Ujico*",
+      "aliases": [],
+      "m3_artist_id": "artist_d0f1ead15c35cdd7"
+    },
+    {
+      "name": "Ulagumo",
+      "aliases": [],
+      "m3_artist_id": "artist_e88fc1fd4c0ef1f5"
+    },
+    {
+      "name": "UmeShow",
+      "aliases": [],
+      "m3_artist_id": "artist_a28d6d37ce4ea9f6"
+    },
+    {
+      "name": "Umiai",
+      "aliases": [],
+      "m3_artist_id": "artist_a37b54a847f2f352"
+    },
+    {
+      "name": "Uroko",
+      "aliases": [],
+      "m3_artist_id": "artist_89c8667c9230f5fc"
+    },
+    {
+      "name": "Utena",
+      "aliases": [],
+      "m3_artist_id": "artist_135422494dddff78"
+    },
+    {
+      "name": "V!crø",
+      "aliases": [],
+      "m3_artist_id": "artist_1ae5fb3fae01a6fb"
+    },
+    {
+      "name": "V0iD",
+      "aliases": [],
+      "m3_artist_id": "artist_7db07c8028a0a81c"
+    },
+    {
+      "name": "VITICZ",
+      "aliases": [],
+      "m3_artist_id": "artist_033e3f2500da3fd0"
+    },
+    {
+      "name": "VOLTA",
+      "aliases": [],
+      "m3_artist_id": "artist_42764e89ef589b42"
+    },
+    {
+      "name": "VTQ",
+      "aliases": [],
+      "m3_artist_id": "artist_94890c942e6d4b0f"
+    },
+    {
+      "name": "Vanillin",
+      "aliases": [],
+      "m3_artist_id": "artist_d00100ebcf132c9c"
+    },
+    {
+      "name": "Vanxia",
+      "aliases": [],
+      "m3_artist_id": "artist_2c7182690e8fb8c3"
+    },
+    {
+      "name": "ViViX",
+      "aliases": [],
+      "m3_artist_id": "artist_219e03f000612c7b"
+    },
+    {
+      "name": "Vishnu Okuno",
+      "aliases": [
+        "vishnu okuno"
+      ],
+      "m3_artist_id": "artist_26d29a1abc1d88e2"
+    },
+    {
+      "name": "Viznode",
+      "aliases": [],
+      "m3_artist_id": "artist_835820409e72be9d"
+    },
+    {
+      "name": "Volumetrique",
+      "aliases": [],
+      "m3_artist_id": "artist_052aeef143704038"
+    },
+    {
+      "name": "W1N74R",
+      "aliases": [],
+      "m3_artist_id": "artist_2b05cf2383f3315d"
+    },
+    {
+      "name": "WE ROB RAVE",
+      "aliases": [],
+      "m3_artist_id": "artist_c7b396a89be17408"
+    },
+    {
+      "name": "WHITEFISTS",
+      "aliases": [],
+      "m3_artist_id": "artist_26e2c7a5d18f91b3"
+    },
+    {
+      "name": "WWW.GANG",
+      "aliases": [],
+      "m3_artist_id": "artist_06f43e07d80e19c2"
+    },
+    {
+      "name": "Wa!ter",
+      "aliases": [],
+      "m3_artist_id": "artist_33961dd68c1758ce"
+    },
+    {
+      "name": "Wagataki",
+      "aliases": [],
+      "m3_artist_id": "artist_da3b52c0cf6db326"
+    },
+    {
+      "name": "Wam",
+      "aliases": [],
+      "m3_artist_id": "artist_38755897f3586ef3"
+    },
+    {
+      "name": "Warhawk",
+      "aliases": [],
+      "m3_artist_id": "artist_111179b41d907b5a"
+    },
+    {
+      "name": "Wasabeep",
+      "aliases": [],
+      "m3_artist_id": "artist_f2971be1a237c0ad"
+    },
+    {
+      "name": "Wataru",
+      "aliases": [],
+      "m3_artist_id": "artist_6fc402ec5a5b57ed"
+    },
+    {
+      "name": "Wipecore",
+      "aliases": [],
+      "m3_artist_id": "artist_5ddc0dd23746ce3a"
+    },
+    {
+      "name": "Wistariaz",
+      "aliases": [],
+      "m3_artist_id": "artist_4bfa5d31b75d53c0"
+    },
+    {
+      "name": "Worker//Holic",
+      "aliases": [],
+      "m3_artist_id": "artist_78329f76caecc181"
+    },
+    {
+      "name": "Wyste",
+      "aliases": [],
+      "m3_artist_id": "artist_b7332e046aaa1a8b"
+    },
+    {
+      "name": "X14N",
+      "aliases": [],
+      "m3_artist_id": "artist_4bdf74b6df1df97c"
+    },
+    {
+      "name": "XH",
+      "aliases": [],
+      "m3_artist_id": "artist_68439b0beb7c19e5"
+    },
+    {
+      "name": "Xena",
+      "aliases": [
+        "XENA"
+      ],
+      "m3_artist_id": "artist_436e5846599b4060"
+    },
+    {
+      "name": "Xeno",
+      "aliases": [],
+      "m3_artist_id": "artist_b8def16f52e3c427"
+    },
+    {
+      "name": "Xeudo Code",
+      "aliases": [],
+      "m3_artist_id": "artist_454faefab161fe51"
+    },
+    {
+      "name": "XinG",
+      "aliases": [],
+      "m3_artist_id": "artist_d2092228bbdc0beb"
+    },
+    {
+      "name": "Xinghuip",
+      "aliases": [],
+      "m3_artist_id": "artist_dd2fd9ec0f4b207f"
+    },
+    {
+      "name": "Xyris",
+      "aliases": [],
+      "m3_artist_id": "artist_15e09488949db099"
+    },
+    {
+      "name": "YACA IN DA HOUSE",
+      "aliases": [],
+      "m3_artist_id": "artist_cd4bf8b3a75d308d"
+    },
+    {
+      "name": "YAKYO",
+      "aliases": [],
+      "m3_artist_id": "artist_7f10fdef0875d8fe"
+    },
+    {
+      "name": "YAMAAD",
+      "aliases": [],
+      "m3_artist_id": "artist_e29e34f771837558"
+    },
+    {
+      "name": "YUKIYANAGI",
+      "aliases": [],
+      "m3_artist_id": "artist_62281af595224bc6"
+    },
+    {
+      "name": "YUPPUN",
+      "aliases": [],
+      "m3_artist_id": "artist_b95c11c369d7199a"
+    },
+    {
+      "name": "YUUHI",
+      "aliases": [],
+      "m3_artist_id": "artist_b8f9b9f7a8cd0917"
+    },
+    {
+      "name": "Yakumo",
+      "aliases": [],
+      "m3_artist_id": "artist_c30d24401cfaa7de"
+    },
+    {
+      "name": "Yi Xi",
+      "aliases": [],
+      "m3_artist_id": "artist_b8d43381d4e7ef25"
+    },
+    {
+      "name": "Yocha2K",
+      "aliases": [],
+      "m3_artist_id": "artist_163ddc6635c04294"
+    },
+    {
+      "name": "Yooh",
+      "aliases": [],
+      "m3_artist_id": "artist_f070a02861f4af30"
+    },
+    {
+      "name": "Yosshie 4onthefloor",
+      "aliases": [],
+      "m3_artist_id": "artist_acad3836401a85eb"
+    },
+    {
+      "name": "Yossshy",
+      "aliases": [],
+      "m3_artist_id": "artist_b27911e63838b855"
+    },
+    {
+      "name": "Yozu C",
+      "aliases": [],
+      "m3_artist_id": "artist_740088449019c61b"
+    },
+    {
+      "name": "Yu-dachi",
+      "aliases": [],
+      "m3_artist_id": "artist_496badcee3363bf1"
+    },
+    {
+      "name": "YuKa",
+      "aliases": [],
+      "m3_artist_id": "artist_583b236a6d1566b1"
+    },
+    {
+      "name": "Yu_Asahina",
+      "aliases": [],
+      "m3_artist_id": "artist_177f1dd62f02b369"
+    },
+    {
+      "name": "Yuichi Arai",
+      "aliases": [],
+      "m3_artist_id": "artist_ee06e0773ba43e28"
+    },
+    {
+      "name": "Yuka Kitamura",
+      "aliases": [],
+      "m3_artist_id": "artist_3b23bd3cf5e9206f"
+    },
+    {
+      "name": "Yumeji",
+      "aliases": [],
+      "m3_artist_id": "artist_ab3014f29bee6dd2"
+    },
+    {
+      "name": "Yusho Sunagawa",
+      "aliases": [],
+      "m3_artist_id": "artist_2e2b022cba8283fe"
+    },
+    {
+      "name": "Yuta Imai",
+      "aliases": [],
+      "m3_artist_id": "artist_1d5a2fd757e5a23e"
+    },
+    {
+      "name": "Yutaka Kouzaki",
+      "aliases": [],
+      "m3_artist_id": "artist_8b4ebef62b2151a1"
+    },
+    {
+      "name": "Yutayuki",
+      "aliases": [
+        "yutayuki"
+      ],
+      "m3_artist_id": "artist_abddc1392d8519a5"
+    },
+    {
+      "name": "Yutori",
+      "aliases": [],
+      "m3_artist_id": "artist_1d933c1f7191b121"
+    },
+    {
+      "name": "Yuze",
+      "aliases": [],
+      "m3_artist_id": "artist_b8a35f2093a71c47"
+    },
+    {
+      "name": "ZEOL",
+      "aliases": [],
+      "m3_artist_id": "artist_9dc113340e14dc95"
+    },
+    {
+      "name": "ZER0",
+      "aliases": [],
+      "m3_artist_id": "artist_8e02402770ba6fbf"
+    },
+    {
+      "name": "ZI-KU-KA",
+      "aliases": [],
+      "m3_artist_id": "artist_534114ce2ccb8584"
+    },
+    {
+      "name": "ZIRAI DAMAGE",
+      "aliases": [],
+      "m3_artist_id": "artist_f45269ed7c3dec6f"
+    },
+    {
+      "name": "Zeami",
+      "aliases": [],
+      "m3_artist_id": "artist_39f6097566fc5d68"
+    },
+    {
+      "name": "Zekk",
+      "aliases": [],
+      "m3_artist_id": "artist_55b14f43b579d3b4"
+    },
+    {
+      "name": "ZiXS",
+      "aliases": [],
+      "m3_artist_id": "artist_2f6cbf2483ee242a"
+    },
+    {
+      "name": "ZiniA",
+      "aliases": [],
+      "m3_artist_id": "artist_d7afda3f2e2cc020"
+    },
+    {
+      "name": "Zlonice",
+      "aliases": [],
+      "m3_artist_id": "artist_8bd44272982af4d3"
+    },
+    {
+      "name": "ZoeEngine",
+      "aliases": [],
+      "m3_artist_id": "artist_b06c801f39f7b5f8"
+    },
+    {
+      "name": "ZoeEngineMW",
+      "aliases": [],
+      "m3_artist_id": "artist_11362f04bc0b3e41"
+    },
+    {
+      "name": "Zohka",
+      "aliases": [],
+      "m3_artist_id": "artist_71fd27a1b75b742a"
+    },
+    {
+      "name": "ZxNX",
+      "aliases": [],
+      "m3_artist_id": "artist_a400c49f7f25e187"
+    },
+    {
+      "name": "abnovark",
+      "aliases": [],
+      "m3_artist_id": "artist_965604d0c7e0a1a5"
+    },
+    {
+      "name": "adaptor",
+      "aliases": [],
+      "m3_artist_id": "artist_7082f9a568fc1251"
+    },
+    {
+      "name": "aimu",
+      "aliases": [],
+      "m3_artist_id": "artist_00bdb480834b9d39"
+    },
+    {
+      "name": "akatora",
+      "aliases": [],
+      "m3_artist_id": "artist_83ca753033b2dd0f"
+    },
+    {
+      "name": "alto",
+      "aliases": [],
+      "m3_artist_id": "artist_175d374a1e9f8545"
+    },
+    {
+      "name": "amohS",
+      "aliases": [],
+      "m3_artist_id": "artist_504ab94a02a9a7c5"
+    },
+    {
+      "name": "anubasu-anubasu",
+      "aliases": [],
+      "m3_artist_id": "artist_48ea6caf8b2ec6e7"
+    },
+    {
+      "name": "aon",
+      "aliases": [
+        "nayutaon"
+      ],
+      "m3_artist_id": "artist_e2ca84db765aa4ff"
+    },
+    {
+      "name": "aquamay",
+      "aliases": [],
+      "m3_artist_id": "artist_cbf5cbce5d3c3072"
+    },
+    {
+      "name": "aran",
+      "aliases": [],
+      "m3_artist_id": "artist_52189ce656d2436c"
+    },
+    {
+      "name": "ariiol",
+      "aliases": [],
+      "m3_artist_id": "artist_98daa0f185936a8c"
+    },
+    {
+      "name": "aun",
+      "aliases": [],
+      "m3_artist_id": "artist_d8dec8bdfc57587a"
+    },
+    {
+      "name": "awfuless",
+      "aliases": [],
+      "m3_artist_id": "artist_da0d08bbb44c6b29"
+    },
+    {
+      "name": "bootpanda",
+      "aliases": [],
+      "m3_artist_id": "artist_0c6bf847745d698f"
+    },
+    {
+      "name": "brz1128",
+      "aliases": [],
+      "m3_artist_id": "artist_29a0773b03ef3f34"
+    },
+    {
+      "name": "cartax",
+      "aliases": [],
+      "m3_artist_id": "artist_69df86716d5bc75b"
+    },
+    {
+      "name": "celtix",
+      "aliases": [],
+      "m3_artist_id": "artist_3b34bc0752a0cf93"
+    },
+    {
+      "name": "cexiria",
+      "aliases": [],
+      "m3_artist_id": "artist_0f743e456f0f6801"
+    },
+    {
+      "name": "chinesemidiboard",
+      "aliases": [],
+      "m3_artist_id": "artist_5f64a1d624ee745a"
+    },
+    {
+      "name": "ckwa",
+      "aliases": [
+        "ちくわ"
+      ],
+      "m3_artist_id": "artist_12698696538265a2"
+    },
+    {
+      "name": "co7ty",
+      "aliases": [],
+      "m3_artist_id": "artist_496c6b71bece5da7"
+    },
+    {
+      "name": "crayvxn",
+      "aliases": [],
+      "m3_artist_id": "artist_668f487625700029"
+    },
+    {
+      "name": "crp.",
+      "aliases": [],
+      "m3_artist_id": "artist_5007564322f4102c"
+    },
+    {
+      "name": "dai",
+      "aliases": [],
+      "m3_artist_id": "artist_4de6bb4e4a6c2058"
+    },
+    {
+      "name": "dama",
+      "aliases": [],
+      "m3_artist_id": "artist_ebb64eb4e3addd91"
+    },
+    {
+      "name": "demaescape Sound Team",
+      "aliases": [],
+      "m3_artist_id": "artist_fc276d61e9e91d35"
+    },
+    {
+      "name": "deneb",
+      "aliases": [],
+      "m3_artist_id": "artist_d84eb704f21b4311"
+    },
+    {
+      "name": "denshino",
+      "aliases": [],
+      "m3_artist_id": "artist_1957570d8e0abd07"
+    },
+    {
+      "name": "dirty magiq",
+      "aliases": [],
+      "m3_artist_id": "artist_2cbfd8f714f667f0"
+    },
+    {
+      "name": "dopamine",
+      "aliases": [],
+      "m3_artist_id": "artist_96cae9d2238bef8e"
+    },
+    {
+      "name": "eKiog",
+      "aliases": [],
+      "m3_artist_id": "artist_8b362da6de805af3"
+    },
+    {
+      "name": "ebisen.o0",
+      "aliases": [],
+      "m3_artist_id": "artist_3054a50c641f75c4"
+    },
+    {
+      "name": "ed1t_mahou",
+      "aliases": [],
+      "m3_artist_id": "artist_e48c5d9f16c315a9"
+    },
+    {
+      "name": "eili",
+      "aliases": [],
+      "m3_artist_id": "artist_e0418db5af58c606"
+    },
+    {
+      "name": "ej ito",
+      "aliases": [],
+      "m3_artist_id": "artist_7bb5faaad3ec86e9"
+    },
+    {
+      "name": "elli mia",
+      "aliases": [],
+      "m3_artist_id": "artist_687b2aa5fffbe92d"
+    },
+    {
+      "name": "emmcare",
+      "aliases": [],
+      "m3_artist_id": "artist_b78fa5cbfc866155"
+    },
+    {
+      "name": "ether2006",
+      "aliases": [],
+      "m3_artist_id": "artist_ca560c5bc14f3201"
+    },
+    {
+      "name": "f2",
+      "aliases": [],
+      "m3_artist_id": "artist_e4ab4e3b1493d5a9"
+    },
+    {
+      "name": "factal",
+      "aliases": [],
+      "m3_artist_id": "artist_0c2632b8dabfd990"
+    },
+    {
+      "name": "fnylsp",
+      "aliases": [],
+      "m3_artist_id": "artist_1df6d201790ceffc"
+    },
+    {
+      "name": "ftrygry",
+      "aliases": [],
+      "m3_artist_id": "artist_4e63f6148bb9a2e3"
+    },
+    {
+      "name": "fujiyori",
+      "aliases": [],
+      "m3_artist_id": "artist_d502552c74b934ca"
+    },
+    {
+      "name": "gaburyu",
+      "aliases": [],
+      "m3_artist_id": "artist_1663f6dddabf0faa"
+    },
+    {
+      "name": "gamei",
+      "aliases": [
+        "げーむあい",
+        "Re_Gamei"
+      ],
+      "m3_artist_id": "artist_0f8d62d342393917"
+    },
+    {
+      "name": "garmr",
+      "aliases": [],
+      "m3_artist_id": "artist_6749745a7644c59c"
+    },
+    {
+      "name": "gmtn.",
+      "aliases": [],
+      "m3_artist_id": "artist_cc90431aa15ead54"
+    },
+    {
+      "name": "gomac",
+      "aliases": [],
+      "m3_artist_id": "artist_df9817a143f64adb"
+    },
+    {
+      "name": "goropi",
+      "aliases": [],
+      "m3_artist_id": "artist_dfa06f4ad642c63d"
+    },
+    {
+      "name": "grape@ぶどうP",
+      "aliases": [],
+      "m3_artist_id": "artist_b1a42164db713b22"
+    },
+    {
+      "name": "guilty_orz",
+      "aliases": [],
+      "m3_artist_id": "artist_adb55f5aa4e466a1"
+    },
+    {
+      "name": "haaaaaaru",
+      "aliases": [],
+      "m3_artist_id": "artist_46bc01a59201feec"
+    },
+    {
+      "name": "hallycore",
+      "aliases": [],
+      "m3_artist_id": "artist_3c5aab570200dcb2"
+    },
+    {
+      "name": "higma",
+      "aliases": [],
+      "m3_artist_id": "artist_2a8b758697cebe9b"
+    },
+    {
+      "name": "hirihiri",
+      "aliases": [],
+      "m3_artist_id": "artist_14a670465ab39119"
+    },
+    {
+      "name": "hororo",
+      "aliases": [],
+      "m3_artist_id": "artist_3aa69050d22546dd"
+    },
+    {
+      "name": "hosu",
+      "aliases": [],
+      "m3_artist_id": "artist_d9addcab75a9ec79"
+    },
+    {
+      "name": "hu-zin",
+      "aliases": [],
+      "m3_artist_id": "artist_ac1d71aaf0c012fe"
+    },
+    {
+      "name": "icesawder",
+      "aliases": [],
+      "m3_artist_id": "artist_edeaf8bfc0981d18"
+    },
+    {
+      "name": "idreamu",
+      "aliases": [],
+      "m3_artist_id": "artist_17f45cbc278c878d"
+    },
+    {
+      "name": "ijica",
+      "aliases": [],
+      "m3_artist_id": "artist_6d1308d57e99b9f3"
+    },
+    {
+      "name": "ikaruga_nex",
+      "aliases": [],
+      "m3_artist_id": "artist_78e9d79c0c4b525c"
+    },
+    {
+      "name": "illi",
+      "aliases": [],
+      "m3_artist_id": "artist_74358ef1a5dbe17b"
+    },
+    {
+      "name": "iohe",
+      "aliases": [],
+      "m3_artist_id": "artist_6d75f2965cf32132"
+    },
+    {
+      "name": "ioni",
+      "aliases": [],
+      "m3_artist_id": "artist_c0d9043e15b26881"
+    },
+    {
+      "name": "iro",
+      "aliases": [],
+      "m3_artist_id": "artist_c11ffde27ac42197"
+    },
+    {
+      "name": "iromi",
+      "aliases": [],
+      "m3_artist_id": "artist_ce500fcec7957a0a"
+    },
+    {
+      "name": "ishiyama5",
+      "aliases": [],
+      "m3_artist_id": "artist_cc0e1ffb10e07fca"
+    },
+    {
+      "name": "ittokan",
+      "aliases": [],
+      "m3_artist_id": "artist_38852c0fcec6b5f4"
+    },
+    {
+      "name": "izumi Shinohara",
+      "aliases": [],
+      "m3_artist_id": "artist_c0890fee6959f8c6"
+    },
+    {
+      "name": "jeNoth",
+      "aliases": [],
+      "m3_artist_id": "artist_7bb22876ce6ae800"
+    },
+    {
+      "name": "jian",
+      "aliases": [],
+      "m3_artist_id": "artist_7c89187f8884524f"
+    },
+    {
+      "name": "k o n d o",
+      "aliases": [],
+      "m3_artist_id": "artist_9917eb94de6cdc44"
+    },
+    {
+      "name": "kakusan.",
+      "aliases": [],
+      "m3_artist_id": "artist_9bf7821accd6740f"
+    },
+    {
+      "name": "kalsoer",
+      "aliases": [],
+      "m3_artist_id": "artist_12adff2395848c6e"
+    },
+    {
+      "name": "kana?",
+      "aliases": [],
+      "m3_artist_id": "artist_971a5927d1237495"
+    },
+    {
+      "name": "kaname",
+      "aliases": [
+        "Kaname"
+      ],
+      "m3_artist_id": "artist_33ce7e9620130c47"
+    },
+    {
+      "name": "kanashima",
+      "aliases": [],
+      "m3_artist_id": "artist_3caf11d3d49b0b5b"
+    },
+    {
+      "name": "kaputt",
+      "aliases": [],
+      "m3_artist_id": "artist_de2278dc9494c182"
+    },
+    {
+      "name": "kaztora",
+      "aliases": [],
+      "m3_artist_id": "artist_d1851a46334adac1"
+    },
+    {
+      "name": "keisei",
+      "aliases": [],
+      "m3_artist_id": "artist_6359e2380b6a609c"
+    },
+    {
+      "name": "ki-you",
+      "aliases": [],
+      "m3_artist_id": "artist_ac8813ee4c6f006f"
+    },
+    {
+      "name": "kidlit",
+      "aliases": [
+        "Kidlit"
+      ],
+      "m3_artist_id": "artist_ecf695fb84986f7e"
+    },
+    {
+      "name": "klkkl",
+      "aliases": [],
+      "m3_artist_id": "artist_c44a43312885d98b"
+    },
+    {
+      "name": "koduckinP",
+      "aliases": [],
+      "m3_artist_id": "artist_d4b6c5ee55b19c6c"
+    },
+    {
+      "name": "koge",
+      "aliases": [],
+      "m3_artist_id": "artist_a2fb9b793f074772"
+    },
+    {
+      "name": "kojake",
+      "aliases": [],
+      "m3_artist_id": "artist_f14a8b801e25313e"
+    },
+    {
+      "name": "konachan",
+      "aliases": [],
+      "m3_artist_id": "artist_7613a5e08da06f0b"
+    },
+    {
+      "name": "kooridori",
+      "aliases": [],
+      "m3_artist_id": "artist_d863f914ea664cce"
+    },
+    {
+      "name": "kors k",
+      "aliases": [],
+      "m3_artist_id": "artist_141677f79d6447eb"
+    },
+    {
+      "name": "kou",
+      "aliases": [],
+      "m3_artist_id": "artist_39d840930ce651a0"
+    },
+    {
+      "name": "kouhei",
+      "aliases": [],
+      "m3_artist_id": "artist_67bd89294293c036"
+    },
+    {
+      "name": "kr-KuuRa",
+      "aliases": [],
+      "m3_artist_id": "artist_8465878f7d5d9e92"
+    },
+    {
+      "name": "kre4tive",
+      "aliases": [],
+      "m3_artist_id": "artist_61b1f45552c40063"
+    },
+    {
+      "name": "kuro",
+      "aliases": [],
+      "m3_artist_id": "artist_20d8a8fffabceb9c"
+    },
+    {
+      "name": "ky0ku70",
+      "aliases": [],
+      "m3_artist_id": "artist_6dd01d842159fd0b"
+    },
+    {
+      "name": "linear ring",
+      "aliases": [],
+      "m3_artist_id": "artist_e013f0b2147ae8ee"
+    },
+    {
+      "name": "litmus*",
+      "aliases": [],
+      "m3_artist_id": "artist_e51ae109fa96ffe8"
+    },
+    {
+      "name": "lowplace",
+      "aliases": [],
+      "m3_artist_id": "artist_c2c5c42d8c1d8e76"
+    },
+    {
+      "name": "madmaid",
+      "aliases": [],
+      "m3_artist_id": "artist_7a8eb54252cffd54"
+    },
+    {
+      "name": "mahziel",
+      "aliases": [],
+      "m3_artist_id": "artist_7da7eac48a95dd71"
+    },
+    {
+      "name": "miomaguro",
+      "aliases": [],
+      "m3_artist_id": "artist_5436549f1ff008ae"
+    },
+    {
+      "name": "mocchikuzu",
+      "aliases": [],
+      "m3_artist_id": "artist_f491379f83e46bbf"
+    },
+    {
+      "name": "monof",
+      "aliases": [],
+      "m3_artist_id": "artist_61c9ba66308a1286"
+    },
+    {
+      "name": "mopi",
+      "aliases": [],
+      "m3_artist_id": "artist_fb0265e5cb14b8f4"
+    },
+    {
+      "name": "moyu",
+      "aliases": [],
+      "m3_artist_id": "artist_80b3d4ea6ebd0fc7"
+    },
+    {
+      "name": "mt",
+      "aliases": [],
+      "m3_artist_id": "artist_fe7f7ccc3fc17be1"
+    },
+    {
+      "name": "muyu",
+      "aliases": [],
+      "m3_artist_id": "artist_1ab48e8124c615d9"
+    },
+    {
+      "name": "nanka",
+      "aliases": [],
+      "m3_artist_id": "artist_0e7c336c1e1dc0bf"
+    },
+    {
+      "name": "nanomo",
+      "aliases": [],
+      "m3_artist_id": "artist_0339e3f571f5a659"
+    },
+    {
+      "name": "naoteto",
+      "aliases": [],
+      "m3_artist_id": "artist_6b5966c051056077"
+    },
+    {
+      "name": "nayuta",
+      "aliases": [],
+      "m3_artist_id": "artist_7c92a09cf9808fcf"
+    },
+    {
+      "name": "ned",
+      "aliases": [],
+      "m3_artist_id": "artist_c2bc07610fb18d0e"
+    },
+    {
+      "name": "nenpulse",
+      "aliases": [],
+      "m3_artist_id": "artist_a1da721bf0d6eb1e"
+    },
+    {
+      "name": "nmk",
+      "aliases": [],
+      "m3_artist_id": "artist_87a8ec19bb5c61cf"
+    },
+    {
+      "name": "noname",
+      "aliases": [],
+      "m3_artist_id": "artist_014b5f09a295b8c2"
+    },
+    {
+      "name": "nosono",
+      "aliases": [],
+      "m3_artist_id": "artist_ae3844db9d4f9219"
+    },
+    {
+      "name": "num",
+      "aliases": [],
+      "m3_artist_id": "artist_1a325e9af1de76dc"
+    },
+    {
+      "name": "nuphory",
+      "aliases": [],
+      "m3_artist_id": "artist_7e3336528914049a"
+    },
+    {
+      "name": "nyankobrq",
+      "aliases": [],
+      "m3_artist_id": "artist_0b34a85430216975"
+    },
+    {
+      "name": "ogiyaku",
+      "aliases": [],
+      "m3_artist_id": "artist_8a77187c8d683429"
+    },
+    {
+      "name": "ohigeCat",
+      "aliases": [],
+      "m3_artist_id": "artist_7d3cfc48519a3ca4"
+    },
+    {
+      "name": "oksuu",
+      "aliases": [],
+      "m3_artist_id": "artist_84065b61f1da9b66"
+    },
+    {
+      "name": "omlet",
+      "aliases": [],
+      "m3_artist_id": "artist_68a6de90564612c9"
+    },
+    {
+      "name": "onoken",
+      "aliases": [],
+      "m3_artist_id": "artist_1e10e7b82520e7fa"
+    },
+    {
+      "name": "otoshi.b",
+      "aliases": [],
+      "m3_artist_id": "artist_2402d53e517d7570"
+    },
+    {
+      "name": "pasly tour",
+      "aliases": [],
+      "m3_artist_id": "artist_618b3e9e374cf3d9"
+    },
+    {
+      "name": "pearl lump",
+      "aliases": [],
+      "m3_artist_id": "artist_aec69542892f630c"
+    },
+    {
+      "name": "pencil",
+      "aliases": [],
+      "m3_artist_id": "artist_13809668fb436386"
+    },
+    {
+      "name": "phosxdraw",
+      "aliases": [],
+      "m3_artist_id": "artist_f54fbd01a6eccf06"
+    },
+    {
+      "name": "picco",
+      "aliases": [],
+      "m3_artist_id": "artist_753f7da10a543a06"
+    },
+    {
+      "name": "pico",
+      "aliases": [],
+      "m3_artist_id": "artist_9ea2483b344bb5c5"
+    },
+    {
+      "name": "plus alpha",
+      "aliases": [],
+      "m3_artist_id": "artist_dfa1c3544eb638b7"
+    },
+    {
+      "name": "pocotan",
+      "aliases": [],
+      "m3_artist_id": "artist_e1f25001c67be0a6"
+    },
+    {
+      "name": "polaritia",
+      "aliases": [],
+      "m3_artist_id": "artist_e5dc077383589ed7"
+    },
+    {
+      "name": "polysha",
+      "aliases": [
+        "Polysha"
+      ],
+      "m3_artist_id": "artist_bc790f4e7f3cbf3d"
+    },
+    {
+      "name": "poniyama",
+      "aliases": [],
+      "m3_artist_id": "artist_7ee122ecb92b1912"
+    },
+    {
+      "name": "potaguri",
+      "aliases": [
+        "@potaguri"
+      ],
+      "m3_artist_id": "artist_5df40573ec3d4c3a"
+    },
+    {
+      "name": "pppppfffffuuuuuiiiii",
+      "aliases": [],
+      "m3_artist_id": "artist_71e3cea793c6f0b6"
+    },
+    {
+      "name": "purine",
+      "aliases": [],
+      "m3_artist_id": "artist_fd8216be1afcb681"
+    },
+    {
+      "name": "qfeileadh",
+      "aliases": [],
+      "m3_artist_id": "artist_320333209a85ca04"
+    },
+    {
+      "name": "quilt heron",
+      "aliases": [],
+      "m3_artist_id": "artist_5723f1f75e10fbf4"
+    },
+    {
+      "name": "quu-zie",
+      "aliases": [],
+      "m3_artist_id": "artist_5e19b14eb3c10580"
+    },
+    {
+      "name": "r",
+      "aliases": [],
+      "m3_artist_id": "artist_454349e422f05297"
+    },
+    {
+      "name": "ragia",
+      "aliases": [
+        "Ragia"
+      ],
+      "m3_artist_id": "artist_8677b0c24912910e"
+    },
+    {
+      "name": "rejection",
+      "aliases": [],
+      "m3_artist_id": "artist_fd793986cd6d4596"
+    },
+    {
+      "name": "ric3show3r",
+      "aliases": [],
+      "m3_artist_id": "artist_3fe15cd47cc401e3"
+    },
+    {
+      "name": "rice3show3r",
+      "aliases": [],
+      "m3_artist_id": "artist_f9564f7dfdfb75c3"
+    },
+    {
+      "name": "rojico",
+      "aliases": [],
+      "m3_artist_id": "artist_2561bc5041f8ff0b"
+    },
+    {
+      "name": "rotten D",
+      "aliases": [],
+      "m3_artist_id": "artist_181b5b9f05cbb294"
+    },
+    {
+      "name": "ryhki",
+      "aliases": [],
+      "m3_artist_id": "artist_75097d333be60fbc"
+    },
+    {
+      "name": "s-don",
+      "aliases": [],
+      "m3_artist_id": "artist_b0f5ccb5a8246722"
+    },
+    {
+      "name": "sSlowly",
+      "aliases": [],
+      "m3_artist_id": "artist_afa608af224f7c73"
+    },
+    {
+      "name": "saaa",
+      "aliases": [],
+      "m3_artist_id": "artist_b28e4cc1071f4ad0"
+    },
+    {
+      "name": "sabi",
+      "aliases": [],
+      "m3_artist_id": "artist_18a96fb4e49cd0e1"
+    },
+    {
+      "name": "saiushi",
+      "aliases": [],
+      "m3_artist_id": "artist_9efb2b4ea7bd856c"
+    },
+    {
+      "name": "sanmal",
+      "aliases": [],
+      "m3_artist_id": "artist_d2afd25676d3fd7e"
+    },
+    {
+      "name": "satella",
+      "aliases": [],
+      "m3_artist_id": "artist_d69c92cbfee46d95"
+    },
+    {
+      "name": "satie",
+      "aliases": [],
+      "m3_artist_id": "artist_be996c0cb9040efa"
+    },
+    {
+      "name": "saturatedNOMI",
+      "aliases": [],
+      "m3_artist_id": "artist_5814a270a0c08d14"
+    },
+    {
+      "name": "savogy",
+      "aliases": [],
+      "m3_artist_id": "artist_0cd94d47f0d5212c"
+    },
+    {
+      "name": "seatrus",
+      "aliases": [],
+      "m3_artist_id": "artist_0884ddf311b741c5"
+    },
+    {
+      "name": "senyuta.",
+      "aliases": [],
+      "m3_artist_id": "artist_f706ab91262a61fc"
+    },
+    {
+      "name": "shameless.",
+      "aliases": [],
+      "m3_artist_id": "artist_44e0f5d8d41538b7"
+    },
+    {
+      "name": "shapes",
+      "aliases": [],
+      "m3_artist_id": "artist_e729e8617f159df1"
+    },
+    {
+      "name": "shimen",
+      "aliases": [],
+      "m3_artist_id": "artist_a380439db19dc3c6"
+    },
+    {
+      "name": "shinome",
+      "aliases": [
+        "Shinome"
+      ],
+      "m3_artist_id": "artist_fd990cfd64e93e7a"
+    },
+    {
+      "name": "shirahae",
+      "aliases": [],
+      "m3_artist_id": "artist_a411102feafef443"
+    },
+    {
+      "name": "siqlo",
+      "aliases": [],
+      "m3_artist_id": "artist_254bdfac7953f498"
+    },
+    {
+      "name": "sireto",
+      "aliases": [],
+      "m3_artist_id": "artist_bad037d25850bc5a"
+    },
+    {
+      "name": "siromaru",
+      "aliases": [],
+      "m3_artist_id": "artist_ad5ce3cd02d1bbb2"
+    },
+    {
+      "name": "sky_delta",
+      "aliases": [],
+      "m3_artist_id": "artist_5c0923788b8f9afb"
+    },
+    {
+      "name": "skyfss",
+      "aliases": [],
+      "m3_artist_id": "artist_12a0c5bda9e9d60a"
+    },
+    {
+      "name": "so1anew",
+      "aliases": [],
+      "m3_artist_id": "artist_ac5b2c13c5bc4b16"
+    },
+    {
+      "name": "sugosugiii",
+      "aliases": [],
+      "m3_artist_id": "artist_aa48c43760874307"
+    },
+    {
+      "name": "sukehan",
+      "aliases": [],
+      "m3_artist_id": "artist_7b7101cb1668f74a"
+    },
+    {
+      "name": "sutoku",
+      "aliases": [],
+      "m3_artist_id": "artist_1ebd25edfb9c1112"
+    },
+    {
+      "name": "systile",
+      "aliases": [],
+      "m3_artist_id": "artist_6851a2d1e0eac438"
+    },
+    {
+      "name": "t!erra",
+      "aliases": [],
+      "m3_artist_id": "artist_98f3b54e5b2589e2"
+    },
+    {
+      "name": "t+pazolite",
+      "aliases": [],
+      "m3_artist_id": "artist_f63132475823f35a"
+    },
+    {
+      "name": "taqumi",
+      "aliases": [],
+      "m3_artist_id": "artist_4895de00b7040a77"
+    },
+    {
+      "name": "technanon",
+      "aliases": [],
+      "m3_artist_id": "artist_7db3052b6f43114d"
+    },
+    {
+      "name": "tenkayu",
+      "aliases": [],
+      "m3_artist_id": "artist_ded6f13c284f233e"
+    },
+    {
+      "name": "tenko",
+      "aliases": [],
+      "m3_artist_id": "artist_ba53100924f5b8cf"
+    },
+    {
+      "name": "toluc",
+      "aliases": [],
+      "m3_artist_id": "artist_5fb92df3fabcce99"
+    },
+    {
+      "name": "trailmix37",
+      "aliases": [],
+      "m3_artist_id": "artist_c6c7f1e9d5445f51"
+    },
+    {
+      "name": "tsuki",
+      "aliases": [],
+      "m3_artist_id": "artist_e33887a1d6e2a5cf"
+    },
+    {
+      "name": "uma",
+      "aliases": [],
+      "m3_artist_id": "artist_e811eb7830249bae"
+    },
+    {
+      "name": "uno",
+      "aliases": [],
+      "m3_artist_id": "artist_bf0ec3694e122e06"
+    },
+    {
+      "name": "uno(IOSYS)",
+      "aliases": [],
+      "m3_artist_id": "artist_054337af97edd387"
+    },
+    {
+      "name": "uramp",
+      "aliases": [],
+      "m3_artist_id": "artist_e7c97e1432c2a17b"
+    },
+    {
+      "name": "utzbo",
+      "aliases": [],
+      "m3_artist_id": "artist_d8188b86d51cf20a"
+    },
+    {
+      "name": "vjorka",
+      "aliases": [],
+      "m3_artist_id": "artist_b69e4a001e8ed9a5"
+    },
+    {
+      "name": "wa.",
+      "aliases": [],
+      "m3_artist_id": "artist_5ade30274a6ee4ec"
+    },
+    {
+      "name": "watch",
+      "aliases": [],
+      "m3_artist_id": "artist_baed831623943be3"
+    },
+    {
+      "name": "wrashi",
+      "aliases": [],
+      "m3_artist_id": "artist_419beb1597f59a5e"
+    },
+    {
+      "name": "xfchiba",
+      "aliases": [],
+      "m3_artist_id": "artist_cdb4c1df883554f2"
+    },
+    {
+      "name": "xtraspicy",
+      "aliases": [],
+      "m3_artist_id": "artist_84ad6e67aa45d636"
+    },
+    {
+      "name": "xxxlolxxx",
+      "aliases": [],
+      "m3_artist_id": "artist_5ed2af1ce138930c"
+    },
+    {
+      "name": "ya2mi",
+      "aliases": [],
+      "m3_artist_id": "artist_acf3384c3f7215d5"
+    },
+    {
+      "name": "yeowool",
+      "aliases": [],
+      "m3_artist_id": "artist_3e7de633bebd1a55"
+    },
+    {
+      "name": "yoei",
+      "aliases": [],
+      "m3_artist_id": "artist_18a49c05a1c24aae"
+    },
+    {
+      "name": "yomoha",
+      "aliases": [],
+      "m3_artist_id": "artist_9a8cf11adb4ed012"
+    },
+    {
+      "name": "yosumi",
+      "aliases": [],
+      "m3_artist_id": "artist_1946e15ef9edcaf9"
+    },
+    {
+      "name": "you",
+      "aliases": [],
+      "m3_artist_id": "artist_bb0347a468d97e98"
+    },
+    {
+      "name": "youmi",
+      "aliases": [],
+      "m3_artist_id": "artist_15699811292a188e"
+    },
+    {
+      "name": "yoxtellar",
+      "aliases": [],
+      "m3_artist_id": "artist_05b29eee6930cbc8"
+    },
+    {
+      "name": "yualith",
+      "aliases": [],
+      "m3_artist_id": "artist_2a1b8704444ad2c4"
+    },
+    {
+      "name": "yuigot",
+      "aliases": [],
+      "m3_artist_id": "artist_95542ac2aca873dc"
+    },
+    {
+      "name": "yuki.",
+      "aliases": [],
+      "m3_artist_id": "artist_4ce82f03b0facd91"
+    },
+    {
+      "name": "yusi.",
+      "aliases": [],
+      "m3_artist_id": "artist_be4a48428b909088"
+    },
+    {
+      "name": "yuugen6",
+      "aliases": [],
+      "m3_artist_id": "artist_90883dbfe916a59d"
+    },
+    {
+      "name": "yx2",
+      "aliases": [],
+      "m3_artist_id": "artist_2a7dbf415dae73f9"
+    },
+    {
+      "name": "zheeq",
+      "aliases": [],
+      "m3_artist_id": "artist_c50d7e189c729e2b"
+    },
+    {
+      "name": "zot!k",
+      "aliases": [],
+      "m3_artist_id": "artist_e0b6c6dd9a37642d"
+    },
+    {
+      "name": "ÉtudE",
+      "aliases": [],
+      "m3_artist_id": "artist_6a2e05117c2b5e4a"
+    },
+    {
+      "name": "πL",
+      "aliases": [],
+      "m3_artist_id": "artist_f2b03838e050e305"
+    },
+    {
+      "name": "Иagi",
+      "aliases": [],
+      "m3_artist_id": "artist_d67261b5c8664702"
+    },
+    {
+      "name": "∀S∀",
+      "aliases": [],
+      "m3_artist_id": "artist_c9778e8723f3769a"
+    },
+    {
+      "name": "■37",
+      "aliases": [],
+      "m3_artist_id": "artist_2dc5e78fff10c347"
+    },
+    {
+      "name": "ああああ",
+      "aliases": [],
+      "m3_artist_id": "artist_601ebe0fb7ce9dc8"
+    },
+    {
+      "name": "あずきねこp",
+      "aliases": [],
+      "m3_artist_id": "artist_ddf98bc7659a26fb"
+    },
+    {
+      "name": "あたたかい水族館",
+      "aliases": [],
+      "m3_artist_id": "artist_ef07276b981a17d5"
+    },
+    {
+      "name": "あるふぁ",
+      "aliases": [],
+      "m3_artist_id": "artist_8651d9accb0df2b2"
+    },
+    {
+      "name": "あんふぃに",
+      "aliases": [],
+      "m3_artist_id": "artist_11b710cec11c8e1f"
+    },
+    {
+      "name": "いちいいず",
+      "aliases": [],
+      "m3_artist_id": "artist_df890116819ee72e"
+    },
+    {
+      "name": "いのうつはSA",
+      "aliases": [],
+      "m3_artist_id": "artist_0eac5499e1af242b"
+    },
+    {
+      "name": "お柴鉱脈",
+      "aliases": [],
+      "m3_artist_id": "artist_2b16e6bed8401635"
+    },
+    {
+      "name": "かきもち",
+      "aliases": [],
+      "m3_artist_id": "artist_680b4483aeb7bb21"
+    },
+    {
+      "name": "かげぴーぼーる",
+      "aliases": [],
+      "m3_artist_id": "artist_d71e08606ac28211"
+    },
+    {
+      "name": "かそかそ",
+      "aliases": [],
+      "m3_artist_id": "artist_94cc0c6bbbcdf124"
+    },
+    {
+      "name": "かたぎり",
+      "aliases": [],
+      "m3_artist_id": "artist_465575beb9264b65"
+    },
+    {
+      "name": "かたほとり",
+      "aliases": [],
+      "m3_artist_id": "artist_1614aab6ddf22d7c"
+    },
+    {
+      "name": "かなてー",
+      "aliases": [],
+      "m3_artist_id": "artist_bc457528dc280278"
+    },
+    {
+      "name": "かにパ",
+      "aliases": [],
+      "m3_artist_id": "artist_2e891cf1dfcabd9e"
+    },
+    {
+      "name": "かねこちはる",
+      "aliases": [],
+      "m3_artist_id": "artist_768a472f89759c6b"
+    },
+    {
+      "name": "かぼちゃ",
+      "aliases": [],
+      "m3_artist_id": "artist_80997f9b9b6970c5"
+    },
+    {
+      "name": "かると",
+      "aliases": [],
+      "m3_artist_id": "artist_5f3925a6288a60e9"
+    },
+    {
+      "name": "がむ",
+      "aliases": [],
+      "m3_artist_id": "artist_6202013affc700e8"
+    },
+    {
+      "name": "くらびすた",
+      "aliases": [],
+      "m3_artist_id": "artist_1d26c8869d1a2471"
+    },
+    {
+      "name": "くるみつは",
+      "aliases": [],
+      "m3_artist_id": "artist_48fbc4f2ab2ab2d2"
+    },
+    {
+      "name": "けふぃー",
+      "aliases": [],
+      "m3_artist_id": "artist_fd8695c5fc945eee"
+    },
+    {
+      "name": "さいきふの",
+      "aliases": [],
+      "m3_artist_id": "artist_ea73057acdb474fe"
+    },
+    {
+      "name": "さのみきひと",
+      "aliases": [],
+      "m3_artist_id": "artist_84563a9641817ff0"
+    },
+    {
+      "name": "しなちくシステム",
+      "aliases": [],
+      "m3_artist_id": "artist_c62e7ca7817f8d7f"
+    },
+    {
+      "name": "しの",
+      "aliases": [],
+      "m3_artist_id": "artist_76bd01be3713621c"
+    },
+    {
+      "name": "しゅーりん",
+      "aliases": [],
+      "m3_artist_id": "artist_d90b5210221a92c9"
+    },
+    {
+      "name": "しょこら",
+      "aliases": [],
+      "m3_artist_id": "artist_499afeece33dd620"
+    },
+    {
+      "name": "しーけー",
+      "aliases": [],
+      "m3_artist_id": "artist_7b0f33437c537716"
+    },
+    {
+      "name": "すいかマグノリア散るちゃん",
+      "aliases": [],
+      "m3_artist_id": "artist_5a116f54e36d70da"
+    },
+    {
+      "name": "すてらべえ",
+      "aliases": [],
+      "m3_artist_id": "artist_ebbe4016609f172a"
+    },
+    {
+      "name": "たかにゃと",
+      "aliases": [],
+      "m3_artist_id": "artist_f2d9d16060f2a344"
+    },
+    {
+      "name": "たたまれ",
+      "aliases": [],
+      "m3_artist_id": "artist_7f8cdc18cb309f7a"
+    },
+    {
+      "name": "たまごの照り焼き",
+      "aliases": [],
+      "m3_artist_id": "artist_2a2d3ae648dac104"
+    },
+    {
+      "name": "つぐ",
+      "aliases": [],
+      "m3_artist_id": "artist_d6ba648f0602b413"
+    },
+    {
+      "name": "つる",
+      "aliases": [],
+      "m3_artist_id": "artist_313b5076033022b6"
+    },
+    {
+      "name": "とむとむーと",
+      "aliases": [],
+      "m3_artist_id": "artist_72ba7223aaa8c28d"
+    },
+    {
+      "name": "とーず",
+      "aliases": [],
+      "m3_artist_id": "artist_90543e0b37ea4241"
+    },
+    {
+      "name": "ないきすと！",
+      "aliases": [],
+      "m3_artist_id": "artist_2354cabceeafca86"
+    },
+    {
+      "name": "なぐも りず",
+      "aliases": [],
+      "m3_artist_id": "artist_fba413ee05f2138f"
+    },
+    {
+      "name": "なまとしば",
+      "aliases": [],
+      "m3_artist_id": "artist_cbd9a8371b4c40a2"
+    },
+    {
+      "name": "なみぐる",
+      "aliases": [],
+      "m3_artist_id": "artist_6fb0f3f8d7183f36"
+    },
+    {
+      "name": "ねぎまさや",
+      "aliases": [],
+      "m3_artist_id": "artist_d26a1d3d7276ab34"
+    },
+    {
+      "name": "ねこまぐろ！",
+      "aliases": [],
+      "m3_artist_id": "artist_16ba816ad24ac60b"
+    },
+    {
+      "name": "ねこみりん",
+      "aliases": [],
+      "m3_artist_id": "artist_e691c300087f882c"
+    },
+    {
+      "name": "ねんね",
+      "aliases": [],
+      "m3_artist_id": "artist_5dd38e16c12d6fd1"
+    },
+    {
+      "name": "のえず",
+      "aliases": [],
+      "m3_artist_id": "artist_0881b0b9c563b14c"
+    },
+    {
+      "name": "のとを",
+      "aliases": [],
+      "m3_artist_id": "artist_d3309ffca4ebfa37"
+    },
+    {
+      "name": "はざめ",
+      "aliases": [],
+      "m3_artist_id": "artist_416864ed02ef5ab1"
+    },
+    {
+      "name": "ひやむぎこむぎ。",
+      "aliases": [],
+      "m3_artist_id": "artist_9efa07d37a0eebc9"
+    },
+    {
+      "name": "ひゅ〜ぶ",
+      "aliases": [],
+      "m3_artist_id": "artist_157429f4f9d064c0"
+    },
+    {
+      "name": "ぴこんちゃん",
+      "aliases": [],
+      "m3_artist_id": "artist_68c68eead8a22440"
+    },
+    {
+      "name": "ふろむ",
+      "aliases": [],
+      "m3_artist_id": "artist_0ec1ec92794df1fd"
+    },
+    {
+      "name": "ぺてら",
+      "aliases": [],
+      "m3_artist_id": "artist_707e6bb7a4d409b1"
+    },
+    {
+      "name": "ぺんとら",
+      "aliases": [],
+      "m3_artist_id": "artist_e32936d512915a97"
+    },
+    {
+      "name": "ほいっぷ",
+      "aliases": [],
+      "m3_artist_id": "artist_aa83e3ffd610cfaf"
+    },
+    {
+      "name": "ぽみ",
+      "aliases": [],
+      "m3_artist_id": "artist_7ee073b634c770f3"
+    },
+    {
+      "name": "まがん",
+      "aliases": [],
+      "m3_artist_id": "artist_5215070dcc63adc9"
+    },
+    {
+      "name": "まさかけー",
+      "aliases": [],
+      "m3_artist_id": "artist_442a3d4306fb44bc"
+    },
+    {
+      "name": "まじめ",
+      "aliases": [],
+      "m3_artist_id": "artist_787fb6df637613b3"
+    },
+    {
+      "name": "ますかっと",
+      "aliases": [],
+      "m3_artist_id": "artist_916988e9faa29633"
+    },
+    {
+      "name": "まより",
+      "aliases": [],
+      "m3_artist_id": "artist_7877e3c6cc603bcb"
+    },
+    {
+      "name": "まるいし",
+      "aliases": [],
+      "m3_artist_id": "artist_5489a7424c116e80"
+    },
+    {
+      "name": "みつあくま",
+      "aliases": [],
+      "m3_artist_id": "artist_f273b4dc9bbe31e0"
+    },
+    {
+      "name": "もくろ",
+      "aliases": [],
+      "m3_artist_id": "artist_376533f3e5fbeef7"
+    },
+    {
+      "name": "やま",
+      "aliases": [],
+      "m3_artist_id": "artist_47c5e1a8b9f3dd16"
+    },
+    {
+      "name": "ゆーじ",
+      "aliases": [],
+      "m3_artist_id": "artist_fff8d50f23f93d52"
+    },
+    {
+      "name": "ようだよ",
+      "aliases": [],
+      "m3_artist_id": "artist_b927d1b36f620aa7"
+    },
+    {
+      "name": "らきあ",
+      "aliases": [],
+      "m3_artist_id": "artist_582f197add2dbc15"
+    },
+    {
+      "name": "るる",
+      "aliases": [],
+      "m3_artist_id": "artist_609d7f408fb95a15"
+    },
+    {
+      "name": "わむわむ",
+      "aliases": [],
+      "m3_artist_id": "artist_9ed3399b89048c99"
+    },
+    {
+      "name": "をっをを",
+      "aliases": [],
+      "m3_artist_id": "artist_ed3aeafce15a87a7"
+    },
+    {
+      "name": "をとは",
+      "aliases": [],
+      "m3_artist_id": "artist_02bf1a7d56f639b9"
+    },
+    {
+      "name": "アメリカ民謡研究会",
+      "aliases": [],
+      "m3_artist_id": "artist_28d9f902df0c9292"
+    },
+    {
+      "name": "アルノ",
+      "aliases": [],
+      "m3_artist_id": "artist_5b445ef3dd2be9df"
+    },
+    {
+      "name": "イマニシ",
+      "aliases": [],
+      "m3_artist_id": "artist_d5be4a75fc1d5f6c"
+    },
+    {
+      "name": "オミ織葉",
+      "aliases": [],
+      "m3_artist_id": "artist_45fc86d99c1ecf92"
+    },
+    {
+      "name": "クエーバー",
+      "aliases": [],
+      "m3_artist_id": "artist_7f5569c5b659e6ba"
+    },
+    {
+      "name": "クシャミィ",
+      "aliases": [],
+      "m3_artist_id": "artist_3c5504f66f7e6089"
+    },
+    {
+      "name": "グヮカモレ",
+      "aliases": [],
+      "m3_artist_id": "artist_256d825788d98a4f"
+    },
+    {
+      "name": "ケツ",
+      "aliases": [],
+      "m3_artist_id": "artist_4a379be922d63b4b"
+    },
+    {
+      "name": "タチマナユ",
+      "aliases": [],
+      "m3_artist_id": "artist_7d940ac9fb711fd6"
+    },
+    {
+      "name": "トマトさんたち",
+      "aliases": [],
+      "m3_artist_id": "artist_adbd32948964d4bc"
+    },
+    {
+      "name": "ハレトキドキ",
+      "aliases": [],
+      "m3_artist_id": "artist_ae4c42c38a1e1c6c"
+    },
+    {
+      "name": "ボルナエ",
+      "aliases": [],
+      "m3_artist_id": "artist_61c72d6173810aae"
+    },
+    {
+      "name": "マドロミ",
+      "aliases": [],
+      "m3_artist_id": "artist_75c8c79118ae9532"
+    },
+    {
+      "name": "ミフメイ",
+      "aliases": [],
+      "m3_artist_id": "artist_bd26fe4ed552a64f"
+    },
+    {
+      "name": "モ葛",
+      "aliases": [],
+      "m3_artist_id": "artist_2166b51aee61d945"
+    },
+    {
+      "name": "ヨノ",
+      "aliases": [],
+      "m3_artist_id": "artist_ac3522d46c3a22e3"
+    },
+    {
+      "name": "一斗缶",
+      "aliases": [],
+      "m3_artist_id": "artist_48d6b3f6baa346ff"
+    },
+    {
+      "name": "一葉",
+      "aliases": [],
+      "m3_artist_id": "artist_3525abcb25426a85"
+    },
+    {
+      "name": "三角コナ",
+      "aliases": [],
+      "m3_artist_id": "artist_dec7abd16a9a0367"
+    },
+    {
+      "name": "丹下風",
+      "aliases": [],
+      "m3_artist_id": "artist_63d82cadc5a2b78c"
+    },
+    {
+      "name": "乙女†Sageve",
+      "aliases": [],
+      "m3_artist_id": "artist_5131346fa417975a"
+    },
+    {
+      "name": "佐藤乃子",
+      "aliases": [],
+      "m3_artist_id": "artist_2847dabd8a05b473"
+    },
+    {
+      "name": "佐藤塩",
+      "aliases": [],
+      "m3_artist_id": "artist_f0bf9cece7bbcd1b"
+    },
+    {
+      "name": "佐藤真也",
+      "aliases": [],
+      "m3_artist_id": "artist_9a07b174f1e99638"
+    },
+    {
+      "name": "佐藤貴文",
+      "aliases": [],
+      "m3_artist_id": "artist_075827753b3ce2fd"
+    },
+    {
+      "name": "佐行声鳴",
+      "aliases": [],
+      "m3_artist_id": "artist_45b476618e3ab85d"
+    },
+    {
+      "name": "傘原けえ",
+      "aliases": [],
+      "m3_artist_id": "artist_3e68d7457592c57f"
+    },
+    {
+      "name": "初音ミク",
+      "aliases": [
+        "Hatsune Miku"
+      ],
+      "m3_artist_id": "artist_1ac87ae99623b2c3"
+    },
+    {
+      "name": "前澤",
+      "aliases": [
+        "maezawa"
+      ],
+      "m3_artist_id": "artist_562b4f4c5b81f775"
+    },
+    {
+      "name": "北大DTM作曲サークル",
+      "aliases": [],
+      "m3_artist_id": "artist_b8bc8c5eebb696b1"
+    },
+    {
+      "name": "卯月となり",
+      "aliases": [],
+      "m3_artist_id": "artist_cce2433940c8fa35"
+    },
+    {
+      "name": "原口沙輔",
+      "aliases": [],
+      "m3_artist_id": "artist_e5c0adced4116a72"
+    },
+    {
+      "name": "名乃ぱんち",
+      "aliases": [],
+      "m3_artist_id": "artist_c5719549f5484c34"
+    },
+    {
+      "name": "国士無双",
+      "aliases": [],
+      "m3_artist_id": "artist_49271ba44acc319d"
+    },
+    {
+      "name": "夜丹れにや",
+      "aliases": [],
+      "m3_artist_id": "artist_93028ad19ded6470"
+    },
+    {
+      "name": "夜間同好会",
+      "aliases": [],
+      "m3_artist_id": "artist_7f1ddd7e1ab7a0f5"
+    },
+    {
+      "name": "大瀬良あい",
+      "aliases": [],
+      "m3_artist_id": "artist_7c2ef958f62c65c6"
+    },
+    {
+      "name": "天乃おつげ",
+      "aliases": [],
+      "m3_artist_id": "artist_ec10e966b93c75a7"
+    },
+    {
+      "name": "天海ちはま",
+      "aliases": [],
+      "m3_artist_id": "artist_39c208a69d568ac8"
+    },
+    {
+      "name": "如月結愛",
+      "aliases": [],
+      "m3_artist_id": "artist_1a9388abb7631ab1"
+    },
+    {
+      "name": "如月青藍",
+      "aliases": [],
+      "m3_artist_id": "artist_53cc62e156840f62"
+    },
+    {
+      "name": "宇宙★海月",
+      "aliases": [],
+      "m3_artist_id": "artist_19ef39b164be9923"
+    },
+    {
+      "name": "屋根裏にズッキーニ",
+      "aliases": [],
+      "m3_artist_id": "artist_4731cc6b8f76cd9c"
+    },
+    {
+      "name": "庭師",
+      "aliases": [],
+      "m3_artist_id": "artist_7cebac9a2ffb240b"
+    },
+    {
+      "name": "律薪名",
+      "aliases": [],
+      "m3_artist_id": "artist_47810ca1cebd30d7"
+    },
+    {
+      "name": "後藤涼輔",
+      "aliases": [],
+      "m3_artist_id": "artist_d12bcd26c2f0742b"
+    },
+    {
+      "name": "悠式茶屋",
+      "aliases": [],
+      "m3_artist_id": "artist_42c9835b1e5f7f42"
+    },
+    {
+      "name": "打打だいず",
+      "aliases": [],
+      "m3_artist_id": "artist_246daf750d8b4501"
+    },
+    {
+      "name": "新目鳥",
+      "aliases": [],
+      "m3_artist_id": "artist_968a0c1d852c6b0c"
+    },
+    {
+      "name": "星野奏子",
+      "aliases": [],
+      "m3_artist_id": "artist_63a8084ce4901e05"
+    },
+    {
+      "name": "星銀乃丈",
+      "aliases": [],
+      "m3_artist_id": "artist_fa61842be921e434"
+    },
+    {
+      "name": "暗黒最強兄弟",
+      "aliases": [],
+      "m3_artist_id": "artist_f57cf6f4148e9127"
+    },
+    {
+      "name": "月乃",
+      "aliases": [],
+      "m3_artist_id": "artist_5f95956f205fe9fa"
+    },
+    {
+      "name": "月城紅葉",
+      "aliases": [],
+      "m3_artist_id": "artist_38dd8259a10a8ca1"
+    },
+    {
+      "name": "栄免建設",
+      "aliases": [],
+      "m3_artist_id": "artist_8f8fdf7422df88ee"
+    },
+    {
+      "name": "棗いつき",
+      "aliases": [],
+      "m3_artist_id": "artist_99f2a7039bed9c4f"
+    },
+    {
+      "name": "森本貴大",
+      "aliases": [],
+      "m3_artist_id": "artist_4662358813720fa5"
+    },
+    {
+      "name": "泡沫",
+      "aliases": [],
+      "m3_artist_id": "artist_80ed49d9841e5392"
+    },
+    {
+      "name": "湯煎白雪",
+      "aliases": [],
+      "m3_artist_id": "artist_0efdf216f441dc7d"
+    },
+    {
+      "name": "溝口ゆうま",
+      "aliases": [],
+      "m3_artist_id": "artist_82f9ddc502bf5678"
+    },
+    {
+      "name": "濵田有共",
+      "aliases": [],
+      "m3_artist_id": "artist_f09c626a5bcd476d"
+    },
+    {
+      "name": "瀬名水紀",
+      "aliases": [],
+      "m3_artist_id": "artist_b99f1a5627ffeb40"
+    },
+    {
+      "name": "瑶基",
+      "aliases": [],
+      "m3_artist_id": "artist_1b679e89d9a2e041"
+    },
+    {
+      "name": "真島ゆろ",
+      "aliases": [],
+      "m3_artist_id": "artist_e1bf75d5e981c0b2"
+    },
+    {
+      "name": "稲狐夜憑宵",
+      "aliases": [],
+      "m3_artist_id": "artist_6f1f751a50746523"
+    },
+    {
+      "name": "空白void",
+      "aliases": [],
+      "m3_artist_id": "artist_2a1895b7cc4c1ae8"
+    },
+    {
+      "name": "立秋",
+      "aliases": [],
+      "m3_artist_id": "artist_33f3ba53375eeddf"
+    },
+    {
+      "name": "立秋 feat.ちょこ",
+      "aliases": [],
+      "m3_artist_id": "artist_d1c81a1926d47922"
+    },
+    {
+      "name": "織井辺コフィ",
+      "aliases": [],
+      "m3_artist_id": "artist_52148009f5d2ee47"
+    },
+    {
+      "name": "群るる見る",
+      "aliases": [],
+      "m3_artist_id": "artist_c3c6c10b982074cd"
+    },
+    {
+      "name": "芥田レンリ",
+      "aliases": [
+        "renriactor"
+      ],
+      "m3_artist_id": "artist_b26b1170c3ba8541"
+    },
+    {
+      "name": "苔原",
+      "aliases": [],
+      "m3_artist_id": "artist_f45256ebe32487f5"
+    },
+    {
+      "name": "藍月なくる",
+      "aliases": [],
+      "m3_artist_id": "artist_ca619b57e29c8c74"
+    },
+    {
+      "name": "藤屋",
+      "aliases": [],
+      "m3_artist_id": "artist_7ecb9c75b5b8c8c5"
+    },
+    {
+      "name": "藻入り",
+      "aliases": [],
+      "m3_artist_id": "artist_6ff2725d59e3f46c"
+    },
+    {
+      "name": "蜂鳥あみ太=4号",
+      "aliases": [],
+      "m3_artist_id": "artist_f2c23227e0ba3117"
+    },
+    {
+      "name": "調声",
+      "aliases": [],
+      "m3_artist_id": "artist_9e602548830eada1"
+    },
+    {
+      "name": "赤虎",
+      "aliases": [],
+      "m3_artist_id": "artist_3f38ca17b9ab5728"
+    },
+    {
+      "name": "長谷川迷子",
+      "aliases": [],
+      "m3_artist_id": "artist_93959a2a5191e9b7"
+    },
+    {
+      "name": "阿野",
+      "aliases": [],
+      "m3_artist_id": "artist_06a6af57c323a9f5"
+    },
+    {
+      "name": "雨熊",
+      "aliases": [],
+      "m3_artist_id": "artist_60ac5417f628dd98"
+    },
+    {
+      "name": "零進法",
+      "aliases": [],
+      "m3_artist_id": "artist_f768d8f469f3202a"
+    },
+    {
+      "name": "駄々子",
+      "aliases": [],
+      "m3_artist_id": "artist_66fb3b210a3620ae"
+    },
+    {
+      "name": "高橋ワタル",
+      "aliases": [],
+      "m3_artist_id": "artist_e302f475991a4446"
+    },
+    {
+      "name": "髥",
+      "aliases": [],
+      "m3_artist_id": "artist_0c71505cdec45cc8"
+    },
+    {
+      "name": "髥莏",
+      "aliases": [],
+      "m3_artist_id": "artist_57470719130bdbe0"
+    },
+    {
+      "name": "鹿あるく",
+      "aliases": [],
+      "m3_artist_id": "artist_c4bb34c69eefaa96"
+    },
+    {
+      "name": "黒魔",
+      "aliases": [
+        "Chroma",
+        "クロマ",
+        "c_h_r_o_m_a"
+      ],
+      "m3_artist_id": "artist_b044cbf693ff3eee"
+    },
+    {
+      "name": "muzik servant",
+      "aliases": [],
+      "m3_artist_id": "artist_muzik_servant"
+    },
+    {
+      "name": "poco.exe",
+      "aliases": [
+        "本体: @Yukino4224"
+      ],
+      "m3_artist_id": "artist_9988b492048b455c"
+    },
+    {
+      "name": "gaze//he's me",
+      "aliases": [],
+      "m3_artist_id": "artist_dac28429fc87ca9f"
+    },
+    {
+      "name": "YUC'e",
+      "aliases": [
+        "ゆーしえ",
+        "YUCe"
+      ],
+      "m3_artist_id": "artist_70a85258f3ba812d"
+    },
+    {
+      "name": "Inverted Silence",
+      "aliases": [
+        "Klare",
+        "Midas"
+      ],
+      "m3_artist_id": "artist_ce68b015566bb57e"
+    },
+    {
+      "name": "Shady Cicada",
+      "aliases": [],
+      "m3_artist_id": "artist_3125f37c7c046378"
+    },
+    {
+      "name": "StrollZ",
+      "aliases": [
+        "ストロールズ"
+      ],
+      "m3_artist_id": "artist_a6eba99c4c82cd6a"
+    },
+    {
+      "name": "しあの",
+      "aliases": [
+        "siano"
+      ],
+      "m3_artist_id": "artist_52daeab1c1d1462e"
+    },
+    {
+      "name": "iyan D1KE",
+      "aliases": [
+        "Iyan Dike"
+      ],
+      "m3_artist_id": "artist_5a72eae6697bd3f0"
+    },
+    {
+      "name": "花隈千冬",
+      "aliases": [
+        "Chifuyu Hanakuma"
+      ],
+      "m3_artist_id": "artist_1292a1f318a19f42"
+    },
+    {
+      "name": "Eye",
+      "aliases": [
+        "アイ"
+      ],
+      "m3_artist_id": "artist_ae160b4691f9e79b"
+    },
+    {
+      "name": "yowanecity",
+      "aliases": [
+        "弱音city"
+      ],
+      "m3_artist_id": "artist_20044c831d048a2b"
+    },
+    {
+      "name": "KOTONOHOUSE",
+      "aliases": [],
+      "m3_artist_id": "artist_55e53614c3d2be53"
+    },
+    {
+      "name": "zensen",
+      "aliases": [],
+      "m3_artist_id": "artist_5a8a0ae20a2b5aed"
+    },
+    {
+      "name": "d.j.ァネイロ",
+      "aliases": [
+        "d.j.aneiro",
+        "d.j.アネイロ"
+      ],
+      "m3_artist_id": "artist_8510227b50be39f3"
+    },
+    {
+      "name": "TeddyLoid",
+      "aliases": [],
+      "m3_artist_id": "artist_9aff67df4a30c641"
+    },
+    {
+      "name": "Fushi",
+      "aliases": [],
+      "m3_artist_id": "artist_2b1ddbe32208c665"
+    },
+    {
+      "name": "ンバヂ",
+      "aliases": [],
+      "m3_artist_id": "artist_a64e04d7490f5474"
+    },
+    {
+      "name": "音街ウナ",
+      "aliases": [
+        "Otomachi Una"
+      ],
+      "m3_artist_id": "artist_592d0fb463aef0eb"
+    },
+    {
+      "name": "水槽",
+      "aliases": [
+        "suisoh",
+        "Suisoh"
+      ],
+      "m3_artist_id": "artist_ddf95339c742d360"
+    },
+    {
+      "name": "PSYQUI",
+      "aliases": [],
+      "m3_artist_id": "artist_cda733d32cfb9690"
+    },
+    {
+      "name": "やなぎなぎ",
+      "aliases": [
+        "Yanaginagi",
+        "yanaginagi"
+      ],
+      "m3_artist_id": "artist_35a318f12cc037ee"
+    },
+    {
+      "name": "中恵光城",
+      "aliases": [
+        "Mitsuki Nakae"
+      ],
+      "m3_artist_id": "artist_2a552892424fc63c"
+    },
+    {
+      "name": "折倉俊則",
+      "aliases": [
+        "Toshinori Arikura"
+      ],
+      "m3_artist_id": "artist_541446c696b589e5"
+    },
+    {
+      "name": "流歌",
+      "aliases": [
+        "Ruka"
+      ],
+      "m3_artist_id": "artist_88e1c2882ca4f4d0"
+    },
+    {
+      "name": "irohanibeats",
+      "aliases": [
+        "RENKA chan",
+        "Endo Hiroto"
+      ],
+      "m3_artist_id": "artist_f98e3d0020ed30b7"
+    },
+    {
+      "name": "FROZEN QUALIA",
+      "aliases": [],
+      "m3_artist_id": "artist_09ce7e36578cdb12"
+    },
+    {
+      "name": "夢乃ゆき",
+      "aliases": [
+        "Yuki Yumeno"
+      ],
+      "m3_artist_id": "artist_cf1aa60cb6eb5c44"
+    },
+    {
+      "name": "kazuki",
+      "aliases": [
+        "Kazuki Iwahashi",
+        "岩橋一樹"
+      ],
+      "m3_artist_id": "artist_afe1c36ae219958f"
+    },
+    {
+      "name": "G.O.D.",
+      "aliases": [
+        "GUITARISTS ON DEMAND",
+        "Guitarists On Demand"
+      ],
+      "m3_artist_id": "artist_b413bc8328fa11a3"
+    },
+    {
+      "name": "Masahiro \"Godspeed\" Aoki",
+      "aliases": [
+        "Godspeed",
+        "青木征洋",
+        "Masahiro Aoki"
+      ],
+      "m3_artist_id": "artist_f8b6f90556d535dc"
+    },
+    {
+      "name": "Seda",
+      "aliases": [],
+      "m3_artist_id": "artist_4840cae9571c1b90"
+    },
+    {
+      "name": "Zenko Mitsuya",
+      "aliases": [
+        "三ツ矢禅晃"
+      ],
+      "m3_artist_id": "artist_a22444f2d51d9c77"
+    },
+    {
+      "name": "AZ",
+      "aliases": [],
+      "m3_artist_id": "artist_546a9a80eb981c7f"
+    },
+    {
+      "name": "JIRO",
+      "aliases": [],
+      "m3_artist_id": "artist_5900ab412a8585a3"
+    },
+    {
+      "name": "Ash inoue",
+      "aliases": [
+        "井上 篤",
+        "Atsushi Inoue"
+      ],
+      "m3_artist_id": "artist_c3c800c2c54ada03"
+    },
+    {
+      "name": "Alfie Bradic",
+      "aliases": [],
+      "m3_artist_id": "artist_aca5b595d56a0608"
+    },
+    {
+      "name": "Satoshi Oka",
+      "aliases": [
+        "岡 聡志"
+      ],
+      "m3_artist_id": "artist_51eb0560b425d030"
+    },
+    {
+      "name": "Hiroki Fujimoto",
+      "aliases": [
+        "vogue",
+        "藤本大樹"
+      ],
+      "m3_artist_id": "artist_be02dabaa0b4ae42"
+    },
+    {
+      "name": "Satoshi Setsune",
+      "aliases": [
+        "setsat",
+        "雪根智史"
+      ],
+      "m3_artist_id": "artist_8dc8a51e420a6f48"
+    },
+    {
+      "name": "JungMato",
+      "aliases": [],
+      "m3_artist_id": "artist_7e28f939e6a0801e"
+    },
+    {
+      "name": "大和",
+      "aliases": [
+        "Yamato",
+        "大和(Yamato)"
+      ],
+      "m3_artist_id": "artist_242873e8b009b015"
+    },
+    {
+      "name": "Mitsuyo",
+      "aliases": [],
+      "m3_artist_id": "artist_9ea612b28f57b38f"
+    },
+    {
+      "name": "Hmt2",
+      "aliases": [
+        "ハマタツ",
+        "HAMA"
+      ],
+      "m3_artist_id": "artist_1a90db60c7f6b155"
+    },
+    {
+      "name": "春流",
+      "aliases": [],
+      "m3_artist_id": "artist_256092b26aa5c3ae"
+    },
+    {
+      "name": "Yus",
+      "aliases": [
+        "ユス"
+      ],
+      "m3_artist_id": "artist_b027d4cd4438879b"
+    },
+    {
+      "name": "園田優",
+      "aliases": [],
+      "m3_artist_id": "artist_a50204d40c147204"
+    },
+    {
+      "name": "Dokuwaki",
+      "aliases": [],
+      "m3_artist_id": "artist_4bc8b0432259fabc"
+    },
+    {
+      "name": "Aoto",
+      "aliases": [],
+      "m3_artist_id": "artist_139904909eab4655"
+    },
+    {
+      "name": "瀬乃一郎",
+      "aliases": [],
+      "m3_artist_id": "artist_8de98222cd9084fb"
+    },
+    {
+      "name": "KaNa",
+      "aliases": [
+        "KaNa (@kanaijuin)"
+      ],
+      "m3_artist_id": "artist_82a167438be08bbd"
+    },
+    {
+      "name": "HAPPYMACHINE",
+      "aliases": [],
+      "m3_artist_id": "artist_598d367d682abc7f"
+    },
+    {
+      "name": "梨雛",
+      "aliases": [],
+      "m3_artist_id": "artist_21e708d93bf0890d"
+    },
+    {
+      "name": "隣町本舗",
+      "aliases": [
+        "Tonarimachi Honpo"
+      ],
+      "m3_artist_id": "artist_bad3a64378f4644d"
+    },
+    {
+      "name": "Mothtek",
+      "aliases": [],
+      "m3_artist_id": "artist_4c32da7aa82035f2"
+    },
+    {
+      "name": "Hardestboy",
+      "aliases": [],
+      "m3_artist_id": "artist_2b89f348727dea49"
+    },
+    {
+      "name": "Hi-Rose",
+      "aliases": [],
+      "m3_artist_id": "artist_66293ebe8bc9e7c6"
+    },
+    {
+      "name": "Dustvoxx",
+      "aliases": [],
+      "m3_artist_id": "artist_341b4f41e8fa52e0"
+    },
+    {
+      "name": "Sculptakt",
+      "aliases": [],
+      "m3_artist_id": "artist_078a5735e5cd9142"
+    },
+    {
+      "name": "重音テト",
+      "aliases": [
+        "Kasane Teto",
+        "Teto"
+      ],
+      "m3_artist_id": "artist_1122e7c11a17c61d"
+    },
+    {
+      "name": "月音",
+      "aliases": [],
+      "m3_artist_id": "artist_9b4f259291fb48f7"
+    },
+    {
+      "name": "Pasqual",
+      "aliases": [],
+      "m3_artist_id": "artist_296c14883fc7486f"
+    },
+    {
+      "name": "tueks",
+      "aliases": [
+        "ツエクス",
+        "tueks Products"
+      ],
+      "m3_artist_id": "artist_c45cd73b88097102"
+    },
+    {
+      "name": "こな KonaDrop",
+      "aliases": [
+        "こな",
+        "KonaDrop",
+        "ふくたらう"
+      ],
+      "m3_artist_id": "artist_bc0f6f8e992b5b38"
+    },
+    {
+      "name": "太田裕哥",
+      "aliases": [],
+      "m3_artist_id": "artist_c53da1409cb7f9c6"
+    },
+    {
+      "name": "to_den",
+      "aliases": [],
+      "m3_artist_id": "artist_2d997398217694bc"
+    },
+    {
+      "name": "xion kohinata",
+      "aliases": [],
+      "m3_artist_id": "artist_3f426c2ebbce6b91"
+    },
+    {
+      "name": "Re-Ra",
+      "aliases": [],
+      "m3_artist_id": "artist_58366274c0a58c11"
+    },
+    {
+      "name": "YURINO",
+      "aliases": [],
+      "m3_artist_id": "artist_38886b4e5ed3b271"
+    },
+    {
+      "name": "05",
+      "aliases": [],
+      "m3_artist_id": "artist_751d31dd6b56b26b"
+    },
+    {
+      "name": "サンケ",
+      "aliases": [],
+      "m3_artist_id": "artist_a6170a35577abf6b"
+    },
+    {
+      "name": "ユーリー",
+      "aliases": [],
+      "m3_artist_id": "artist_c937d0f890f88597"
+    },
+    {
+      "name": "sirone",
+      "aliases": [],
+      "m3_artist_id": "artist_98d9b9c7ca712eb5"
+    },
+    {
+      "name": "Amane-雨音-",
+      "aliases": [
+        "Amane",
+        "雨音"
+      ],
+      "m3_artist_id": "artist_0f8e1f06e9936085"
+    },
+    {
+      "name": "Escarmew",
+      "aliases": [],
+      "m3_artist_id": "artist_3bae8daef2a8e839"
+    },
+    {
+      "name": "Litsar.",
+      "aliases": [],
+      "m3_artist_id": "artist_bcfec06e74436e72"
+    },
+    {
+      "name": "いえり",
+      "aliases": [],
+      "m3_artist_id": "artist_60c9c89e739020da"
+    },
+    {
+      "name": "breeziness",
+      "aliases": [],
+      "m3_artist_id": "artist_1715c2dae5c55130"
+    },
+    {
+      "name": "梅園 千鶴",
+      "aliases": [
+        "梅園千鶴"
+      ],
+      "m3_artist_id": "artist_a0b0149afc9bbeb8"
+    },
+    {
+      "name": "t.g.w",
+      "aliases": [],
+      "m3_artist_id": "artist_2561b97fe71f5370"
+    },
+    {
+      "name": "⎳-メン",
+      "aliases": [
+        "ルートメン"
+      ],
+      "m3_artist_id": "artist_8be01410ed1a9b2e"
+    },
+    {
+      "name": "Quon Kotoki",
+      "aliases": [],
+      "m3_artist_id": "artist_bc7a6c60996bbf5e"
+    },
+    {
+      "name": "Eleanor Forte",
+      "aliases": [
+        "エレノア・フォルテ"
+      ],
+      "m3_artist_id": "artist_4dcf2addb6ba0495"
+    },
+    {
+      "name": "Nunchuck Gorilla",
+      "aliases": [],
+      "m3_artist_id": "artist_9faa9e40f6e4c63e"
+    },
+    {
+      "name": "星導星七",
+      "aliases": [],
+      "m3_artist_id": "artist_2ef88c850987544c"
+    },
+    {
+      "name": "最うし",
+      "aliases": [],
+      "m3_artist_id": "artist_064de11e699fbb68"
+    },
+    {
+      "name": "清水 嶺",
+      "aliases": [
+        "清水嶺"
+      ],
+      "m3_artist_id": "artist_c30bc0c14e596767"
+    },
+    {
+      "name": "Ester",
+      "aliases": [],
+      "m3_artist_id": "artist_184e88c34d99fadf"
+    },
+    {
+      "name": "Shell",
+      "aliases": [],
+      "m3_artist_id": "artist_ea89b68c34ce4a63"
+    },
+    {
+      "name": "theVoidword",
+      "aliases": [],
+      "m3_artist_id": "artist_db5e400f52f6aeb4"
+    },
+    {
+      "name": "a1426p",
+      "aliases": [],
+      "m3_artist_id": "artist_514ed7912936194d"
+    },
+    {
+      "name": "のーふ",
+      "aliases": [],
+      "m3_artist_id": "artist_d50eaab4e5f482f3"
+    },
+    {
+      "name": "Ryuroido",
+      "aliases": [],
+      "m3_artist_id": "artist_90d288b0eed24c7c"
+    },
+    {
+      "name": "むつき醒",
+      "aliases": [],
+      "m3_artist_id": "artist_cf8cf082a51eed9f"
+    },
+    {
+      "name": "A1shat",
+      "aliases": [],
+      "m3_artist_id": "artist_cf2cce023e289844"
+    },
+    {
+      "name": "翠京",
+      "aliases": [],
+      "m3_artist_id": "artist_1792cdfb3c4dfd63"
+    },
+    {
+      "name": "MischiefEve",
+      "aliases": [],
+      "m3_artist_id": "artist_f638901fb3f686af"
+    },
+    {
+      "name": "竹原ひろ",
+      "aliases": [],
+      "m3_artist_id": "artist_646c132871321fe0"
+    },
+    {
+      "name": "Gauche",
+      "aliases": [],
+      "m3_artist_id": "artist_96edc948adb823d5"
+    },
+    {
+      "name": "Eraser",
+      "aliases": [],
+      "m3_artist_id": "artist_1432aab1d005218c"
+    },
+    {
+      "name": "こだきんP",
+      "aliases": [],
+      "m3_artist_id": "artist_4c9a3757ff16f18b"
+    },
+    {
+      "name": "くろ",
+      "aliases": [],
+      "m3_artist_id": "artist_f26a1f8190c5806b"
+    },
+    {
+      "name": "DJ Rikudayo",
+      "aliases": [],
+      "m3_artist_id": "artist_7032a15860f4fa05"
+    },
+    {
+      "name": "Winna Strive",
+      "aliases": [],
+      "m3_artist_id": "artist_3f85407622c90dda"
+    },
+    {
+      "name": "TEMPLIME",
+      "aliases": [
+        "テンプライム"
+      ],
+      "m3_artist_id": "artist_f12ea0967f1a7176"
+    },
+    {
+      "name": "椿野ひなこ",
+      "aliases": [
+        "Hinako Tsubakino"
+      ],
+      "m3_artist_id": "artist_b4134aea1cc436c1"
+    },
+    {
+      "name": "PNKTmc",
+      "aliases": [
+        "ぽんこつMC",
+        "ぽんこつmc"
+      ],
+      "m3_artist_id": "artist_4b3fe6ada0de13ff"
+    },
+    {
+      "name": "齋藤のんのん",
+      "aliases": [
+        "Nonnon Saito"
+      ],
+      "m3_artist_id": "artist_0c5f7d673aa81642"
+    },
+    {
+      "name": "米田らん*",
+      "aliases": [
+        "RANASOL",
+        "米田らん"
+      ],
+      "m3_artist_id": "artist_e54db8c7af72de42"
+    },
+    {
+      "name": "春日部つくし",
+      "aliases": [
+        "Kasukabe Tsukushi"
+      ],
+      "m3_artist_id": "artist_52b1444f065daa4a"
+    },
+    {
+      "name": "Good4Tune",
+      "aliases": [
+        "グッドフォーチュン"
+      ],
+      "m3_artist_id": "artist_30533249e0dc0d57"
+    },
+    {
+      "name": "キツネノアシアト",
+      "aliases": [
+        "Nagitsune Circle"
+      ],
+      "m3_artist_id": "artist_2dea30905c4e4234"
+    },
+    {
+      "name": "Nagitsune",
+      "aliases": [
+        "nagitsune"
+      ],
+      "m3_artist_id": "artist_31f648413b3c338a"
+    },
+    {
+      "name": "白鳥 愛歌",
+      "aliases": [
+        "Shiratori Aika",
+        "Aika Siratori"
+      ],
+      "m3_artist_id": "artist_a2a7834b62e406f6"
+    },
+    {
+      "name": "夏色花梨",
+      "aliases": [
+        "Natsuki Karin"
+      ],
+      "m3_artist_id": "artist_9d8cba9bfe0d680f"
+    },
+    {
+      "name": "東北大学DTM同好会 console over",
+      "aliases": [
+        "console over",
+        "東北大学DTM同好会"
+      ],
+      "m3_artist_id": "artist_aa10e56cfd370723"
+    },
+    {
+      "name": "Necoya",
+      "aliases": [],
+      "m3_artist_id": "artist_639de0c76ec42529"
+    },
+    {
+      "name": "oneLine",
+      "aliases": [],
+      "m3_artist_id": "artist_0422de180ec152f5"
+    },
+    {
+      "name": "カイ",
+      "aliases": [],
+      "m3_artist_id": "artist_23cb6b6e3d403e8d"
+    },
+    {
+      "name": "Luxu",
+      "aliases": [],
+      "m3_artist_id": "artist_3aa7b70ba0cd716e"
+    },
+    {
+      "name": "シロカグラ",
+      "aliases": [],
+      "m3_artist_id": "artist_2ee6bada72290593"
+    },
+    {
+      "name": "Necoya+",
+      "aliases": [],
+      "m3_artist_id": "artist_b184fdc88e65c46b"
+    },
+    {
+      "name": "Niwa",
+      "aliases": [],
+      "m3_artist_id": "artist_03c22a7f47c2b9be"
+    },
+    {
+      "name": "Yuno",
+      "aliases": [],
+      "m3_artist_id": "artist_d19b2ebdaa68ccc8"
+    },
+    {
+      "name": "vionan",
+      "aliases": [],
+      "m3_artist_id": "artist_f390f7b03c5345da"
+    },
+    {
+      "name": "みゅーぜろ",
+      "aliases": [],
+      "m3_artist_id": "artist_cfd7cf81782abe29"
+    },
+    {
+      "name": "Muontetra",
+      "aliases": [],
+      "m3_artist_id": "artist_5ce872fad9746451"
+    },
+    {
+      "name": "Humanade",
+      "aliases": [],
+      "m3_artist_id": "artist_1c507192b934ada2"
+    },
+    {
+      "name": "三針",
+      "aliases": [],
+      "m3_artist_id": "artist_4671b7c609f3d0be"
+    },
+    {
+      "name": "nanalia",
+      "aliases": [],
+      "m3_artist_id": "artist_026cc86a82e196ce"
+    },
+    {
+      "name": "テカゼ",
+      "aliases": [
+        "tekaze"
+      ],
+      "m3_artist_id": "artist_3480ec7bd8fc85a8"
+    },
+    {
+      "name": "松浦眞那",
+      "aliases": [
+        "Mana Matsuura",
+        "松浦真那"
+      ],
+      "m3_artist_id": "artist_f0fd393d22e61c64"
+    },
+    {
+      "name": "Rano",
+      "aliases": [
+        "rano"
+      ],
+      "m3_artist_id": "artist_a42e72883148b0ab"
+    },
+    {
+      "name": "effe",
+      "aliases": [],
+      "m3_artist_id": "artist_8b23c339372dbd1a"
+    },
+    {
+      "name": "kingyo0",
+      "aliases": [
+        "kingyo"
+      ],
+      "m3_artist_id": "artist_197ca4b0d3f5d903"
+    },
+    {
+      "name": "しーせん",
+      "aliases": [
+        "c__1ooo",
+        "c1000"
+      ],
+      "m3_artist_id": "artist_1fb845fbe734d85f"
+    },
+    {
+      "name": "小田切マーク洋平",
+      "aliases": [
+        "Yohei Mark Odagiri"
+      ],
+      "m3_artist_id": "artist_6f4d1da1e44053c0"
+    },
+    {
+      "name": "Bowne",
+      "aliases": [],
+      "m3_artist_id": "artist_4e9a036e42ce6d17"
+    },
+    {
+      "name": "Ganbare Masashige",
+      "aliases": [
+        "がんばれまさしげ"
+      ],
+      "m3_artist_id": "artist_bc879485e758788c"
+    },
+    {
+      "name": "FAIZ",
+      "aliases": [],
+      "m3_artist_id": "artist_9bbb0017a181a838"
+    },
+    {
+      "name": "GyrO",
+      "aliases": [],
+      "m3_artist_id": "artist_20144671b0b05f2a"
+    },
+    {
+      "name": "M4tt",
+      "aliases": [],
+      "m3_artist_id": "artist_e2f3c5ea0f20ba12"
+    },
+    {
+      "name": "kazuma",
+      "aliases": [],
+      "m3_artist_id": "artist_581f0ddc1c210f0a"
+    },
+    {
+      "name": "cyan slime",
+      "aliases": [
+        "cyanslime"
+      ],
+      "m3_artist_id": "artist_b829e4fa88e45ff1"
+    },
+    {
+      "name": "Jun Kuroda",
+      "aliases": [
+        "黒田純"
+      ],
+      "m3_artist_id": "artist_21786562bc39d13b"
+    },
+    {
+      "name": "ことの",
+      "aliases": [
+        "Kotono",
+        "kotonaut_"
+      ],
+      "m3_artist_id": "artist_61feb74eafce35b0"
+    },
+    {
+      "name": "Hagali",
+      "aliases": [
+        "ハガリ",
+        "Rai"
+      ],
+      "m3_artist_id": "artist_ee6326806b4066ac"
+    },
+    {
+      "name": "kaez",
+      "aliases": [
+        "カエズ"
+      ],
+      "m3_artist_id": "artist_ffbc859ab0a54d6e"
+    },
+    {
+      "name": "Jordi Storm",
+      "aliases": [],
+      "m3_artist_id": "artist_72ef31f8b5dd45f1"
+    },
+    {
+      "name": "Lili Xiong",
+      "aliases": [],
+      "m3_artist_id": "artist_1af0ced37a3ec0f1"
+    },
+    {
+      "name": "ぱとり",
+      "aliases": [
+        "Patori"
+      ],
+      "m3_artist_id": "artist_89b435d15a78ffa4"
+    },
+    {
+      "name": "GO TSUKADA",
+      "aliases": [],
+      "m3_artist_id": "artist_fda6d02733d3f679"
+    },
+    {
+      "name": "蒼風そうか",
+      "aliases": [],
+      "m3_artist_id": "artist_53f37831db896062"
+    },
+    {
+      "name": "Shibayan",
+      "aliases": [
+        "ShibayanRecords",
+        "シバヤン"
+      ],
+      "m3_artist_id": "artist_86dbf82f2ece78d5"
+    },
+    {
+      "name": "esoragoto",
+      "aliases": [
+        "エソラゴト"
+      ],
+      "m3_artist_id": "artist_5d6d7ad316099388"
+    },
+    {
+      "name": "萌",
+      "aliases": [
+        "Moe",
+        "萌 (esoragoto)"
+      ],
+      "m3_artist_id": "artist_1602799eebacad22"
+    },
+    {
+      "name": "shino",
+      "aliases": [
+        "shino (esoragoto)"
+      ],
+      "m3_artist_id": "artist_01fbed94ef240c29"
+    },
+    {
+      "name": "DJ石倉",
+      "aliases": [
+        "DJ Ishikura",
+        "Ishikura"
+      ],
+      "m3_artist_id": "artist_eaa0561b27602913"
+    },
+    {
+      "name": "フタバオサム",
+      "aliases": [
+        "Futaba Osamu"
+      ],
+      "m3_artist_id": "artist_c436d813505e83d8"
+    },
+    {
+      "name": "どぅーん",
+      "aliases": [
+        "Doon"
+      ],
+      "m3_artist_id": "artist_9b7a69b53d1619b5"
+    },
+    {
+      "name": "宮舞モカ",
+      "aliases": [
+        "Miyamai Moca"
+      ],
+      "m3_artist_id": "artist_75dafb701fd86335"
+    },
+    {
+      "name": "Parallol",
+      "aliases": [
+        "parallelmltdwn"
+      ],
+      "m3_artist_id": "artist_935437d1f0276929"
+    },
+    {
+      "name": "わかばやし",
+      "aliases": [
+        "Wakabayashi"
+      ],
+      "m3_artist_id": "artist_eee80b8d99679f95"
+    },
+    {
+      "name": "Flare Rune",
+      "aliases": [
+        "フレア・ルーン"
+      ],
+      "m3_artist_id": "artist_3377ba7044361430"
+    },
+    {
+      "name": "尾手またび",
+      "aliases": [
+        "Ote Matabi"
+      ],
+      "m3_artist_id": "artist_09355a674caddf80"
+    },
+    {
+      "name": "記憶に残る",
+      "aliases": [
+        "Kioku ni Nokoru"
+      ],
+      "m3_artist_id": "artist_44480d0ed53bf3d2"
+    },
+    {
+      "name": "Lyrical:code",
+      "aliases": [
+        "リリカルコード",
+        "code_lyrical"
+      ],
+      "m3_artist_id": "artist_b6038f91551bd149"
+    },
+    {
+      "name": "sa-torunn",
+      "aliases": [
+        "るん子",
+        "satorunn"
+      ],
+      "m3_artist_id": "artist_985f6e472c50e094"
+    },
+    {
+      "name": "実稀",
+      "aliases": [
+        "Miki",
+        "実稀-miki-"
+      ],
+      "m3_artist_id": "artist_f1d64a2fd554b95d"
+    },
+    {
+      "name": "みそらみみ",
+      "aliases": [
+        "Misora Mimi"
+      ],
+      "m3_artist_id": "artist_c42ab48a9ed53200"
+    },
+    {
+      "name": "okogeeechann",
+      "aliases": [
+        "おこげちゃん",
+        "Okogeechan"
+      ],
+      "m3_artist_id": "artist_0281c9c847f9ed99"
+    },
+    {
+      "name": "KOKOMI",
+      "aliases": [
+        "Kokomi",
+        "心美"
+      ],
+      "m3_artist_id": "artist_1ceffdf74d771158"
+    },
+    {
+      "name": "rintaro soma",
+      "aliases": [
+        "Rintaro Soma"
+      ],
+      "m3_artist_id": "artist_e1f961e28290e8ca"
+    },
+    {
+      "name": "ななひら",
+      "aliases": [
+        "Nanahira"
+      ],
+      "m3_artist_id": "artist_92569af4f394d880"
+    },
+    {
+      "name": "Morven",
+      "aliases": [],
+      "m3_artist_id": "artist_97551620ade7a53c"
+    },
+    {
+      "name": "FALCH1ON",
+      "aliases": [],
+      "m3_artist_id": "artist_dec9cfcbb48d8227"
+    },
+    {
+      "name": "錯音シノ",
+      "aliases": [
+        "Sakune Shino"
+      ],
+      "m3_artist_id": "artist_5e71d51d6954adab"
+    },
+    {
+      "name": "錯音ジバ",
+      "aliases": [
+        "Sakune Jiba"
+      ],
+      "m3_artist_id": "artist_2ba0af56e9ccedb6"
+    },
+    {
+      "name": "Cheers39",
+      "aliases": [
+        "チアーズミク",
+        "cheers_39"
+      ],
+      "m3_artist_id": "artist_70c5f41b2624e6a5"
+    },
+    {
+      "name": "AdvanceRatio",
+      "aliases": [],
+      "m3_artist_id": "artist_39c44179eb0db2cc"
+    },
+    {
+      "name": "Iz*mi",
+      "aliases": [
+        "Izmi"
+      ],
+      "m3_artist_id": "artist_eff08e5d69471be6"
+    },
+    {
+      "name": "KAUTSAR",
+      "aliases": [],
+      "m3_artist_id": "artist_a347ae0f4dbc68d2"
+    },
+    {
+      "name": "Levia",
+      "aliases": [],
+      "m3_artist_id": "artist_e885565b68a81bef"
+    },
+    {
+      "name": "Mayonazy",
+      "aliases": [],
+      "m3_artist_id": "artist_1ce93bd02e8eb45a"
+    },
+    {
+      "name": "Oyasugumi",
+      "aliases": [],
+      "m3_artist_id": "artist_15d01b65f1c60163"
+    },
+    {
+      "name": "SPOTDODGE",
+      "aliases": [],
+      "m3_artist_id": "artist_a78ed5ad9abbd29c"
+    },
+    {
+      "name": "zalas",
+      "aliases": [],
+      "m3_artist_id": "artist_d92b741c4383dd49"
+    },
+    {
+      "name": "巡音ルカ",
+      "aliases": [
+        "Megurine Luka"
+      ],
+      "m3_artist_id": "artist_9ebb919143acea60"
+    },
+    {
+      "name": "GUMI",
+      "aliases": [
+        "Megpoid",
+        "グミ"
+      ],
+      "m3_artist_id": "artist_45397ad152addc72"
+    },
+    {
+      "name": "REML",
+      "aliases": [
+        "Reml"
+      ],
+      "m3_artist_id": "artist_a31768e8c2293904"
+    },
+    {
+      "name": "irucaice",
+      "aliases": [
+        "いるかアイス"
+      ],
+      "m3_artist_id": "artist_74df573232ad03c7"
+    },
+    {
+      "name": "AiSuu",
+      "aliases": [
+        "アイスー"
+      ],
+      "m3_artist_id": "artist_7757648db595c561"
+    },
+    {
+      "name": "ルウル",
+      "aliases": [
+        "LeuR"
+      ],
+      "m3_artist_id": "artist_94d99cac3f276b3e"
+    },
+    {
+      "name": "分散型自律ゴーレム りむる",
+      "aliases": [
+        "りむる",
+        "Reml"
+      ],
+      "m3_artist_id": "artist_f240ff92c9a166ca"
+    },
+    {
+      "name": "sola",
+      "aliases": [
+        "sola_she",
+        "ソラ"
+      ],
+      "m3_artist_id": "artist_7a40ec88bab02c87"
+    },
+    {
+      "name": "mawari",
+      "aliases": [
+        "mawaririri"
+      ],
+      "m3_artist_id": "artist_c952933be64ecac3"
+    },
+    {
+      "name": "高岡兼時",
+      "aliases": [
+        "ziiken"
+      ],
+      "m3_artist_id": "artist_fcf97749ae5f9cf0"
+    },
+    {
+      "name": "あかいろ",
+      "aliases": [
+        "AkaiRo",
+        "AkaiRo807"
+      ],
+      "m3_artist_id": "artist_e3cac49e1664d0f7"
+    },
+    {
+      "name": "白米",
+      "aliases": [
+        "Hakumai",
+        "siro_csl"
+      ],
+      "m3_artist_id": "artist_7165bfdf5e0cb7fc"
+    },
+    {
+      "name": "美月もも",
+      "aliases": [
+        "Mitsuki Momo",
+        "me_2ki",
+        "momomitsuki"
+      ],
+      "m3_artist_id": "artist_78436847f8d2765a"
+    },
+    {
+      "name": "YUXSE",
+      "aliases": [
+        "yuxse_music"
+      ],
+      "m3_artist_id": "artist_74399089a7abd390"
+    },
+    {
+      "name": "のいず",
+      "aliases": [
+        "noise",
+        "noise19274"
+      ],
+      "m3_artist_id": "artist_07d57f300e45da37"
+    },
+    {
+      "name": "rukaku",
+      "aliases": [
+        "mikuphile"
+      ],
+      "m3_artist_id": "artist_7352054762391d67"
+    },
+    {
+      "name": "a2c",
+      "aliases": [
+        "MellowJamStudio",
+        "MintJam"
+      ],
+      "m3_artist_id": "artist_394e68839349a156"
+    },
+    {
+      "name": "TERRA",
+      "aliases": [
+        "MintJam",
+        "terrachin"
+      ],
+      "m3_artist_id": "artist_a553c86a72625211"
+    },
+    {
+      "name": "葉月リョウヘイ",
+      "aliases": [
+        "U-RASIA",
+        "kidunaduki"
+      ],
+      "m3_artist_id": "artist_f3d5831a0b89ec34"
+    },
+    {
+      "name": "Sakamiya",
+      "aliases": [
+        "sakamiya_"
+      ],
+      "m3_artist_id": "artist_4d860da5a6887ffb"
+    },
+    {
+      "name": "琴吹むつみ",
+      "aliases": [
+        "mutsumi_meal"
+      ],
+      "m3_artist_id": "artist_85d76c35bb3bb345"
+    },
+    {
+      "name": "蒼野みどり",
+      "aliases": [
+        "1aon8_sui"
+      ],
+      "m3_artist_id": "artist_67e154fd22f0eb75"
+    },
+    {
+      "name": "ウニ丼",
+      "aliases": [],
+      "m3_artist_id": "artist_678c77d11b9e66de"
+    },
+    {
+      "name": "宇都 圭輝",
+      "aliases": [
+        "Keiki Uto",
+        "keiki_key"
+      ],
+      "m3_artist_id": "artist_86fe92d95b277c79"
+    },
+    {
+      "name": "白井 崇陽",
+      "aliases": [
+        "Takahiro Shirai",
+        "vl_shirai123"
+      ],
+      "m3_artist_id": "artist_4d50443e6ad402d6"
+    },
+    {
+      "name": "椿春木",
+      "aliases": [
+        "momohana_3939"
+      ],
+      "m3_artist_id": "artist_9fbec75903ff709d"
+    },
+    {
+      "name": "おばけのニギ",
+      "aliases": [
+        "ghost_knigi"
+      ],
+      "m3_artist_id": "artist_73f34363efd63231"
+    },
+    {
+      "name": "しろさきあや",
+      "aliases": [
+        "Shirosaki Aya",
+        "nekonisasami",
+        "しろあや"
+      ],
+      "m3_artist_id": "artist_e24aadaf80cae90f"
+    },
+    {
+      "name": "カミヤヒロト",
+      "aliases": [
+        "E_Riot00"
+      ],
+      "m3_artist_id": "artist_57f57e0281174ae0"
+    },
+    {
+      "name": "なのだへけ",
+      "aliases": [
+        "NAnoDA_HAM"
+      ],
+      "m3_artist_id": "artist_ed11e00722fc33d3"
+    },
+    {
+      "name": "相良心",
+      "aliases": [
+        "Kokoro Sagara",
+        "556t"
+      ],
+      "m3_artist_id": "artist_5f2f58ec9215950d"
+    },
+    {
+      "name": "キバオブアキバ",
+      "aliases": [
+        "Kiba of akiba"
+      ],
+      "m3_artist_id": "artist_92545c9d5b833043"
+    },
+    {
+      "name": "Marmalade butcher",
+      "aliases": [
+        "マーマレードブッチャー"
+      ],
+      "m3_artist_id": "artist_f9cb9a8e8bc95de9"
+    },
+    {
+      "name": "SOLITUDE A SLEEPLESS NIGHTS",
+      "aliases": [],
+      "m3_artist_id": "artist_65536c9790bc659e"
+    },
+    {
+      "name": "NC帝國",
+      "aliases": [
+        "NC帝国"
+      ],
+      "m3_artist_id": "artist_6e597e0e8c08666e"
+    },
+    {
+      "name": "兎野ショーン",
+      "aliases": [
+        "Shaun Usagino",
+        "Usagino_Shaun",
+        "ショーン"
+      ],
+      "m3_artist_id": "artist_6c08fa5e04db5301"
+    },
+    {
+      "name": "ふたばみなと",
+      "aliases": [
+        "Minato Futaba"
+      ],
+      "m3_artist_id": "artist_5fc74bcc4a44cc11"
+    },
+    {
+      "name": "シンナイコウジ",
+      "aliases": [
+        "Koji Shinnai"
+      ],
+      "m3_artist_id": "artist_d3c91df9f83c22b8"
+    },
+    {
+      "name": "144p",
+      "aliases": [
+        "144prog"
+      ],
+      "m3_artist_id": "artist_32e295fd87188ffd"
+    },
+    {
+      "name": "鬼車",
+      "aliases": [],
+      "m3_artist_id": "artist_9ac7a3eaba51b0d7"
+    },
+    {
+      "name": "おなやれお",
+      "aliases": [],
+      "m3_artist_id": "artist_f26bbf33087e0502"
+    },
+    {
+      "name": "てみず",
+      "aliases": [
+        "てずみ",
+        "Ts_Ms_"
+      ],
+      "m3_artist_id": "artist_9990145384972521"
+    },
+    {
+      "name": "つくつく",
+      "aliases": [
+        "tukutuku_tktk"
+      ],
+      "m3_artist_id": "artist_ca968cc9c95aecfa"
+    },
+    {
+      "name": "Nvster*",
+      "aliases": [
+        "ななち",
+        "nanachimofluff"
+      ],
+      "m3_artist_id": "artist_5f883443db931146"
+    },
+    {
+      "name": "estha",
+      "aliases": [
+        "XL Project"
+      ],
+      "m3_artist_id": "artist_f6b4ee053e073e50"
+    },
+    {
+      "name": "彩澄しゅお",
+      "aliases": [
+        "Shuo Asumi",
+        "Asumi Shuo"
+      ],
+      "m3_artist_id": "artist_fd47bbbfbb9cc7c3"
+    },
+    {
+      "name": "haLRu",
+      "aliases": [],
+      "m3_artist_id": "artist_9eee9356703edb58"
+    },
+    {
+      "name": "暗雨Anyu",
+      "aliases": [
+        "暗雨",
+        "Anyu",
+        "Darkrain0320"
+      ],
+      "m3_artist_id": "artist_83bf48ba5b1e4412"
+    },
+    {
+      "name": "水縹そまる",
+      "aliases": [
+        "somaruriro",
+        "Somaru Mihonada",
+        "水縹"
+      ],
+      "m3_artist_id": "artist_673f425ee247797f"
+    },
+    {
+      "name": "雪乃イト",
+      "aliases": [
+        "Yukino Ito"
+      ],
+      "m3_artist_id": "artist_d84d67e13e8ebd1a"
+    },
+    {
+      "name": "Ryohey Nakamura",
+      "aliases": [],
+      "m3_artist_id": "artist_0dbcd6c5fe1037c2"
+    },
+    {
+      "name": "oratoruk",
+      "aliases": [],
+      "m3_artist_id": "artist_fcd9f4bd8da22c4e"
+    },
+    {
+      "name": "KeiuO",
+      "aliases": [
+        "uouokeiuo",
+        "uouo"
+      ],
+      "m3_artist_id": "artist_5f50a5f12a546e73"
+    },
+    {
+      "name": "Spherical Pyramid",
+      "aliases": [],
+      "m3_artist_id": "artist_58913ece25560fbb"
+    },
+    {
+      "name": "白雪。",
+      "aliases": [
+        "Shirayuki",
+        "Snowrw1040",
+        "s1r4yuk1"
+      ],
+      "m3_artist_id": "artist_6fd272a65bda64e2"
+    },
+    {
+      "name": "天使電影",
+      "aliases": [
+        "ANGEL_KINEMA"
+      ],
+      "m3_artist_id": "artist_8412ff09d65f7a38"
+    },
+    {
+      "name": "湯麩",
+      "aliases": [
+        "yufu_official"
+      ],
+      "m3_artist_id": "artist_dc9f5338a2a19c81"
+    },
+    {
+      "name": "鳥居隼",
+      "aliases": [
+        "shunshun008"
+      ],
+      "m3_artist_id": "artist_a11d367572dccf91"
+    },
+    {
+      "name": "からめる",
+      "aliases": [
+        "Karameru"
+      ],
+      "m3_artist_id": "artist_cd702b26d68f916a"
+    },
+    {
+      "name": "nay",
+      "aliases": [],
+      "m3_artist_id": "artist_4a64585238a3b3ca"
+    },
+    {
+      "name": "Xiba",
+      "aliases": [
+        "ジバ",
+        "discharge100"
+      ],
+      "m3_artist_id": "artist_0d8d44301963e102"
+    },
+    {
+      "name": "甘口ミク",
+      "aliases": [
+        "Amakuchi Miku"
+      ],
+      "m3_artist_id": "artist_5dfd9e44db87b506"
+    },
+    {
+      "name": "深月ももえ",
+      "aliases": [
+        "Momoe Mizuki",
+        "mizukimomoeluna"
+      ],
+      "m3_artist_id": "artist_9f3cfd528767b123"
+    },
+    {
+      "name": "ひろろん",
+      "aliases": [
+        "Hiroron"
+      ],
+      "m3_artist_id": "artist_e8278f680b670031"
+    },
+    {
+      "name": "POcket",
+      "aliases": [
+        "pocket"
+      ],
+      "m3_artist_id": "artist_bc56eb5628696fbd"
+    },
+    {
+      "name": "兎角菫",
+      "aliases": [
+        "TokakuSumire",
+        "Tokaku Sumire"
+      ],
+      "m3_artist_id": "artist_ebe2cf2ac47833ae"
+    },
+    {
+      "name": "irukanotane",
+      "aliases": [],
+      "m3_artist_id": "artist_f906919074903ce5"
+    },
+    {
+      "name": "Unten",
+      "aliases": [],
+      "m3_artist_id": "artist_39c51de751117c57"
+    },
+    {
+      "name": "まばたき研究所",
+      "aliases": [
+        "Mabataki Kenkyujo"
+      ],
+      "m3_artist_id": "artist_fbbf4874d70e7e79"
+    },
+    {
+      "name": "右角",
+      "aliases": [
+        "Ukaku"
+      ],
+      "m3_artist_id": "artist_74a6d2a2c1b6e457"
+    },
+    {
+      "name": "琴葉茜・葵",
+      "aliases": [
+        "琴葉茜",
+        "琴葉葵",
+        "Kotonoha Akane & Aoi"
+      ],
+      "m3_artist_id": "artist_a87347c4876a4062"
+    },
+    {
+      "name": "IA",
+      "aliases": [
+        "IA -ARIA ON THE PLANETES-"
+      ],
+      "m3_artist_id": "artist_a75d067fa44bca81"
+    },
+    {
+      "name": "ナースロボ_タイプT",
+      "aliases": [
+        "ナースロボ",
+        "Nurse Robo Type T",
+        "ナースロボタイプT AI",
+        "ナースロボタイプT",
+        "ナースロボ_タイプＴ"
+      ],
+      "m3_artist_id": "artist_c9c48f7c920b64cd"
+    },
+    {
+      "name": "結月ゆかり",
+      "aliases": [
+        "Yuzuki Yukari"
+      ],
+      "m3_artist_id": "artist_87c065a075aa22fe"
+    },
+    {
+      "name": "Kanae Asaba",
+      "aliases": [
+        "浅場佳苗",
+        "Kanae_Asaba"
+      ],
+      "m3_artist_id": "artist_18ce7b00fb8c1a1a"
+    },
+    {
+      "name": "lily-an",
+      "aliases": [
+        "りりあむ",
+        "liztora",
+        "リリアム"
+      ],
+      "m3_artist_id": "artist_064c7d318f26f87b"
+    },
+    {
+      "name": "ico",
+      "aliases": [
+        "icovoid",
+        "icovs"
+      ],
+      "m3_artist_id": "artist_c51052ef06b65a95"
+    },
+    {
+      "name": "モノクロバレット",
+      "aliases": [
+        "monokurobullet",
+        "monochromebullet"
+      ],
+      "m3_artist_id": "artist_9c925cd5e6bdafda"
+    },
+    {
+      "name": "ねるまであいする。",
+      "aliases": [
+        "neruma_official",
+        "nerurumamusic"
+      ],
+      "m3_artist_id": "artist_7d705719fdb44bdc"
+    },
+    {
+      "name": ".end",
+      "aliases": [
+        "dot_end",
+        "jazzmastaaichi"
+      ],
+      "m3_artist_id": "artist_ad864c6536c9f013"
+    },
+    {
+      "name": "Project zia",
+      "aliases": [
+        "zia",
+        "プロジェクトジア"
+      ],
+      "m3_artist_id": "artist_a025af5b03330e06"
+    },
+    {
+      "name": "cymvidia",
+      "aliases": [],
+      "m3_artist_id": "artist_adf6211c6ec15bb0"
+    },
+    {
+      "name": "Howling Calling",
+      "aliases": [
+        "howlingcalling"
+      ],
+      "m3_artist_id": "artist_97ab804221d552ba"
+    },
+    {
+      "name": "OFFICE DESTRUCTION GIRL",
+      "aliases": [
+        "__odg",
+        "officedestructiongirl",
+        "ODG"
+      ],
+      "m3_artist_id": "artist_75e143d29743079d"
+    },
+    {
+      "name": "Sifneos.",
+      "aliases": [
+        "sifneos",
+        "sifneosofficial",
+        "sifneos-official"
+      ],
+      "m3_artist_id": "artist_81a097eafd0ded00"
+    },
+    {
+      "name": "Nykirosuk",
+      "aliases": [
+        "robinikivrc"
+      ],
+      "m3_artist_id": "artist_565a1ffcbff911ac"
+    },
+    {
+      "name": "ひもの",
+      "aliases": [
+        "hi_mono_chrome"
+      ],
+      "m3_artist_id": "artist_ec9225b7d088c818"
+    },
+    {
+      "name": "sick hopeless",
+      "aliases": [
+        "sickhopeless"
+      ],
+      "m3_artist_id": "artist_e778974aab1afbfd"
+    },
+    {
+      "name": "櫻澤ヒカル",
+      "aliases": [
+        "櫻澤 ヒカル",
+        "Sakurazawa Hikaru",
+        "Pik_PiPi"
+      ],
+      "m3_artist_id": "artist_323bf406d60f2621"
+    },
+    {
+      "name": "マイノリティノート",
+      "aliases": [
+        "Minority Note",
+        "Minority_Note"
+      ],
+      "m3_artist_id": "artist_3377c2c9638b2581"
+    },
+    {
+      "name": "乃花こより",
+      "aliases": [
+        "koyori_nohana",
+        "のより"
+      ],
+      "m3_artist_id": "artist_2c4b0dced4a9cfab"
+    },
+    {
+      "name": "Mwk",
+      "aliases": [
+        "Mwk_094"
+      ],
+      "m3_artist_id": "artist_123db5847be64105"
+    },
+    {
+      "name": "れりす",
+      "aliases": [
+        "_relis_",
+        "Relis"
+      ],
+      "m3_artist_id": "artist_3fa80287f1ae1d20"
+    },
+    {
+      "name": "水魚みいむ",
+      "aliases": [
+        "mizuo_miimu"
+      ],
+      "m3_artist_id": "artist_556862d626dc02a9"
+    },
+    {
+      "name": "Amos",
+      "aliases": [
+        "Amos_music"
+      ],
+      "m3_artist_id": "artist_505c85eea66d960e"
+    },
+    {
+      "name": "rak1a",
+      "aliases": [
+        "rak1a_"
+      ],
+      "m3_artist_id": "artist_b3bb568600633bb1"
+    },
+    {
+      "name": "つりうむ",
+      "aliases": [
+        "tsuriumu"
+      ],
+      "m3_artist_id": "artist_8659682886c5af74"
+    },
+    {
+      "name": "vai5000",
+      "aliases": [
+        "vai_5000"
+      ],
+      "m3_artist_id": "artist_c85950671951cdb4"
+    },
+    {
+      "name": "Sadisfy",
+      "aliases": [
+        "sadisfy_"
+      ],
+      "m3_artist_id": "artist_5b81967529837a21"
+    },
+    {
+      "name": "小春六花",
+      "aliases": [
+        "Koharu Rikka",
+        "小春 六花"
+      ],
+      "m3_artist_id": "artist_1c3b6581af890aed"
+    },
+    {
+      "name": "Moe Shop",
+      "aliases": [
+        "moe shop",
+        "korewamoe"
+      ],
+      "m3_artist_id": "artist_b78c83005519419b"
+    },
+    {
+      "name": "cyanpota",
+      "aliases": [
+        "cyanide_pota",
+        "KCN",
+        "シアンポタ",
+        "cyanpota / KCN"
+      ],
+      "m3_artist_id": "artist_632f59bc490c7566"
+    },
+    {
+      "name": "flawguri",
+      "aliases": [],
+      "m3_artist_id": "artist_c20ef22ff620e1ad"
+    },
+    {
+      "name": "Phasma",
+      "aliases": [
+        "phasma",
+        "@Phasma"
+      ],
+      "m3_artist_id": "artist_dd9d993f573ec3f9"
+    },
+    {
+      "name": "Oshiribeat",
+      "aliases": [
+        "OSHIRIBEAT"
+      ],
+      "m3_artist_id": "artist_9923fd9989bf6ff4"
+    },
+    {
+      "name": "Norts",
+      "aliases": [
+        "norts_music"
+      ],
+      "m3_artist_id": "artist_63826b18925bc786"
+    },
+    {
+      "name": "Plastic Fruits",
+      "aliases": [
+        "plastic fruits"
+      ],
+      "m3_artist_id": "artist_9c4b05b6fdab3afc"
+    },
+    {
+      "name": "sayu",
+      "aliases": [
+        "sayu_vocal"
+      ],
+      "m3_artist_id": "artist_1dbe697116cc3b26"
+    },
+    {
+      "name": "Raimukun",
+      "aliases": [
+        "Raimukun_",
+        "Raimu"
+      ],
+      "m3_artist_id": "artist_f7620daf132fb237"
+    },
+    {
+      "name": "A-byss",
+      "aliases": [
+        "Abyss",
+        "a-byss"
+      ],
+      "m3_artist_id": "artist_96d2d03c420b6549"
+    },
+    {
+      "name": "Roy Mikelate",
+      "aliases": [
+        "Roy_Mikelate"
+      ],
+      "m3_artist_id": "artist_c138f874c1ca7d71"
+    },
+    {
+      "name": "ATAS",
+      "aliases": [
+        "atas"
+      ],
+      "m3_artist_id": "artist_e02d1d57307918e5"
+    },
+    {
+      "name": "J.Kepler",
+      "aliases": [
+        "Koyuu",
+        "Koyuu (J.Kepler)"
+      ],
+      "m3_artist_id": "artist_bde4b6f3194d865c"
+    },
+    {
+      "name": "UNI",
+      "aliases": [
+        "유니",
+        "VOCALOID UNI"
+      ],
+      "m3_artist_id": "artist_4262606d3354dfc0"
+    },
+    {
+      "name": "貝と蜃気楼",
+      "aliases": [
+        "CLAM AND MIRAGE",
+        "CLAM_AND_MIRAGE"
+      ],
+      "m3_artist_id": "artist_c147d4be19b5e58a"
+    },
+    {
+      "name": "宵",
+      "aliases": [
+        "Koyoi",
+        "@Koyoi_1101"
+      ],
+      "m3_artist_id": "artist_f6c211f08c2766e7"
+    },
+    {
+      "name": "キッカ",
+      "aliases": [
+        "Kikka",
+        "@x1312ACABx",
+        "factotumstudio"
+      ],
+      "m3_artist_id": "artist_ca903b0cc7077df4"
+    },
+    {
+      "name": "246",
+      "aliases": [
+        "@_246M"
+      ],
+      "m3_artist_id": "artist_37c20f19f3272b5c"
+    },
+    {
+      "name": "mss",
+      "aliases": [
+        "@mss_rebirth"
+      ],
+      "m3_artist_id": "artist_5f330c671741ab40"
+    },
+    {
+      "name": "SΔYO",
+      "aliases": [
+        "七篠さよ",
+        "さよ",
+        "さよよ"
+      ],
+      "m3_artist_id": "artist_0523f98ab0bf6b13"
+    },
+    {
+      "name": "ナリヅルユウ",
+      "aliases": [
+        "鳴弦ユウ"
+      ],
+      "m3_artist_id": "artist_5acb21c455cc6c17"
+    },
+    {
+      "name": "Coakira",
+      "aliases": [
+        "AKIRADEATH"
+      ],
+      "m3_artist_id": "artist_e21ff0b2b4fd60f7"
+    },
+    {
+      "name": "HAIZAI AUDIO",
+      "aliases": [],
+      "m3_artist_id": "artist_8dfc8340513240ae"
+    },
+    {
+      "name": "おんた",
+      "aliases": [],
+      "m3_artist_id": "artist_a37d41d78506b2e8"
+    },
+    {
+      "name": "モリモリあつし",
+      "aliases": [
+        "ats024"
+      ],
+      "m3_artist_id": "artist_eef3033aac9d32a9"
+    },
+    {
+      "name": "Diceros Bicornis",
+      "aliases": [
+        "Diceros Bicornis (xi+BlackY)"
+      ],
+      "m3_artist_id": "artist_0956e17e6705a0b9"
+    },
+    {
+      "name": "xi",
+      "aliases": [],
+      "m3_artist_id": "artist_17057013652043f0"
+    },
+    {
+      "name": "ぴれんどらー",
+      "aliases": [],
+      "m3_artist_id": "artist_beab7b78c30dfd99"
+    },
+    {
+      "name": "ぱらどっと",
+      "aliases": [],
+      "m3_artist_id": "artist_81603fbc502fcc09"
+    },
+    {
+      "name": "ガリガリさむし",
+      "aliases": [],
+      "m3_artist_id": "artist_4aab09f9b2ef09ea"
+    },
+    {
+      "name": "ましろ",
+      "aliases": [],
+      "m3_artist_id": "artist_46f0921dc19ed8e5"
+    },
+    {
+      "name": "ヒノデ",
+      "aliases": [],
+      "m3_artist_id": "artist_22a647b464bd9da8"
+    },
+    {
+      "name": "谷キリカ",
+      "aliases": [],
+      "m3_artist_id": "artist_4679c47aaa499d5e"
+    },
+    {
+      "name": "ushiee",
+      "aliases": [],
+      "m3_artist_id": "artist_4457f03bacaa4c76"
+    },
+    {
+      "name": "みーに",
+      "aliases": [],
+      "m3_artist_id": "artist_091e9cad84bbd829"
+    },
+    {
+      "name": "小菅こんにゃく",
+      "aliases": [],
+      "m3_artist_id": "artist_9814f7b65005893d"
+    },
+    {
+      "name": "クロデル",
+      "aliases": [],
+      "m3_artist_id": "artist_faddc7b31b006a6d"
+    },
+    {
+      "name": "青葉泡",
+      "aliases": [
+        "あおば あぶく",
+        "abcu"
+      ],
+      "m3_artist_id": "artist_9067b2f6fc11470f"
+    },
+    {
+      "name": "なちぴ",
+      "aliases": [],
+      "m3_artist_id": "artist_45a7418b324844f8"
+    },
+    {
+      "name": "タカハシヒビキ",
+      "aliases": [],
+      "m3_artist_id": "artist_9efb1d9246994e05"
+    },
+    {
+      "name": "新谷風太",
+      "aliases": [],
+      "m3_artist_id": "artist_f0a0936420434ce1"
+    },
+    {
+      "name": "あいろね",
+      "aliases": [
+        "Airone"
+      ],
+      "m3_artist_id": "artist_f848430b9622483f"
+    },
+    {
+      "name": "CoraLe",
+      "aliases": [],
+      "m3_artist_id": "artist_1897589ac0ad4276"
+    },
+    {
+      "name": "綿菓子かんろ",
+      "aliases": [],
+      "m3_artist_id": "artist_70cd48466b60418a"
+    },
+    {
+      "name": "神山哲也",
+      "aliases": [
+        "神山哲也(Core Creative)"
+      ],
+      "m3_artist_id": "artist_237d3790363845f3"
+    },
+    {
+      "name": "Takeaki Oshima",
+      "aliases": [
+        "大島向陽"
+      ],
+      "m3_artist_id": "artist_155fbfec95f848e6"
+    },
+    {
+      "name": "みいこ",
+      "aliases": [],
+      "m3_artist_id": "artist_8bc3ce50c2f34da4"
+    },
+    {
+      "name": "よわいさかな",
+      "aliases": [
+        "Weak Fish",
+        "yowaiosakana"
+      ],
+      "m3_artist_id": "artist_5fa3767867384161"
+    },
+    {
+      "name": "x-x",
+      "aliases": [],
+      "m3_artist_id": "artist_9d609af2bdb44072"
+    },
+    {
+      "name": "可不",
+      "aliases": [
+        "KAFU",
+        "CeVIO AI 可不"
+      ],
+      "m3_artist_id": "artist_1ed6accfb1ea4166"
+    },
+    {
+      "name": "普賢千冬",
+      "aliases": [
+        "Fugen Chifuyu"
+      ],
+      "m3_artist_id": "artist_950fd069d0b04368"
+    },
+    {
+      "name": "猫使ビィ",
+      "aliases": [
+        "Nekotsuka Byi"
+      ],
+      "m3_artist_id": "artist_72401a3c048e43f4"
+    },
+    {
+      "name": "慈仁",
+      "aliases": [],
+      "m3_artist_id": "artist_f68d57cc0ecb47c9"
+    },
+    {
+      "name": "なとりーむ",
+      "aliases": [],
+      "m3_artist_id": "artist_5cdc753067c14b6b"
+    },
+    {
+      "name": "SaiKa",
+      "aliases": [],
+      "m3_artist_id": "artist_00d7b1fce7bb48d9"
+    },
+    {
+      "name": "kura",
+      "aliases": [],
+      "m3_artist_id": "artist_db43e82044c149fc"
+    },
+    {
+      "name": "松本文紀",
+      "aliases": [
+        "Fuminori Matsumoto",
+        "metrowing"
+      ],
+      "m3_artist_id": "artist_eb05c6b9dd0247eb"
+    },
+    {
+      "name": "はな",
+      "aliases": [
+        "Hana"
+      ],
+      "m3_artist_id": "artist_a63048bff8c34cf5"
+    },
+    {
+      "name": "ユヤ",
+      "aliases": [
+        "ユヤ(空色ナイフ)",
+        "Yuya"
+      ],
+      "m3_artist_id": "artist_d08ee599c4424b99"
+    },
+    {
+      "name": "坂ノハル",
+      "aliases": [
+        "Haru Sakano"
+      ],
+      "m3_artist_id": "artist_bba7180c3e614049"
+    },
+    {
+      "name": "Aria Tsukioumi",
+      "aliases": [],
+      "m3_artist_id": "artist_3fdae4c54e6f452d"
+    },
+    {
+      "name": "削除",
+      "aliases": [
+        "Sakuzyo",
+        "sakuzyo"
+      ],
+      "m3_artist_id": "artist_7b1c2fc023414cef"
+    },
+    {
+      "name": "イチカベサケン",
+      "aliases": [
+        "Saken Ichikabe",
+        "saken649"
+      ],
+      "m3_artist_id": "artist_1affa14e3bed4670"
+    },
+    {
+      "name": "altro",
+      "aliases": [],
+      "m3_artist_id": "artist_6471cd1ffb274ff1"
+    },
+    {
+      "name": "ナツメイツキ",
+      "aliases": [
+        "SynthesizerV2 AI ナツメイツキ",
+        "夏目イツキ",
+        "Natsume Itsuki"
+      ],
+      "m3_artist_id": "artist_93bca9e766294762"
+    },
+    {
+      "name": "Phontage",
+      "aliases": [],
+      "m3_artist_id": "artist_bb13a12e3da140da"
+    },
+    {
+      "name": "秋奈",
+      "aliases": [
+        "Akina"
+      ],
+      "m3_artist_id": "artist_3cab3f59070647d9"
+    },
+    {
+      "name": "終末うにこ",
+      "aliases": [
+        "Uniko Shuumatsu"
+      ],
+      "m3_artist_id": "artist_6b6aa338afdb4728"
+    },
+    {
+      "name": "みよみよ",
+      "aliases": [
+        "Miyomiyo"
+      ],
+      "m3_artist_id": "artist_7df29ecd7e47412e"
+    },
+    {
+      "name": "悒うつぼ",
+      "aliases": [
+        "uutubo",
+        "Utubo"
+      ],
+      "m3_artist_id": "artist_2277b796d24840fc"
+    },
+    {
+      "name": "谷口 修",
+      "aliases": [
+        "Osamu Taniguchi",
+        "akisute0701"
+      ],
+      "m3_artist_id": "artist_b3d4ea0819a44945"
+    },
+    {
+      "name": "Lidlic",
+      "aliases": [
+        "リドリック"
+      ],
+      "m3_artist_id": "artist_6b943dd622ac4776"
+    },
+    {
+      "name": "二ノ宮はぐ",
+      "aliases": [
+        "Hagu Ninomiya"
+      ],
+      "m3_artist_id": "artist_9f73b10a0be34580"
+    },
+    {
+      "name": "ginkiha",
+      "aliases": [
+        "ぎんきは"
+      ],
+      "m3_artist_id": "artist_ad3549d21e6944d9"
+    },
+    {
+      "name": "terminus",
+      "aliases": [
+        "_trdrn"
+      ],
+      "m3_artist_id": "artist_29ad6489a62640c4"
+    },
+    {
+      "name": "たかな",
+      "aliases": [
+        "Takana",
+        "@colis_"
+      ],
+      "m3_artist_id": "artist_8a50d50312b7452d"
+    },
+    {
+      "name": "無来",
+      "aliases": [
+        "Murai"
+      ],
+      "m3_artist_id": "artist_a977edfc34a04f8d"
+    },
+    {
+      "name": "Fukujin",
+      "aliases": [],
+      "m3_artist_id": "artist_fba6c65a7c824332"
+    },
+    {
+      "name": "Nost",
+      "aliases": [],
+      "m3_artist_id": "artist_cf122122d5be43dd"
+    },
+    {
+      "name": "crux",
+      "aliases": [
+        "@crux_3714"
+      ],
+      "m3_artist_id": "artist_ee33499ffa37445b"
+    },
+    {
+      "name": "Neko Hacker",
+      "aliases": [
+        "ネコハッカー",
+        "@neko_hacker"
+      ],
+      "m3_artist_id": "artist_8407ecd80c31406a"
+    },
+    {
+      "name": "mochari",
+      "aliases": [
+        "@chari_0528"
+      ],
+      "m3_artist_id": "artist_479c340c4c874fbe"
+    },
+    {
+      "name": "胡桃坂 庵",
+      "aliases": [
+        "@IworiKurumizaka",
+        "庵",
+        "I.K.",
+        "Iwori Kurumizaka"
+      ],
+      "m3_artist_id": "artist_3260c3abc10a4148"
+    },
+    {
+      "name": "10年後の君へのアンチテヱゼ",
+      "aliases": [
+        "An Antithesis to You, 10 Years From Now.",
+        "アンチテヱゼ"
+      ],
+      "m3_artist_id": "artist_6ac1085f609d4132"
+    },
+    {
+      "name": "夢ノ結唱ROSE",
+      "aliases": [
+        "@yumenokessho",
+        "ROSE",
+        "湊友希那",
+        "BanG Dream!"
+      ],
+      "m3_artist_id": "artist_ee20ec5d99624a69"
+    },
+    {
+      "name": "リゼ",
+      "aliases": [
+        "@Lyse_ariableyes",
+        "Lyse",
+        "Ariabl'eyeS"
+      ],
+      "m3_artist_id": "artist_2a38863842e2440c"
+    },
+    {
+      "name": "吉沢ゆーじ",
+      "aliases": [
+        "@red_glasses_"
+      ],
+      "m3_artist_id": "artist_95f9cf8e6ec7427b"
+    }
+  ]
+}
