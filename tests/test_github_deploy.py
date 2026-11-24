@@ -668,6 +668,7 @@ def test_probe_405_details_and_diagnostic_matrix(tmp_path, monkeypatch):
     monkeypatch.setenv("NETEASE_API_CRYPTO", "eapi")
     monkeypatch.setenv("NETEASE_API_PROXY", "http://u:pw@9.9.9.9:8080")
     monkeypatch.setattr(probe_mod, "verify_login", lambda *a, **kw: None)
+    monkeypatch.setattr(probe_mod.time, "sleep", lambda *a, **kw: None)
 
     seen_calls = []
 
@@ -684,15 +685,17 @@ def test_probe_405_details_and_diagnostic_matrix(tmp_path, monkeypatch):
         def json(self):
             return self._body
 
-    def fake_request(method, url, data=None, params=None, timeout=None):
+    def fake_request(method, url, data=None, params=None, headers=None, proxies=None, timeout=None):
         payload = data if method == "POST" else params
         seen_calls.append((method, url, dict(payload or {})))
+        if url == "https://music.163.com/api/artist/sublist":
+            return _FakeHttpResp(405, {"code": 405, "message": "blocked"})
         if url.endswith("/artist/sublist"):
             if payload.get("realIP") and payload.get("crypto") == "eapi":
                 # Simulate diagnostic realIP+eapi succeeding while primary probe saw 405
                 if len(seen_calls) <= 2:
                     return _FakeHttpResp(405, {"code": 405, "message": "cheating MUSIC_U=probe_tok_secret"})
-                return _FakeHttpResp(200, {"code": 200, "data": [{"id": 1, "name": "A"}]})
+                return _FakeHttpResp(200, {"code": 200, "count": 4700, "data": [{"id": 1, "name": "A"}]})
             return _FakeHttpResp(405, {"code": 405, "message": "blocked"})
         if url.endswith("/artist/songs"):
             return _FakeHttpResp(200, {"code": 200, "songs": [{"al": {"id": 555}}]})
@@ -713,10 +716,24 @@ def test_probe_405_details_and_diagnostic_matrix(tmp_path, monkeypatch):
         "crypto": "eapi",
         "proxy_configured": True,
     }
-    assert any(
-        d["endpoint"] == "/artist/sublist" and d["mode"] == "realIP+eapi" and d["ok"] is True
-        for d in report["diagnostics"]
-    )
+    diag_modes = {d["mode"] for d in report["diagnostics"] if d["endpoint"] == "/artist/sublist"}
+    assert {
+        "default",
+        "realIP",
+        "eapi",
+        "realIP+eapi",
+        "api",
+        "realIP+api",
+        "linuxapi",
+        "realIP+linuxapi",
+        "eapi+iphone+er+ct",
+        "eapi+android+er+ct",
+        "eapi+pc+er+ct",
+        "direct-music-api",
+    } <= diag_modes
+    real_eapi = next(d for d in report["diagnostics"] if d["endpoint"] == "/artist/sublist" and d["mode"] == "realIP+eapi")
+    assert real_eapi["ok"] is True
+    assert "返回 1 位" in real_eapi["detail"]
     assert seen_calls[0][2]["realIP"] == "116.25.146.177"
     assert seen_calls[0][2]["crypto"] == "eapi"
     assert seen_calls[0][2]["proxy"] == "http://u:pw@9.9.9.9:8080"
@@ -724,6 +741,8 @@ def test_probe_405_details_and_diagnostic_matrix(tmp_path, monkeypatch):
     md = engine.redacted_error_text(ci_scan._build_probe_summary_md(report))
     assert "传输模式诊断矩阵" in md
     assert "realIP+eapi" in md
+    assert "linuxapi" in md
+    assert "direct-music-api" in md
     assert "代理：`已配置`" in md
     assert "proxy=<redacted>" not in md
     assert "probe_tok_secret" not in md
@@ -750,6 +769,7 @@ def test_probe_falls_back_to_cached_artists_on_sublist_405(tmp_path, monkeypatch
     monkeypatch.delenv("NETEASE_API_CRYPTO", raising=False)
     monkeypatch.delenv("NETEASE_API_PROXY", raising=False)
     monkeypatch.setattr(probe_mod, "verify_login", lambda *a, **kw: None)
+    monkeypatch.setattr(probe_mod.time, "sleep", lambda *a, **kw: None)
 
     class _FakeResp:
         def __init__(self, status_code, body):
@@ -764,7 +784,7 @@ def test_probe_falls_back_to_cached_artists_on_sublist_405(tmp_path, monkeypatch
         def json(self):
             return self._body
 
-    def fake_request(method, url, data=None, params=None, timeout=None):
+    def fake_request(method, url, data=None, params=None, headers=None, proxies=None, timeout=None):
         if url.endswith("/artist/sublist"):
             return _FakeResp(405, {"code": 405, "message": "操作频繁"})
         if url.endswith("/artist/songs"):
@@ -783,11 +803,16 @@ def test_probe_falls_back_to_cached_artists_on_sublist_405(tmp_path, monkeypatch
     assert report["artist_source"] == "fallback-cache"
     assert report["artist_cache_key"] == fp
     assert report["artist_count"] == 1
-    assert report["diagnostics"] == []
+    assert len(report["diagnostics"]) >= 12
+    assert all(d["endpoint"] == "/artist/sublist" for d in report["diagnostics"])
+    diag_modes = {d["mode"] for d in report["diagnostics"]}
+    assert {"api", "linuxapi", "eapi+iphone+er+ct", "direct-music-api"} <= diag_modes
     assert any(c["endpoint"] == "/album" and c["ok"] for c in report["checks"])
 
     md = engine.redacted_error_text(ci_scan._build_probe_summary_md(report))
     assert "降级：使用艺人缓存" in md
+    assert "传输模式诊断矩阵" in md
+    assert "linuxapi" in md
     assert "代理：`未配置`" in md
     assert "fallback_tok_888" not in md
 

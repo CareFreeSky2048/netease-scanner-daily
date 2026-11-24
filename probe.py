@@ -91,73 +91,203 @@ def _resolve_sample_artist_id(config, cookie=""):
     return "6452"
 
 
+def _merge_cookie(cookie, extra):
+    base = str(cookie or "").strip().rstrip(";")
+    add = str(extra or "").strip().strip(";")
+    if not add:
+        return f"{base};" if base else ""
+    if not base:
+        return f"{add};"
+    return f"{base}; {add};"
+
+
+def _parse_probe_response(entry, resp, scrub_fn, endpoint):
+    entry["http_status"] = resp.status_code
+    parsed = None
+    try:
+        body = resp.json()
+        if isinstance(body, dict):
+            parsed = body
+            entry["api_code"] = body.get("code")
+            msg = body.get("message") or body.get("msg") or ""
+            if msg:
+                entry["detail"] = scrub_fn(str(msg))
+    except Exception:
+        pass
+    entry["ok"] = resp.ok and isinstance(parsed, dict) and parsed.get("code") == 200
+    if entry["ok"] and endpoint == "/artist/sublist" and isinstance(parsed.get("data"), list):
+        entry["detail"] = f"返回 {len(parsed['data'])} 位（total={parsed.get('count', '—')}）"
+    if not entry["detail"] and not entry["ok"]:
+        entry["detail"] = f"HTTP {resp.status_code}"
+    return parsed
+
+
+def _probe_endpoint(
+    results,
+    base,
+    cookie,
+    overrides,
+    scrub_fn,
+    endpoint,
+    mode_name,
+    base_params,
+    mode_params,
+    *,
+    extra_cookie="",
+    delay=0.0,
+):
+    start = time.monotonic()
+    proxy_extra = {"proxy": overrides["proxy"]} if overrides.get("proxy") else {}
+    req_cookie = _merge_cookie(cookie, extra_cookie) if extra_cookie else cookie
+    req_params = {
+        **base_params,
+        **mode_params,
+        **proxy_extra,
+        "cookie": req_cookie,
+        "timestamp": int(time.time() * 1000),
+    }
+    entry = {
+        "endpoint": endpoint,
+        "mode": mode_name,
+        "http_status": None,
+        "api_code": None,
+        "ok": False,
+        "detail": "",
+        "elapsed_ms": 0,
+    }
+    parsed = None
+    try:
+        # Bust NeteaseCloudMusicApi's 2-minute URL apicache across diagnostic modes.
+        resp = requests.request(
+            "POST",
+            base + endpoint,
+            params={"_diag": f"{mode_name}_{int(time.time() * 1000)}"},
+            data=req_params,
+            timeout=8,
+        )
+        parsed = _parse_probe_response(entry, resp, scrub_fn, endpoint)
+    except Exception as exc:
+        entry["detail"] = scrub_fn(type(exc).__name__)
+    entry["elapsed_ms"] = round((time.monotonic() - start) * 1000)
+    results.append(entry)
+    if delay > 0:
+        time.sleep(delay)
+    return parsed
+
+
+def _run_sublist_protocol_sweep(base, cookie, overrides, scrub_fn, *, delay=0.15):
+    """Test /artist/sublist across crypto modes, client fingerprints, and direct upstream POST."""
+    results = []
+    sublist_modes = (
+        ("default", {}, ""),
+        ("realIP", {"realIP": DIAGNOSTIC_REAL_IP}, ""),
+        ("eapi", {"crypto": "eapi"}, ""),
+        ("realIP+eapi", {"realIP": DIAGNOSTIC_REAL_IP, "crypto": "eapi"}, ""),
+        ("api", {"crypto": "api"}, ""),
+        ("realIP+api", {"realIP": DIAGNOSTIC_REAL_IP, "crypto": "api"}, ""),
+        ("linuxapi", {"crypto": "linuxapi"}, ""),
+        ("realIP+linuxapi", {"realIP": DIAGNOSTIC_REAL_IP, "crypto": "linuxapi"}, ""),
+        (
+            "eapi+iphone+er+ct",
+            {"realIP": DIAGNOSTIC_REAL_IP, "crypto": "eapi", "e_r": "true", "checkToken": "true"},
+            "os=iphone; appver=9.0.90; osver=16.2; channel=distribution",
+        ),
+        (
+            "eapi+android+er+ct",
+            {
+                "realIP": DIAGNOSTIC_REAL_IP,
+                "crypto": "eapi",
+                "e_r": "true",
+                "checkToken": "true",
+                "ua": "NeteaseMusic/9.1.65.240927161425(9001065);Dalvik/2.1.0 (Linux; U; Android 14; 23013RK75C Build/UKQ1.230804.001)",
+            },
+            "os=android; appver=8.20.20.231215173437; osver=14; channel=xiaomi",
+        ),
+        (
+            "eapi+pc+er+ct",
+            {
+                "realIP": DIAGNOSTIC_REAL_IP,
+                "crypto": "eapi",
+                "e_r": "true",
+                "checkToken": "true",
+                "ua": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Safari/537.36 Chrome/91.0.4472.164 NeteaseMusicDesktop/3.0.18.203152",
+            },
+            "os=pc; appver=3.1.17.204416; osver=Microsoft-Windows-10-Professional-build-19045-64bit; channel=netease",
+        ),
+    )
+
+    for mode_name, mode_params, extra_cookie in sublist_modes:
+        _probe_endpoint(
+            results,
+            base,
+            cookie,
+            overrides,
+            scrub_fn,
+            "/artist/sublist",
+            mode_name,
+            {"limit": 3, "offset": 0},
+            mode_params,
+            extra_cookie=extra_cookie,
+            delay=delay,
+        )
+
+    direct_entry = {
+        "endpoint": "/artist/sublist",
+        "mode": "direct-music-api",
+        "http_status": None,
+        "api_code": None,
+        "ok": False,
+        "detail": "",
+        "elapsed_ms": 0,
+    }
+    direct_start = time.monotonic()
+    try:
+        proxy_val = overrides.get("proxy", "")
+        proxy_kw = {"proxies": {"http": proxy_val, "https": proxy_val}} if proxy_val else {}
+        resp = requests.request(
+            "POST",
+            "https://music.163.com/api/artist/sublist",
+            data={"limit": 3, "offset": 0, "total": "true"},
+            headers={
+                "Cookie": _merge_cookie(cookie, "os=pc"),
+                "Referer": "https://music.163.com/",
+                "Origin": "https://music.163.com",
+                "User-Agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                    "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+                ),
+                "X-Real-IP": DIAGNOSTIC_REAL_IP,
+                "X-Forwarded-For": DIAGNOSTIC_REAL_IP,
+            },
+            timeout=8,
+            **proxy_kw,
+        )
+        _parse_probe_response(direct_entry, resp, scrub_fn, "/artist/sublist")
+    except Exception as exc:
+        direct_entry["detail"] = scrub_fn(type(exc).__name__)
+    direct_entry["elapsed_ms"] = round((time.monotonic() - direct_start) * 1000)
+    results.append(direct_entry)
+    return results
+
+
 def _run_diagnostics(base, cookie, config, overrides, scrub_fn):
     """Read-only sweep across transport modes when primary probe fails."""
-    results = []
-    proxy_extra = {"proxy": overrides["proxy"]} if overrides.get("proxy") else {}
+    results = _run_sublist_protocol_sweep(base, cookie, overrides, scrub_fn)
     sample_artist_id = _resolve_sample_artist_id(config, cookie)
     sample_album_id = None
 
     modes = (
         ("default", {}),
-        ("realIP", {"realIP": DIAGNOSTIC_REAL_IP}),
-        ("eapi", {"crypto": "eapi"}),
         ("realIP+eapi", {"realIP": DIAGNOSTIC_REAL_IP, "crypto": "eapi"}),
     )
 
-    def test_one(endpoint, mode_name, base_params, mode_params):
-        start = time.monotonic()
-        req_params = {
-            **base_params,
-            **mode_params,
-            **proxy_extra,
-            "cookie": cookie,
-            "timestamp": int(time.time() * 1000),
-        }
-        entry = {
-            "endpoint": endpoint,
-            "mode": mode_name,
-            "http_status": None,
-            "api_code": None,
-            "ok": False,
-            "detail": "",
-            "elapsed_ms": 0,
-        }
-        parsed = None
-        try:
-            # Bust NeteaseCloudMusicApi's 2-minute URL apicache across diagnostic modes.
-            resp = requests.request(
-                "POST",
-                base + endpoint,
-                params={"_diag": f"{mode_name}_{int(time.time() * 1000)}"},
-                data=req_params,
-                timeout=8,
-            )
-            entry["http_status"] = resp.status_code
-            try:
-                body = resp.json()
-                if isinstance(body, dict):
-                    parsed = body
-                    entry["api_code"] = body.get("code")
-                    msg = body.get("message") or body.get("msg") or ""
-                    if msg:
-                        entry["detail"] = scrub_fn(str(msg))
-            except Exception:
-                pass
-            entry["ok"] = resp.ok and isinstance(parsed, dict) and parsed.get("code") == 200
-            if not entry["detail"] and not entry["ok"]:
-                entry["detail"] = f"HTTP {resp.status_code}"
-        except Exception as exc:
-            entry["detail"] = scrub_fn(type(exc).__name__)
-        entry["elapsed_ms"] = round((time.monotonic() - start) * 1000)
-        results.append(entry)
-        return parsed
-
     for mode_name, mode_params in modes:
-        test_one("/artist/sublist", mode_name, {"limit": 3, "offset": 0}, mode_params)
-
-    for mode_name, mode_params in (modes[0], modes[3]):
-        songs_body = test_one(
+        songs_body = _probe_endpoint(
+            results,
+            base,
+            cookie,
+            overrides,
+            scrub_fn,
             "/artist/songs",
             mode_name,
             {"id": sample_artist_id, "limit": 3, "offset": 0, "order": "time"},
@@ -168,7 +298,12 @@ def _run_diagnostics(base, cookie, config, overrides, scrub_fn):
             if songs and isinstance(songs[0], dict):
                 sample_album_id = (songs[0].get("al") or {}).get("id")
 
-        albums_body = test_one(
+        albums_body = _probe_endpoint(
+            results,
+            base,
+            cookie,
+            overrides,
+            scrub_fn,
             "/artist/album",
             mode_name,
             {"id": sample_artist_id, "limit": 3, "offset": 0},
@@ -180,8 +315,18 @@ def _run_diagnostics(base, cookie, config, overrides, scrub_fn):
                 sample_album_id = albums[0].get("id")
 
     album_target = str(sample_album_id or "18905")
-    for mode_name, mode_params in (modes[0], modes[3]):
-        test_one("/album", mode_name, {"id": album_target}, mode_params)
+    for mode_name, mode_params in modes:
+        _probe_endpoint(
+            results,
+            base,
+            cookie,
+            overrides,
+            scrub_fn,
+            "/album",
+            mode_name,
+            {"id": album_target},
+            mode_params,
+        )
 
     return results
 
@@ -271,6 +416,7 @@ def probe(config=None, artist_count=3, api_base=None):
             )
             report["artist_source"] = "fallback-cache"
             report["artist_cache_key"] = fallback_key
+            report["diagnostics"] = _run_sublist_protocol_sweep(base, cookie, overrides, scrub_fn)
             artists = fallback_artists
 
         if not artists:
