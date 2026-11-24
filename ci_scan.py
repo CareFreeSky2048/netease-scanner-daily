@@ -7,11 +7,13 @@ import json
 import os
 import re
 import shutil
+import sqlite3
 import sys
 import tempfile
 import threading
 import time
-from datetime import datetime
+from contextlib import closing
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 from zoneinfo import ZoneInfo
@@ -46,6 +48,11 @@ def _parse_args(argv: Optional[Iterable[str]] = None) -> argparse.Namespace:
 
     parser.add_argument("--probe-only", action="store_true")
     parser.add_argument("--probe-artists", type=int, default=3)
+    parser.add_argument(
+        "--fresh-today",
+        action="store_true",
+        help="Dry-run helper: roll back today's runs/hits/CSV links/album cache entries in the ephemeral data dir before scanning",
+    )
 
     parser.add_argument("--result-json", type=Path, default=None)
     parser.add_argument("--today-csv", type=Path, default=None)
@@ -223,6 +230,7 @@ def _build_scan_summary_md(
     run_hits: List[Dict[str, Any]],
     day_hits: List[Dict[str, Any]],
     scrub_fn: Any,
+    fresh_today_rollback: Optional[Dict[str, Any]] = None,
 ) -> str:
     status = run.get("status", "unknown")
     badges = {
@@ -238,28 +246,46 @@ def _build_scan_summary_md(
     metrics = run.get("metrics") or {}
     elapsed_min = round(float(metrics.get("elapsed_sec") or 0) / 60.0, 1)
 
-    lines = [
-        f"## 网易云新曲扫描报告 · {today_str}",
-        "",
-        f"**状态**：{badge}",
-        "",
-        "| 项目 | 值 |",
-        "| --- | --- |",
-        f"| Run ID | `{run.get('id', '')}` |",
-        f"| 来源 | `{run.get('source', '')}`"
-        + (f" (`{run.get('schedule_time')}`)" if run.get("schedule_time") else "")
-        + " |",
-        f"| 扫描模式 | `{params.get('scanMode', '')}` |",
-        f"| 并发线程 | `{params.get('threads', '')}` |",
-        f"| 外部合辑窗口 | `{params.get('externalStartDate', '')}` ~ `{params.get('externalEndDate', '')}` |",
-        f"| 新专/新歌窗口 | `{params.get('newStartDate', '')}` ~ `{params.get('newEndDate', '')}` |",
-        f"| 耗时 | {elapsed_min} 分钟 |",
-        f"| 本次新增 | **{len(run_hits)}** 条（CSV 已去重 {metrics.get('csv_skipped', 0)} 条） |",
-        f"| 今日累计新增 | **{len(day_hits)}** 条 |",
-        f"| 覆蓋艺人 / 候选专辑 | {summary.get('artists', 0)} 位 / {summary.get('unique_albums', 0)} 张 |",
-        f"| 失败计数 | 艺人 {summary.get('artist_failures', 0)} · 探测 {summary.get('new_album_probe_failures', 0)} · 专辑 {summary.get('album_errors', 0)} · 归属 {summary.get('owned_errors', 0)} · 异常 {summary.get('task_errors', 0)} |",
-        "",
-    ]
+    title = (
+        f"## 🧪 网易云新曲扫描试跑报告（模拟今日首次扫描）· {today_str}"
+        if fresh_today_rollback is not None
+        else f"## 网易云新曲扫描报告 · {today_str}"
+    )
+    lines = [title, ""]
+    if fresh_today_rollback is not None:
+        lines.extend(
+            [
+                "> 🧪 **隔离试跑模式（模拟今日尚未扫描）**：已在临时沙箱目录回滚今日历史状态"
+                f"（任务 {fresh_today_rollback.get('removed_runs', 0)} 次 · "
+                f"命中 {fresh_today_rollback.get('removed_hits', 0)} 条 · "
+                f"CSV 去重行 {fresh_today_rollback.get('removed_csv_rows', 0)} 条 · "
+                f"今日专辑缓存 {fresh_today_rollback.get('evicted_album_cache', 0)} 条），"
+                "保留昨日及更早历史与艺人缓存。结果仅保留于本次 Summary 与 Artifacts，**未写回**生产 Release（`scanner-state`）与 `site` 分支。",
+                "",
+            ]
+        )
+    lines.extend(
+        [
+            f"**状态**：{badge}",
+            "",
+            "| 项目 | 值 |",
+            "| --- | --- |",
+            f"| Run ID | `{run.get('id', '')}` |",
+            f"| 来源 | `{run.get('source', '')}`"
+            + (f" (`{run.get('schedule_time')}`)" if run.get("schedule_time") else "")
+            + " |",
+            f"| 扫描模式 | `{params.get('scanMode', '')}` |",
+            f"| 并发线程 | `{params.get('threads', '')}` |",
+            f"| 外部合辑窗口 | `{params.get('externalStartDate', '')}` ~ `{params.get('externalEndDate', '')}` |",
+            f"| 新专/新歌窗口 | `{params.get('newStartDate', '')}` ~ `{params.get('newEndDate', '')}` |",
+            f"| 耗时 | {elapsed_min} 分钟 |",
+            f"| 本次新增 | **{len(run_hits)}** 条（CSV 已去重 {metrics.get('csv_skipped', 0)} 条） |",
+            f"| 今日累计新增 | **{len(day_hits)}** 条 |",
+            f"| 覆蓋艺人 / 候选专辑 | {summary.get('artists', 0)} 位 / {summary.get('unique_albums', 0)} 张 |",
+            f"| 失败计数 | 艺人 {summary.get('artist_failures', 0)} · 探测 {summary.get('new_album_probe_failures', 0)} · 专辑 {summary.get('album_errors', 0)} · 归属 {summary.get('owned_errors', 0)} · 异常 {summary.get('task_errors', 0)} |",
+            "",
+        ]
+    )
 
     if run.get("error"):
         lines.extend(["### 错误信息", "", f"> ❌ {scrub_fn(run['error'])}", ""])
@@ -430,6 +456,126 @@ def _write_text(path: Optional[Path], text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def rollback_today_state(
+    data_dir: Path,
+    today_str: str,
+    *,
+    db_path: Optional[Path] = None,
+) -> Dict[str, Any]:
+    """Roll back today's ephemeral scan state so a dry-run simulates today never having been scanned."""
+    db_file = db_path or (data_dir / "scan_history.sqlite3")
+    csv_file = data_dir / "VA_Tracks_Output.csv"
+    album_cache_file = data_dir / "VA_Album_Date_Cache.json"
+
+    removed_runs = 0
+    removed_hits = 0
+    removed_logs = 0
+    removed_m3_reports = 0
+    removed_csv_rows = 0
+    evicted_album_cache = 0
+    today_links: set[str] = set()
+
+    if db_file.is_file():
+        with closing(sqlite3.connect(db_file, timeout=30)) as db:
+            run_ids = [
+                row[0]
+                for row in db.execute(
+                    "SELECT id FROM runs WHERE schedule_date = ? OR "
+                    "(source = 'manual' AND substr(created_at, 1, 10) = ?)",
+                    (today_str, today_str),
+                ).fetchall()
+                if row[0]
+            ]
+            if run_ids:
+                ph = ",".join("?" for _ in run_ids)
+                today_links = {
+                    row[0]
+                    for row in db.execute(
+                        f"SELECT DISTINCT link FROM hits WHERE run_id IN ({ph})",
+                        run_ids,
+                    ).fetchall()
+                    if row[0]
+                }
+                cur = db.execute(f"DELETE FROM hits WHERE run_id IN ({ph})", run_ids)
+                removed_hits = max(0, cur.rowcount or 0)
+                cur = db.execute(f"DELETE FROM logs WHERE run_id IN ({ph})", run_ids)
+                removed_logs = max(0, cur.rowcount or 0)
+                m3_keys = [f"m3_match_report:{rid}" for rid in run_ids]
+                m3_ph = ",".join("?" for _ in m3_keys)
+                cur = db.execute(f"DELETE FROM settings WHERE key IN ({m3_ph})", m3_keys)
+                removed_m3_reports = max(0, cur.rowcount or 0)
+                cur = db.execute(f"DELETE FROM runs WHERE id IN ({ph})", run_ids)
+                removed_runs = max(0, cur.rowcount or 0)
+                db.commit()
+
+    if today_links and csv_file.is_file():
+        tmp_csv = csv_file.with_suffix(".csv.tmp")
+        try:
+            with (
+                csv_file.open("r", encoding="utf-8-sig", newline="") as src,
+                tmp_csv.open("w", encoding="utf-8-sig", newline="") as dst,
+            ):
+                reader = csv.reader(src)
+                writer = csv.writer(dst)
+                header = next(reader, None)
+                if header is not None:
+                    writer.writerow(header)
+                for row in reader:
+                    if len(row) >= 5 and row[4] in today_links:
+                        removed_csv_rows += 1
+                    else:
+                        writer.writerow(row)
+            if removed_csv_rows > 0:
+                tmp_csv.replace(csv_file)
+            else:
+                tmp_csv.unlink(missing_ok=True)
+        except Exception:
+            tmp_csv.unlink(missing_ok=True)
+            raise
+
+    if album_cache_file.is_file():
+        today_date = date.fromisoformat(today_str)
+        today_start_ts = datetime(
+            today_date.year, today_date.month, today_date.day, 0, 0, 0, tzinfo=TZ
+        ).timestamp()
+        cache_data = json.loads(album_cache_file.read_text(encoding="utf-8"))
+        if isinstance(cache_data, dict):
+            cleaned: Dict[str, Any] = {}
+            for key, val in cache_data.items():
+                evict = False
+                if isinstance(val, dict):
+                    cached_at = val.get("cached_at")
+                    if cached_at is not None and not isinstance(cached_at, bool):
+                        try:
+                            if float(cached_at) >= today_start_ts:
+                                evict = True
+                        except (TypeError, ValueError):
+                            evict = False
+                if evict:
+                    evicted_album_cache += 1
+                else:
+                    cleaned[key] = val
+            if evicted_album_cache > 0:
+                tmp_cache = album_cache_file.with_suffix(".json.tmp")
+                try:
+                    with tmp_cache.open("w", encoding="utf-8") as handle:
+                        json.dump(cleaned, handle, ensure_ascii=False, separators=(",", ":"))
+                    tmp_cache.replace(album_cache_file)
+                except Exception:
+                    tmp_cache.unlink(missing_ok=True)
+                    raise
+
+    return {
+        "date": today_str,
+        "removed_runs": removed_runs,
+        "removed_hits": removed_hits,
+        "removed_logs": removed_logs,
+        "removed_m3_reports": removed_m3_reports,
+        "removed_csv_rows": removed_csv_rows,
+        "evicted_album_cache": evicted_album_cache,
+    }
+
+
 def execute_scan(
     runtime: Any,
     args: argparse.Namespace,
@@ -439,6 +585,20 @@ def execute_scan(
     import server
 
     today_str = datetime.now(TZ).date().isoformat()
+    fresh_today = bool(getattr(args, "fresh_today", False))
+    if fresh_today and args.retry_of.strip():
+        raise ValueError("--fresh-today cannot be combined with --retry-of")
+
+    fresh_today_rollback: Optional[Dict[str, Any]] = None
+    if fresh_today:
+        fresh_today_rollback = rollback_today_state(
+            data_dir, today_str, db_path=runtime.store.path
+        )
+        print(
+            f"[ci_scan] 🧪 Fresh-day dry-run rollback for {today_str}: "
+            f"{json.dumps(fresh_today_rollback, ensure_ascii=False)}",
+            flush=True,
+        )
 
     if args.source == "scheduled" and args.skip_if_slot_exists:
         if runtime.store.scheduled_exists(today_str, args.schedule_slot):
@@ -579,7 +739,14 @@ def execute_scan(
     def scrub_all(text: str) -> str:
         return engine.redacted_error_text(runtime.scrub(text))
 
-    summary_md = _build_scan_summary_md(run, today_str, run_hits, day_hits, scrub_all)
+    summary_md = _build_scan_summary_md(
+        run,
+        today_str,
+        run_hits,
+        day_hits,
+        scrub_all,
+        fresh_today_rollback=fresh_today_rollback,
+    )
     _write_text(args.summary_md, summary_md)
 
     metrics = run.get("metrics") or {}
@@ -587,6 +754,7 @@ def execute_scan(
         "run_id": run_id,
         "status": run.get("status"),
         "skipped": False,
+        "dry_run": fresh_today,
         "date": today_str,
         "source": run.get("source"),
         "schedule_slot": run.get("schedule_time"),
@@ -596,6 +764,8 @@ def execute_scan(
         "warning": scrub_all(run.get("warning") or ""),
         "error": scrub_all(run.get("error") or ""),
     }
+    if fresh_today_rollback is not None:
+        result_payload["fresh_today_rollback"] = fresh_today_rollback
     _write_json(args.result_json, result_payload)
 
     status = run.get("status")

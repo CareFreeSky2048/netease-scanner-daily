@@ -54,6 +54,7 @@ Remove-Item Env:GITHUB_TOKEN
 1. 打开 GitHub 仓库 **Actions → Netease Music Scanner → Run workflow**。
 2. 先选择 `action = probe` 运行一次接口探测，确认 GitHub Actions 节点连通网易云接口且 `MUSIC_COOKIE` 有效。
 3. 再选择 `action = scan`、`scan_mode = auto` 手动试跑一次全量扫描，核对 **Job Summary**、下载 Artifacts 中的 `latest-report.html` / `today.csv` / `records-export.zip`。
+   - **隔离试跑模式（`action = test_fresh_day`）**：如需模拟“假设今天一次都没扫描过”的状态（仅回滚临时工作区中今日的任务、命中、CSV 当日去重行与今日专辑缓存，完整保留昨日及更早历史与艺人缓存），可在 **Run workflow** 选择 `action = test_fresh_day`。结果仅输出到 **Job Summary** 与 Artifacts，**绝不会**写回生产 Release（`scanner-state`）或覆盖 `site` 分支。
 4. 确认新链路连续正常后，登录旧 VPS 停止原扫描服务（避免双端同时写入或重复触发）：
 
 ```bash
@@ -63,7 +64,7 @@ docker compose -f compose.tunnel.yaml stop scanner
 
 ### 5. 私有查看结果与同步本地电脑
 
-- **Actions Job Summary**：每次运行结束后直接在工作流页面查看状态、耗时、错误告警与 Top 30 高热度专辑（点击专辑标题直达网易云）。
+- **Actions Job Summary**：每次运行结束后直接在工作流页面查看状态、耗时、错误告警与全部新增专辑（按热度排序，展示命中艺人，点击专辑标题直达网易云）。
 - **离线单文件报告 & 记录包**：每次运行在 Artifacts 保留 30 天，包含 `latest-report.html`（双端自适应，双击即可离线搜索/筛热度/导出 CSV）、`today.csv`、`run.csv`、`m3-report.csv`（M3 模式）及桌面兼容回传包 `records-export.zip`。
 - **私有托管静态网页（推荐 Cloudflare Pages + Access）**：工作流每次扫描后会将精简静态页面强制单提交推送到 `site` 分支（无历史膨胀）。在 Cloudflare Pages 绑定该私有仓库的 `site` 分支（构建命令留空，输出目录填 `.`），并开启 **Cloudflare Access** 登录保护，即可用手机和电脑随时安全访问全部按日结果与任务历史。
 

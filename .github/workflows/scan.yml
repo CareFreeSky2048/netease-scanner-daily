@@ -8,11 +8,12 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: 'Action to perform'
+        description: 'Action to perform (test_fresh_day = isolated dry-run assuming today unscanned)'
         type: choice
         default: 'scan'
         options:
           - scan
+          - test_fresh_day
           - probe
           - rebuild_site
       scan_mode:
@@ -211,19 +212,23 @@ jobs:
             --today-csv ./artifacts/today.csv
             --run-csv ./artifacts/run.csv
             --m3-csv ./artifacts/m3-report.csv
-            --desktop-zip ./artifacts/records-export.zip
             --summary-md "$GITHUB_STEP_SUMMARY"
             --no-fail-on-error
           )
 
-          if [ "$EVENT_NAME" = "schedule" ]; then
-            if [ "${EVENT_SCHEDULE:-}" = "0 20 * * *" ]; then
-              ARGS+=(--source scheduled --schedule-slot 04:00 --skip-if-slot-exists)
-            else
-              ARGS+=(--source scheduled --schedule-slot 00:03 --skip-if-slot-exists)
-            fi
+          if [ "$RUN_ACTION" = "test_fresh_day" ]; then
+            ARGS+=(--fresh-today --source manual)
           else
-            ARGS+=(--source manual)
+            ARGS+=(--desktop-zip ./artifacts/records-export.zip)
+            if [ "$EVENT_NAME" = "schedule" ]; then
+              if [ "${EVENT_SCHEDULE:-}" = "0 20 * * *" ]; then
+                ARGS+=(--source scheduled --schedule-slot 04:00 --skip-if-slot-exists)
+              else
+                ARGS+=(--source scheduled --schedule-slot 00:03 --skip-if-slot-exists)
+              fi
+            else
+              ARGS+=(--source manual)
+            fi
           fi
 
           if [ -n "${INPUT_EXT_START:-}" ]; then ARGS+=(--external-start-date "$INPUT_EXT_START"); fi
@@ -284,7 +289,7 @@ jobs:
         run: python state_store.py save --data-dir ./data --keep-m3-reports 10 --keep-latest 3 --daily-retention 14
 
       - name: Publish squashed static viewer to site branch
-        if: success() && steps.ctx.outputs.action != 'probe' && steps.run-meta.outputs.skipped != 'true'
+        if: success() && (steps.ctx.outputs.action == 'scan' || steps.ctx.outputs.action == 'rebuild_site') && steps.run-meta.outputs.skipped != 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
@@ -317,7 +322,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Enforce scan status gate
-        if: steps.ctx.outputs.action == 'scan'
+        if: steps.ctx.outputs.action == 'scan' || steps.ctx.outputs.action == 'test_fresh_day'
         env:
           RUN_STATUS: ${{ steps.run-meta.outputs.status }}
         shell: bash

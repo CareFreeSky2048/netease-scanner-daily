@@ -11,7 +11,7 @@ import sqlite3
 import subprocess
 import tarfile
 from contextlib import closing
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -549,6 +549,7 @@ def test_scan_workflow_respects_github_limits_and_shell_safety():
     inputs_block = m.group(1)
     input_names = re.findall(r"^      ([a-z0-9_]+):\s*$", inputs_block, flags=re.MULTILINE)
     assert 1 <= len(input_names) <= 10, f"Found {len(input_names)} dispatch inputs: {input_names}"
+    assert "test_fresh_day" in inputs_block
 
     # Concurrency group must prevent parallel state writes without cancelling active scans.
     assert "group: netease-scanner-state" in text
@@ -564,6 +565,21 @@ def test_scan_workflow_respects_github_limits_and_shell_safety():
     assert "NETEASE_REAL_IP:" in text
     assert "NETEASE_API_CRYPTO:" in text
     assert "NETEASE_API_PROXY:" in text
+
+    # Dry-run test_fresh_day must NEVER save state or publish to site branch, while keeping status gate.
+    save_match = re.search(r"- name: Save compacted state to GitHub Release\s*\n(.*?)(?=\n      - name: |\Z)", text, flags=re.DOTALL)
+    assert save_match is not None
+    assert "steps.ctx.outputs.action == 'scan'" in save_match.group(1)
+    assert "test_fresh_day" not in save_match.group(1)
+
+    publish_match = re.search(r"- name: Publish squashed static viewer to site branch\s*\n(.*?)(?=\n      - name: |\Z)", text, flags=re.DOTALL)
+    assert publish_match is not None
+    assert "steps.ctx.outputs.action == 'scan' || steps.ctx.outputs.action == 'rebuild_site'" in publish_match.group(1)
+    assert "!= 'probe'" not in publish_match.group(1)
+
+    gate_match = re.search(r"- name: Enforce scan status gate\s*\n(.*?)(?=\n      - name: |\Z)", text, flags=re.DOTALL)
+    assert gate_match is not None
+    assert "steps.ctx.outputs.action == 'test_fresh_day'" in gate_match.group(1)
 
 
 def test_engine_transport_overrides_and_proxy_redaction(monkeypatch):
@@ -852,6 +868,228 @@ def test_build_site_deduplicates_placeholders_and_includes_artists():
     assert by_id["500"]["artists"] == ["Alice", "Bob"]
     assert by_id["501"]["track_count"] == 1
     assert by_id["501"]["artists"] == ["Solo"]
+
+
+def test_rollback_today_state_isolates_only_today_and_preserves_history(tmp_path):
+    data_dir = tmp_path / "data"
+    cache_dir = data_dir / "VA_Artist_Caches"
+    cache_dir.mkdir(parents=True)
+    artist_cache_file = cache_dir / "artists_92c430701d65a19f.json"
+    artist_payload = json.dumps({"count": 2, "artists": [{"id": "1", "name": "A"}, {"id": "2", "name": "B"}]})
+    artist_cache_file.write_text(artist_payload, encoding="utf-8")
+
+    csv_file = data_dir / "VA_Tracks_Output.csv"
+    with csv_file.open("w", encoding="utf-8-sig", newline="") as handle:
+        w = csv.writer(handle)
+        w.writerow(state_store.CSV_HEADER)
+        w.writerow(["Artist Old", "Old Track", "Old Album", "2026-11-23", "https://music.163.com/#/song?id=101", "0"])
+        w.writerow(["Artist S", "Today Sched Track", "Album S", "2026-11-24", "https://music.163.com/#/song?id=201", "1"])
+        w.writerow(["Artist M", "Today Manual Track", "Album M", "2026-11-24", "https://music.163.com/#/song?id=202", "1"])
+
+    yest_ts = datetime(2026, 11, 23, 23, 59, 59, tzinfo=ci_scan.TZ).timestamp()
+    today_ts = datetime(2026, 11, 24, 0, 5, 0, tzinfo=ci_scan.TZ).timestamp()
+    album_cache_file = data_dir / "VA_Album_Date_Cache.json"
+    album_cache_file.write_text(
+        json.dumps({
+            "1001": {"album_id": "1001", "album_name": "Old Album", "cached_at": yest_ts},
+            "1002": {"album_id": "1002", "album_name": "Today Album", "cached_at": today_ts},
+            "1003": {"album_id": "1003", "album_name": "Legacy Entry"},
+        }),
+        encoding="utf-8",
+    )
+
+    store = server.Store(data_dir / "scan_history.sqlite3")
+    store.set_value("backup_date", "2026-11-24")
+    with store.connect() as db:
+        runs = [
+            ("run_yest", "scheduled", "2026-11-23", "00:03", "2026-11-23T00:03:00+08:00", "https://music.163.com/#/song?id=101"),
+            ("run_today_sched", "scheduled", "2026-11-24", "00:03", "2026-11-24T00:03:00+08:00", "https://music.163.com/#/song?id=201"),
+            ("run_today_man", "manual", None, None, "2026-11-24T10:00:00+08:00", "https://music.163.com/#/song?id=202"),
+        ]
+        for rid, src, sdate, stime, cat, link in runs:
+            db.execute(
+                "INSERT INTO runs(id,source,schedule_date,schedule_time,status,created_at,params) VALUES(?,?,?,?,?,?,?)",
+                (rid, src, sdate, stime, "success", cat, "{}"),
+            )
+            db.execute("INSERT INTO hits VALUES(?,?,?)", (rid, link, json.dumps({"link": link})))
+            db.execute("INSERT INTO logs(run_id,created_at,level,text) VALUES(?,?,?,?)", (rid, cat, "info", f"log {rid}"))
+            db.execute("INSERT INTO settings(key,value) VALUES(?,?)", (f"m3_match_report:{rid}", "{}"))
+
+    res = ci_scan.rollback_today_state(data_dir, "2026-11-24")
+    assert res == {
+        "date": "2026-11-24",
+        "removed_runs": 2,
+        "removed_hits": 2,
+        "removed_logs": 2,
+        "removed_m3_reports": 2,
+        "removed_csv_rows": 2,
+        "evicted_album_cache": 1,
+    }
+
+    with closing(sqlite3.connect(data_dir / "scan_history.sqlite3")) as db:
+        assert [r[0] for r in db.execute("SELECT id FROM runs").fetchall()] == ["run_yest"]
+        assert [r[0] for r in db.execute("SELECT link FROM hits").fetchall()] == ["https://music.163.com/#/song?id=101"]
+        assert [r[0] for r in db.execute("SELECT run_id FROM logs").fetchall()] == ["run_yest"]
+        keys = {r[0] for r in db.execute("SELECT key FROM settings").fetchall()}
+        assert keys == {"backup_date", "m3_match_report:run_yest"}
+
+    with csv_file.open("r", encoding="utf-8-sig", newline="") as handle:
+        csv_rows = list(csv.reader(handle))
+    assert len(csv_rows) == 2
+    assert csv_rows[1][4] == "https://music.163.com/#/song?id=101"
+
+    album_cache_after = json.loads(album_cache_file.read_text(encoding="utf-8"))
+    assert set(album_cache_after.keys()) == {"1001", "1003"}
+    assert artist_cache_file.read_text(encoding="utf-8") == artist_payload
+
+    # Idempotent on repeated invocation
+    res2 = ci_scan.rollback_today_state(data_dir, "2026-11-24")
+    assert res2 == {
+        "date": "2026-11-24",
+        "removed_runs": 0,
+        "removed_hits": 0,
+        "removed_logs": 0,
+        "removed_m3_reports": 0,
+        "removed_csv_rows": 0,
+        "evicted_album_cache": 0,
+    }
+
+
+def test_ci_scan_fresh_today_dry_run_end_to_end(tmp_path, monkeypatch):
+    data_dir = tmp_path / "fresh_data"
+    (data_dir / "VA_Artist_Caches").mkdir(parents=True)
+    cfg_path = ci_scan._prepare_temp_config(
+        tmp_path / "sec_fresh",
+        raw_cookie="MUSIC_U=dryrun_cookie_123;",
+        threads=4,
+        recent_limit=50,
+        owned_limit=50,
+        new_album_probe_limit=20,
+        artist_cache_key="",
+    )
+
+    today_dt = datetime.now(ci_scan.TZ).replace(hour=1, minute=0, second=0, microsecond=0)
+    today_str = today_dt.date().isoformat()
+    yest_dt = today_dt - timedelta(days=1)
+    yest_str = yest_dt.date().isoformat()
+
+    monkeypatch.setattr(engine, "SCRIPT_DIR", data_dir)
+    monkeypatch.setattr(engine, "CSV_FILE", data_dir / "VA_Tracks_Output.csv")
+    monkeypatch.setattr(engine, "ALBUM_CACHE_FILE", data_dir / "VA_Album_Date_Cache.json")
+    monkeypatch.setattr(engine, "ARTIST_CACHE_DIR", data_dir / "VA_Artist_Caches")
+    monkeypatch.setattr(server, "DATA", data_dir)
+    monkeypatch.setattr(server, "verify_login", lambda *a, **kw: None)
+
+    yest_hit = {
+        "name": "Yest Artist",
+        "song_name": "Yest Song",
+        "album_name": "Yest Album",
+        "date_str": yest_str,
+        "link": "https://music.163.com/#/song?id=100",
+        "flag": 0,
+        "album_id": "100",
+        "album_count": 1,
+    }
+    today_hit = {
+        "name": "Fresh Artist",
+        "song_name": "Fresh Song",
+        "album_name": "Fresh Album",
+        "date_str": today_str,
+        "link": "https://music.163.com/#/song?id=777",
+        "flag": 1,
+        "album_id": "777",
+        "album_count": 3,
+    }
+
+    with (data_dir / "VA_Tracks_Output.csv").open("w", encoding="utf-8-sig", newline="") as handle:
+        w = csv.writer(handle)
+        w.writerow(state_store.CSV_HEADER)
+        w.writerow([yest_hit["name"], yest_hit["song_name"], yest_hit["album_name"], yest_hit["date_str"], yest_hit["link"], "0"])
+        w.writerow([today_hit["name"], today_hit["song_name"], today_hit["album_name"], today_hit["date_str"], today_hit["link"], "1"])
+
+    (data_dir / "VA_Album_Date_Cache.json").write_text(
+        json.dumps({
+            "100": {"album_id": "100", "album_name": "Yest Album", "cached_at": yest_dt.timestamp()},
+            "777": {"album_id": "777", "album_name": "Fresh Album", "cached_at": today_dt.timestamp()},
+        }),
+        encoding="utf-8",
+    )
+
+    store = server.Store(data_dir / "scan_history.sqlite3")
+    with store.connect() as db:
+        db.execute(
+            "INSERT INTO runs(id,source,schedule_date,schedule_time,status,created_at,params) VALUES(?,?,?,?,?,?,?)",
+            ("run_yest", "scheduled", yest_str, "00:03", "success", yest_dt.isoformat(timespec="seconds"), "{}"),
+        )
+        db.execute("INSERT INTO hits VALUES(?,?,?)", ("run_yest", yest_hit["link"], json.dumps(yest_hit)))
+        db.execute(
+            "INSERT INTO runs(id,source,schedule_date,schedule_time,status,created_at,params) VALUES(?,?,?,?,?,?,?)",
+            ("run_prev_today", "scheduled", today_str, "00:03", "success", today_dt.isoformat(timespec="seconds"), "{}"),
+        )
+        db.execute("INSERT INTO hits VALUES(?,?,?)", ("run_prev_today", today_hit["link"], json.dumps(today_hit)))
+
+    def fake_worker(*a, **kw):
+        engine.init_csv_and_seen()
+        emitted = []
+        skipped = 0
+        for item in (yest_hit, today_hit):
+            if engine.write_hit_if_new(item):
+                emitted.append(item)
+                engine.emit({"type": "hit", "data": item})
+            else:
+                skipped += 1
+        engine.emit({
+            "type": "done",
+            "results": emitted,
+            "summary": {"artists": 2, "unique_albums": 2, "artist_failures": 0, "new_album_probe_failures": 0, "album_errors": 0, "owned_errors": 0},
+            "metrics": {"elapsed_sec": 4.2, "results": len(emitted), "csv_skipped": skipped},
+        })
+
+    runtime = server.Runtime(config=server.Config(cfg_path), db_path=data_dir / "scan_history.sqlite3", worker=fake_worker)
+    try:
+        bad_args = ci_scan._parse_args(["--data-dir", str(data_dir), "--fresh-today", "--retry-of", "run_yest"])
+        with pytest.raises(ValueError, match="cannot be combined"):
+            ci_scan.execute_scan(runtime, bad_args, data_dir)
+
+        out_dir = tmp_path / "fresh_out"
+        args = ci_scan._parse_args([
+            "--data-dir", str(data_dir),
+            "--source", "manual",
+            "--scan-mode", "regular",
+            "--threads", "4",
+            "--fresh-today",
+            "--result-json", str(out_dir / "run_result.json"),
+            "--today-csv", str(out_dir / "today.csv"),
+            "--run-csv", str(out_dir / "run.csv"),
+            "--summary-md", str(out_dir / "summary.md"),
+        ])
+        rc = ci_scan.execute_scan(runtime, args, data_dir)
+        assert rc == 0
+
+        res = json.loads((out_dir / "run_result.json").read_text(encoding="utf-8"))
+        assert res["dry_run"] is True
+        assert res["result_count"] == 1
+        assert res["today_total"] == 1
+        assert res["fresh_today_rollback"] == {
+            "date": today_str,
+            "removed_runs": 1,
+            "removed_hits": 1,
+            "removed_logs": 0,
+            "removed_m3_reports": 0,
+            "removed_csv_rows": 1,
+            "evicted_album_cache": 1,
+        }
+
+        summary_text = (out_dir / "summary.md").read_text(encoding="utf-8")
+        assert "🧪 网易云新曲扫描试跑报告（模拟今日首次扫描）" in summary_text
+        assert "隔离试跑模式（模拟今日尚未扫描）" in summary_text
+        assert "未写回" in summary_text
+        assert "Fresh Album" in summary_text
+        assert "CSV 已去重 1 条" in summary_text
+        assert "dryrun_cookie_123" not in summary_text
+    finally:
+        runtime.close()
+
 
 
 
