@@ -33,7 +33,7 @@ def _parse_args(argv: Optional[Iterable[str]] = None) -> argparse.Namespace:
     parser.add_argument("--skip-if-slot-exists", action="store_true")
 
     parser.add_argument("--scan-mode", choices=("auto", "regular", "m3", "m3_intersection"), default="auto")
-    parser.add_argument("--threads", type=int, default=8)
+    parser.add_argument("--threads", type=int, default=7)
     parser.add_argument("--external-start-date", default="")
     parser.add_argument("--external-end-date", default="")
     parser.add_argument("--new-start-date", default="")

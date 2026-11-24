@@ -22,7 +22,7 @@ git push -u origin main
 - **Repository secrets（必填）**：
   - `MUSIC_COOKIE`：填入网易云音乐大号 Cookie（支持纯 `MUSIC_U` 值或完整 `MUSIC_U=...;`；切勿写入仓库文件或日志）。
 - **Repository variables（可选）**：
-  - `SCAN_THREADS`：默认并发线程数，建议设为 `8`（未设置时工作流默认 `8`）。
+  - `SCAN_THREADS`：默认并发线程数，建议设为 `7`（未设置时工作流默认 `7`）。
   - `ARTIST_CACHE_KEY`：若已有大号关注列表缓存指纹，可填入 16 位十六进制指纹（例如 `92c430701d65a19f`），在实时拉取失败时作为回退缓存。
 
 ### 3. 导入已有缓存与历史到 Release `scanner-state`
@@ -70,7 +70,7 @@ docker compose -f compose.tunnel.yaml stop scanner
 ### 6. 调度策略与 GitHub Actions 免费额度说明
 
 - 默认工作流 `.github/workflows/scan.yml` 每天于北京时间 **00:03**（UTC `3 16 * * *`）与 **04:00**（UTC `0 20 * * *`）自动执行，并发组锁定保证同一时刻只有一个扫描读写持久状态；支持通过 `workflow_dispatch` 手动选择 `auto` / `regular` / `m3` / `m3_intersection`、日期窗口、并发线程或针对异常任务的 `retry_of`。
-- **免费额度提示**：GitHub Free 账户对**私有仓库**每月提供 **2,000 分钟** Linux runner 免费额度。按 `SCAN_THREADS=8`、单次全量扫描约 30 分钟估算，每天 2 次约消耗 **1,800 分钟/月**（接近上限）；如需留出更大余量，可将变量 `SCAN_THREADS` 调高至 `10–12`，或在 `.github/workflows/scan.yml` 中暂时注释掉 `04:00` 定时条目改为每天 1 次。
+- **免费额度提示**：GitHub Free 账户对**私有仓库**每月提供 **2,000 分钟** Linux runner 免费额度。按 `SCAN_THREADS=7`、单次全量扫描约 35 分钟估算，每天 2 次约消耗 **2,100 分钟/月**（略高于免费额度）；如需留出余量，可将变量 `SCAN_THREADS` 调高至 `8–12`，或在 `.github/workflows/scan.yml` 中暂时注释掉 `04:00` 定时条目改为每天 1 次。
 
 ---
 
