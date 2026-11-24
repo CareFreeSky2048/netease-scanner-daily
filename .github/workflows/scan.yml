@@ -163,6 +163,9 @@ jobs:
         env:
           MUSIC_COOKIE: ${{ secrets.MUSIC_COOKIE }}
           ARTIST_CACHE_KEY: ${{ vars.ARTIST_CACHE_KEY }}
+          NETEASE_REAL_IP: ${{ vars.NETEASE_REAL_IP || 'auto' }}
+          NETEASE_API_CRYPTO: ${{ vars.NETEASE_API_CRYPTO || 'eapi' }}
+          NETEASE_API_PROXY: ${{ secrets.NETEASE_API_PROXY }}
           VAR_THREADS: ${{ vars.SCAN_THREADS }}
           RECENT_LIMIT: ${{ vars.RECENT_LIMIT }}
           OWNED_LIMIT: ${{ vars.OWNED_LIMIT }}

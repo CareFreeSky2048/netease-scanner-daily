@@ -962,8 +962,13 @@ class Runtime:
 
 def verify_login(cookie, api_base=None):
     try:
+        payload_data = {
+            "cookie": cookie,
+            "timestamp": int(datetime.now().timestamp() * 1000),
+            **engine.api_transport_overrides(),
+        }
         response = requests.post((api_base or engine.API_BASE) + "/login/status",
-                                 data={"cookie": cookie, "timestamp": int(datetime.now().timestamp() * 1000)}, timeout=8)
+                                 data=payload_data, timeout=8)
         response.raise_for_status()
         payload = response.json()
     except Exception as exc:

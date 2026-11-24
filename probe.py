@@ -8,32 +8,209 @@ import requests
 import engine
 from server import Config, verify_login
 
+DIAGNOSTIC_REAL_IP = "116.25.146.177"
+
+
+def _scrub_text(text, cookie, proxy=""):
+    result = str(text or "")
+    for token in (cookie, cookie.removeprefix("MUSIC_U=").rstrip(";"), proxy):
+        if token:
+            result = result.replace(token, "<redacted>")
+    return engine.redacted_error_text(result)
+
+
+def _extract_error_detail(response, scrub_fn):
+    parts = [f"HTTP {response.status_code}"]
+    try:
+        body = response.json()
+        if isinstance(body, dict):
+            if body.get("code") is not None:
+                parts.append(f"code={body.get('code')}")
+            msg = body.get("message") or body.get("msg")
+            if msg:
+                parts.append(f"msg={msg}")
+    except Exception:
+        pass
+    return scrub_fn(" · ".join(parts))
+
+
+def _resolve_sample_artist_id(config):
+    try:
+        cfg = config.read()
+        key = str(cfg.get("artist_cache_key") or "").strip()
+        if key:
+            artists = engine.load_artist_cache_by_key(key)
+            if artists:
+                return str(artists[0]["id"])
+    except Exception:
+        pass
+    try:
+        if engine.ARTIST_CACHE_DIR.is_dir():
+            files = sorted(
+                engine.ARTIST_CACHE_DIR.glob("artists_*.json"),
+                key=lambda p: p.stat().st_mtime,
+                reverse=True,
+            )
+            for path in files:
+                artists = engine.load_artist_cache_by_key(path.stem.removeprefix("artists_"))
+                if artists:
+                    return str(artists[0]["id"])
+    except Exception:
+        pass
+    return "6452"
+
+
+def _run_diagnostics(base, cookie, config, overrides, scrub_fn):
+    """Read-only sweep across transport modes when primary probe fails."""
+    results = []
+    proxy_extra = {"proxy": overrides["proxy"]} if overrides.get("proxy") else {}
+    sample_artist_id = _resolve_sample_artist_id(config)
+    sample_album_id = None
+
+    modes = (
+        ("default", {}),
+        ("realIP", {"realIP": DIAGNOSTIC_REAL_IP}),
+        ("eapi", {"crypto": "eapi"}),
+        ("realIP+eapi", {"realIP": DIAGNOSTIC_REAL_IP, "crypto": "eapi"}),
+    )
+
+    def test_one(endpoint, mode_name, base_params, mode_params):
+        start = time.monotonic()
+        req_params = {
+            **base_params,
+            **mode_params,
+            **proxy_extra,
+            "cookie": cookie,
+            "timestamp": int(time.time() * 1000),
+        }
+        entry = {
+            "endpoint": endpoint,
+            "mode": mode_name,
+            "http_status": None,
+            "api_code": None,
+            "ok": False,
+            "detail": "",
+            "elapsed_ms": 0,
+        }
+        parsed = None
+        try:
+            resp = requests.request("POST", base + endpoint, data=req_params, timeout=8)
+            entry["http_status"] = resp.status_code
+            try:
+                body = resp.json()
+                if isinstance(body, dict):
+                    parsed = body
+                    entry["api_code"] = body.get("code")
+                    msg = body.get("message") or body.get("msg") or ""
+                    if msg:
+                        entry["detail"] = scrub_fn(str(msg))
+            except Exception:
+                pass
+            entry["ok"] = resp.ok and isinstance(parsed, dict) and parsed.get("code") == 200
+            if not entry["detail"] and not entry["ok"]:
+                entry["detail"] = f"HTTP {resp.status_code}"
+        except Exception as exc:
+            entry["detail"] = scrub_fn(type(exc).__name__)
+        entry["elapsed_ms"] = round((time.monotonic() - start) * 1000)
+        results.append(entry)
+        return parsed
+
+    for mode_name, mode_params in modes:
+        test_one("/artist/sublist", mode_name, {"limit": 3, "offset": 0}, mode_params)
+
+    for mode_name, mode_params in (modes[0], modes[3]):
+        songs_body = test_one(
+            "/artist/songs",
+            mode_name,
+            {"id": sample_artist_id, "limit": 3, "offset": 0, "order": "time"},
+            mode_params,
+        )
+        if not sample_album_id and isinstance(songs_body, dict):
+            songs = songs_body.get("songs") or []
+            if songs and isinstance(songs[0], dict):
+                sample_album_id = (songs[0].get("al") or {}).get("id")
+
+        albums_body = test_one(
+            "/artist/album",
+            mode_name,
+            {"id": sample_artist_id, "limit": 3, "offset": 0},
+            mode_params,
+        )
+        if not sample_album_id and isinstance(albums_body, dict):
+            albums = albums_body.get("hotAlbums") or []
+            if albums and isinstance(albums[0], dict):
+                sample_album_id = albums[0].get("id")
+
+    album_target = str(sample_album_id or "18905")
+    for mode_name, mode_params in (modes[0], modes[3]):
+        test_one("/album", mode_name, {"id": album_target}, mode_params)
+
+    return results
+
 
 def probe(config=None, artist_count=3, api_base=None):
     config = config or Config()
     cookie = config.cookie()
-    base = api_base or engine.API_BASE
-    report = {"api_base": base, "started_at": time.time(), "checks": [], "ok": False}
+    base = (api_base or engine.API_BASE).rstrip("/")
+    overrides = engine.api_transport_overrides()
+    proxy_val = overrides.get("proxy", "")
+
+    def scrub_fn(text):
+        return _scrub_text(text, cookie, proxy_val)
+
+    report = {
+        "api_base": base,
+        "started_at": time.time(),
+        "transport": {
+            "realIP": overrides.get("realIP", ""),
+            "crypto": overrides.get("crypto", ""),
+            "proxy_configured": bool(proxy_val),
+        },
+        "checks": [],
+        "diagnostics": [],
+        "ok": False,
+    }
 
     def get(path, params):
         start = time.monotonic()
         # POST keeps credentials out of URL/access logs. Try GET only on 405,
         # matching the scanner's existing endpoint compatibility behaviour.
-        params = {**params, "cookie": cookie, "timestamp": int(time.time() * 1000)}
+        req_params = {
+            **params,
+            **overrides,
+            "cookie": cookie,
+            "timestamp": int(time.time() * 1000),
+        }
+        last_405 = ""
         for method in ("POST", "GET"):
-            response = requests.request(method, base + path, data=params if method == "POST" else None,
-                                        params=params if method == "GET" else None, timeout=8)
+            response = requests.request(
+                method,
+                base + path,
+                data=req_params if method == "POST" else None,
+                params=req_params if method == "GET" else None,
+                timeout=8,
+            )
             if response.status_code == 405:
+                last_405 = _extract_error_detail(response, scrub_fn)
                 continue
             response.raise_for_status()
             data = response.json()
             if data.get("code") == 405:
+                last_405 = _extract_error_detail(response, scrub_fn)
                 continue
             if data.get("code") != 200:
-                raise ValueError(f"{path} 返回码 {data.get('code')}")
-            report["checks"].append({"endpoint": path, "ok": True, "elapsed_ms": round((time.monotonic() - start) * 1000)})
+                msg = data.get("message") or data.get("msg") or ""
+                suffix = f" ({scrub_fn(msg)})" if msg else ""
+                raise ValueError(f"{path} 返回码 {data.get('code')}{suffix}")
+            report["checks"].append(
+                {
+                    "endpoint": path,
+                    "ok": True,
+                    "elapsed_ms": round((time.monotonic() - start) * 1000),
+                }
+            )
             return data
-        raise ValueError(f"{path} GET/POST 均返回 405")
+        raise ValueError(f"{path} GET/POST 均返回 405（{last_405 or '405'}）")
 
     try:
         verify_login(cookie, base)
@@ -56,10 +233,14 @@ def probe(config=None, artist_count=3, api_base=None):
         report["ok"] = True
         report["artist_count"] = len(artists)
     except Exception as exc:
-        # Exception messages from requests may include cookies. Only explicitly
-        # created validation errors are shown, with the credential removed.
-        report["error"] = (str(exc).replace(cookie, "<redacted>").replace(cookie.removeprefix("MUSIC_U=").rstrip(";"), "<redacted>")
-                           if type(exc) is ValueError else f"接口请求失败（{type(exc).__name__}）")
+        # Exception messages from requests may include cookies/proxy creds.
+        # Only explicitly created validation errors are shown, scrubbed.
+        report["error"] = (
+            scrub_fn(str(exc))
+            if type(exc) is ValueError
+            else f"接口请求失败（{type(exc).__name__}）"
+        )
+        report["diagnostics"] = _run_diagnostics(base, cookie, config, overrides, scrub_fn)
     report["elapsed_sec"] = round(time.time() - report["started_at"], 2)
     return report
 

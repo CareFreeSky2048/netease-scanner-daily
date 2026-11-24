@@ -279,10 +279,18 @@ def _build_scan_summary_md(
 
 def _build_probe_summary_md(report: Dict[str, Any]) -> str:
     status_line = "✅ 接口探测通过" if report.get("ok") else "❌ 接口探测失败"
+    transport = report.get("transport") or {}
+    transport_desc = (
+        f"realIP=`{transport.get('realIP') or '未设置'}` · "
+        f"crypto=`{transport.get('crypto') or '默认'}` · "
+        f"proxy=`{'已配置' if transport.get('proxy_configured') else '未配置'}`"
+    )
     lines = [
         "## 网易云 API 探测报告",
         "",
         f"**结果**：{status_line}（耗时 {report.get('elapsed_sec', 0)} 秒，采样艺人 {report.get('artist_count', 0)} 位）",
+        "",
+        f"**传输参数**：{transport_desc}",
         "",
         "| 接口 | 状态 | 耗时 (ms) |",
         "| --- | --- | --- |",
@@ -292,7 +300,25 @@ def _build_probe_summary_md(report: Dict[str, Any]) -> str:
             f"| `{chk.get('endpoint', '')}` | {'✅' if chk.get('ok') else '❌'} | {chk.get('elapsed_ms', '—')} |"
         )
     if report.get("error"):
-        lines.extend(["", f"> ❌ {report['error']}"])
+        lines.extend(["", f"> ❌ {_md_escape(report['error'])}"])
+    diagnostics = report.get("diagnostics") or []
+    if diagnostics:
+        lines.extend(
+            [
+                "",
+                "### 传输模式诊断矩阵（自动对比）",
+                "",
+                "| 接口 | 模式 | HTTP | 返回码 | 结果 | 说明 | 耗时 (ms) |",
+                "| --- | --- | --- | --- | --- | --- | --- |",
+            ]
+        )
+        for item in diagnostics:
+            lines.append(
+                f"| `{_md_escape(item.get('endpoint'))}` | `{_md_escape(item.get('mode'))}` | "
+                f"{item.get('http_status') or '—'} | {item.get('api_code') or '—'} | "
+                f"{'✅' if item.get('ok') else '❌'} | {_md_escape(item.get('detail') or '—')} | "
+                f"{item.get('elapsed_ms', '—')} |"
+            )
     return "\n".join(lines) + "\n"
 
 

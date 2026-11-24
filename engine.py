@@ -334,9 +334,11 @@ def emit(msg: Dict[str, Any]) -> None:
 
 
 def redacted_error_text(text: str) -> str:
-    # 避免 Cookie 明文进入前端日志或报告
+    # 避免 Cookie 或代理凭据明文进入前端日志或报告
     text = re.sub(r"MUSIC_U%3D[^&\s]+", "MUSIC_U=<redacted>", text)
     text = re.sub(r"MUSIC_U=[^;\s]+;?", "MUSIC_U=<redacted>;", text)
+    text = re.sub(r"(https?|socks5h?)://[^/\s@]+@", r"\1://<redacted>@", text, flags=re.IGNORECASE)
+    text = re.sub(r"proxy=[^&\s]+", "proxy=<redacted>", text, flags=re.IGNORECASE)
     return text
 
 
@@ -600,6 +602,37 @@ METHOD_CACHE: Dict[str, str] = {
     "/artist/album": "GET",
     "/album": "GET",
 }
+_CHINA_IP_PREFIXES = (
+    "116.25", "116.76", "116.77", "116.78", "116.79", "116.80",
+    "116.81", "116.82", "116.83", "116.84", "116.85", "116.86",
+    "116.87", "116.88", "116.89", "116.90", "116.91", "116.92",
+    "116.93", "116.94",
+)
+_AUTO_REAL_IP: Optional[str] = None
+_TRANSPORT_LOCK = threading.Lock()
+
+
+def api_transport_overrides() -> Dict[str, str]:
+    """Read optional NeteaseCloudMusicApi transport overrides from environment variables."""
+    global _AUTO_REAL_IP
+    overrides: Dict[str, str] = {}
+    real_ip = os.getenv("NETEASE_REAL_IP", "").strip()
+    if real_ip and real_ip.lower() not in {"none", "off"}:
+        if real_ip.lower() == "auto":
+            with _TRANSPORT_LOCK:
+                if _AUTO_REAL_IP is None:
+                    prefix = random.choice(_CHINA_IP_PREFIXES)
+                    _AUTO_REAL_IP = f"{prefix}.{random.randint(1, 254)}.{random.randint(1, 254)}"
+                overrides["realIP"] = _AUTO_REAL_IP
+        else:
+            overrides["realIP"] = real_ip
+    crypto = os.getenv("NETEASE_API_CRYPTO", "").strip()
+    if crypto and crypto.lower() not in {"none", "off"}:
+        overrides["crypto"] = crypto
+    proxy = os.getenv("NETEASE_API_PROXY", "").strip()
+    if proxy and proxy.lower() not in {"none", "off"}:
+        overrides["proxy"] = proxy
+    return overrides
 
 
 def get_session() -> requests.Session:
@@ -632,6 +665,8 @@ def api_request(path: str, params: Optional[Dict[str, Any]] = None, preferred: O
         raise ApiError(path, "scan stopped")
     params = dict(params or {})
     params.setdefault("timestamp", int(time.time() * 1000))
+    for k, v in api_transport_overrides().items():
+        params.setdefault(k, v)
     timeout = timeout or API_TIMEOUT
     sess = get_session()
     with METHOD_CACHE_LOCK:
@@ -653,14 +688,24 @@ def api_request(path: str, params: Optional[Dict[str, Any]] = None, preferred: O
                 duration = time.time() - start
                 if res.status_code == 405:
                     METRICS.record_endpoint(path, duration, ok=False, status_code=405)
-                    last_err = ApiError(path, "405 Method Not Allowed", 405)
+                    detail = "405 Method Not Allowed"
+                    try:
+                        err_body = res.json()
+                        err_msg = err_body.get("message") or err_body.get("msg")
+                        if err_msg:
+                            detail = f"405: {redacted_error_text(str(err_msg))}"
+                    except Exception:
+                        pass
+                    last_err = ApiError(path, detail, 405)
                     continue
                 res.raise_for_status()
                 data = res.json()
                 code = data.get("code")
                 if code == 405:
                     METRICS.record_endpoint(path, duration, ok=False, status_code=405)
-                    last_err = ApiError(path, "API code 405", 405)
+                    err_msg = data.get("message") or data.get("msg")
+                    detail = f"API code 405: {redacted_error_text(str(err_msg))}" if err_msg else "API code 405"
+                    last_err = ApiError(path, detail, 405)
                     continue
                 if code == 460:
                     METRICS.record_endpoint(path, duration, ok=False, status_code=460)

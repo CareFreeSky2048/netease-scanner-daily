@@ -560,4 +560,138 @@ def test_scan_workflow_respects_github_limits_and_shell_safety():
     for block in run_blocks:
         assert "${{ inputs." not in block
 
+    # Transport overrides must be wired for GitHub Actions runners.
+    assert "NETEASE_REAL_IP:" in text
+    assert "NETEASE_API_CRYPTO:" in text
+    assert "NETEASE_API_PROXY:" in text
+
+
+def test_engine_transport_overrides_and_proxy_redaction(monkeypatch):
+    monkeypatch.delenv("NETEASE_REAL_IP", raising=False)
+    monkeypatch.delenv("NETEASE_API_CRYPTO", raising=False)
+    monkeypatch.delenv("NETEASE_API_PROXY", raising=False)
+    monkeypatch.setattr(engine, "_AUTO_REAL_IP", None)
+    assert engine.api_transport_overrides() == {}
+
+    monkeypatch.setenv("NETEASE_REAL_IP", "auto")
+    monkeypatch.setenv("NETEASE_API_CRYPTO", "eapi")
+    monkeypatch.setenv("NETEASE_API_PROXY", "http://user:s3cr3t@1.2.3.4:8080")
+    ov1 = engine.api_transport_overrides()
+    ov2 = engine.api_transport_overrides()
+    assert ov1["realIP"].startswith("116.")
+    assert ov1["realIP"] == ov2["realIP"]
+    assert ov1["crypto"] == "eapi"
+    assert ov1["proxy"] == "http://user:s3cr3t@1.2.3.4:8080"
+
+    monkeypatch.setenv("NETEASE_REAL_IP", "off")
+    monkeypatch.setenv("NETEASE_API_CRYPTO", "none")
+    monkeypatch.setenv("NETEASE_API_PROXY", "off")
+    assert engine.api_transport_overrides() == {}
+
+    scrubbed = engine.redacted_error_text(
+        "failed http://alice:topsecret@proxy.example:1080/test?proxy=http://a:b@c&cookie=MUSIC_U=abc123;"
+    )
+    assert "topsecret" not in scrubbed
+    assert "a:b" not in scrubbed
+    assert "abc123" not in scrubbed
+    assert "http://<redacted>@proxy.example:1080" in scrubbed
+
+
+def test_verify_login_forwards_transport_overrides(monkeypatch):
+    monkeypatch.setenv("NETEASE_REAL_IP", "116.25.10.20")
+    monkeypatch.setenv("NETEASE_API_CRYPTO", "eapi")
+    monkeypatch.setenv("NETEASE_API_PROXY", "http://127.0.0.1:9000")
+
+    captured = {}
+
+    class _Resp:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return {"data": {"code": 200, "account": {"id": 42}}}
+
+    def fake_post(url, data=None, timeout=None):
+        captured["url"] = url
+        captured["data"] = dict(data)
+        return _Resp()
+
+    monkeypatch.setattr(server.requests, "post", fake_post)
+    server.verify_login("MUSIC_U=tok;", "http://127.0.0.1:3000")
+    assert captured["data"]["realIP"] == "116.25.10.20"
+    assert captured["data"]["crypto"] == "eapi"
+    assert captured["data"]["proxy"] == "http://127.0.0.1:9000"
+
+
+def test_probe_405_details_and_diagnostic_matrix(tmp_path, monkeypatch):
+    import probe as probe_mod
+
+    cfg_path = tmp_path / "cfg.json"
+    cookie_path = tmp_path / "cookie.txt"
+    cookie_path.write_text("MUSIC_U=probe_tok_secret;", encoding="utf-8")
+    cfg_path.write_text(json.dumps({"cookie_file": str(cookie_path)}), encoding="utf-8")
+
+    monkeypatch.setenv("NETEASE_REAL_IP", "116.25.146.177")
+    monkeypatch.setenv("NETEASE_API_CRYPTO", "eapi")
+    monkeypatch.setenv("NETEASE_API_PROXY", "http://u:pw@9.9.9.9:8080")
+    monkeypatch.setattr(probe_mod, "verify_login", lambda *a, **kw: None)
+
+    seen_calls = []
+
+    class _FakeHttpResp:
+        def __init__(self, status_code, body):
+            self.status_code = status_code
+            self.ok = 200 <= status_code < 300
+            self._body = body
+
+        def raise_for_status(self):
+            if self.status_code >= 400:
+                raise requests.HTTPError(f"HTTP {self.status_code}")
+
+        def json(self):
+            return self._body
+
+    def fake_request(method, url, data=None, params=None, timeout=None):
+        payload = data if method == "POST" else params
+        seen_calls.append((method, url, dict(payload or {})))
+        if url.endswith("/artist/sublist"):
+            if payload.get("realIP") and payload.get("crypto") == "eapi":
+                # Simulate diagnostic realIP+eapi succeeding while primary probe saw 405
+                if len(seen_calls) <= 2:
+                    return _FakeHttpResp(405, {"code": 405, "message": "cheating MUSIC_U=probe_tok_secret"})
+                return _FakeHttpResp(200, {"code": 200, "data": [{"id": 1, "name": "A"}]})
+            return _FakeHttpResp(405, {"code": 405, "message": "blocked"})
+        if url.endswith("/artist/songs"):
+            return _FakeHttpResp(200, {"code": 200, "songs": [{"al": {"id": 555}}]})
+        if url.endswith("/artist/album"):
+            return _FakeHttpResp(200, {"code": 200, "hotAlbums": [{"id": 555}]})
+        if url.endswith("/album"):
+            return _FakeHttpResp(200, {"code": 200, "album": {"id": 555}})
+        raise AssertionError(url)
+
+    monkeypatch.setattr(probe_mod.requests, "request", fake_request)
+    report = probe_mod.probe(config=server.Config(cfg_path), artist_count=3, api_base="http://127.0.0.1:3000")
+
+    assert report["ok"] is False
+    assert "probe_tok_secret" not in report["error"]
+    assert "cheating" in report["error"]
+    assert report["transport"] == {
+        "realIP": "116.25.146.177",
+        "crypto": "eapi",
+        "proxy_configured": True,
+    }
+    assert any(
+        d["endpoint"] == "/artist/sublist" and d["mode"] == "realIP+eapi" and d["ok"] is True
+        for d in report["diagnostics"]
+    )
+    assert seen_calls[0][2]["realIP"] == "116.25.146.177"
+    assert seen_calls[0][2]["crypto"] == "eapi"
+    assert seen_calls[0][2]["proxy"] == "http://u:pw@9.9.9.9:8080"
+
+    md = ci_scan._build_probe_summary_md(report)
+    assert "传输模式诊断矩阵" in md
+    assert "realIP+eapi" in md
+    assert "probe_tok_secret" not in md
+    assert "pw@" not in md
+
 
