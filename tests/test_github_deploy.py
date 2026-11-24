@@ -626,6 +626,10 @@ def test_verify_login_forwards_transport_overrides(monkeypatch):
 def test_probe_405_details_and_diagnostic_matrix(tmp_path, monkeypatch):
     import probe as probe_mod
 
+    empty_cache = tmp_path / "empty_cache"
+    empty_cache.mkdir()
+    monkeypatch.setattr(engine, "ARTIST_CACHE_DIR", empty_cache)
+
     cfg_path = tmp_path / "cfg.json"
     cookie_path = tmp_path / "cookie.txt"
     cookie_path.write_text("MUSIC_U=probe_tok_secret;", encoding="utf-8")
@@ -688,10 +692,74 @@ def test_probe_405_details_and_diagnostic_matrix(tmp_path, monkeypatch):
     assert seen_calls[0][2]["crypto"] == "eapi"
     assert seen_calls[0][2]["proxy"] == "http://u:pw@9.9.9.9:8080"
 
-    md = ci_scan._build_probe_summary_md(report)
+    md = engine.redacted_error_text(ci_scan._build_probe_summary_md(report))
     assert "传输模式诊断矩阵" in md
     assert "realIP+eapi" in md
+    assert "代理：`已配置`" in md
+    assert "proxy=<redacted>" not in md
     assert "probe_tok_secret" not in md
     assert "pw@" not in md
+
+
+def test_probe_falls_back_to_cached_artists_on_sublist_405(tmp_path, monkeypatch):
+    import probe as probe_mod
+
+    cache_dir = tmp_path / "caches"
+    cache_dir.mkdir()
+    monkeypatch.setattr(engine, "ARTIST_CACHE_DIR", cache_dir)
+
+    cookie = "MUSIC_U=fallback_tok_888;"
+    fp = engine.cookie_fingerprint(cookie)
+    engine.save_artist_cache(fp, [{"id": "701", "name": "CachedArtist"}], {"source": "test"})
+
+    cfg_path = tmp_path / "cfg.json"
+    cookie_path = tmp_path / "cookie.txt"
+    cookie_path.write_text(cookie, encoding="utf-8")
+    cfg_path.write_text(json.dumps({"cookie_file": str(cookie_path)}), encoding="utf-8")
+
+    monkeypatch.setenv("NETEASE_REAL_IP", "116.25.146.177")
+    monkeypatch.delenv("NETEASE_API_CRYPTO", raising=False)
+    monkeypatch.delenv("NETEASE_API_PROXY", raising=False)
+    monkeypatch.setattr(probe_mod, "verify_login", lambda *a, **kw: None)
+
+    class _FakeResp:
+        def __init__(self, status_code, body):
+            self.status_code = status_code
+            self.ok = 200 <= status_code < 300
+            self._body = body
+
+        def raise_for_status(self):
+            if self.status_code >= 400:
+                raise requests.HTTPError(f"HTTP {self.status_code}")
+
+        def json(self):
+            return self._body
+
+    def fake_request(method, url, data=None, params=None, timeout=None):
+        if url.endswith("/artist/sublist"):
+            return _FakeResp(405, {"code": 405, "message": "操作频繁"})
+        if url.endswith("/artist/songs"):
+            return _FakeResp(200, {"code": 200, "songs": [{"al": {"id": 9901}}]})
+        if url.endswith("/artist/album"):
+            return _FakeResp(200, {"code": 200, "hotAlbums": [{"id": 9901}]})
+        if url.endswith("/album"):
+            return _FakeResp(200, {"code": 200, "album": {"id": 9901}})
+        raise AssertionError(url)
+
+    monkeypatch.setattr(probe_mod.requests, "request", fake_request)
+    report = probe_mod.probe(config=server.Config(cfg_path), artist_count=3, api_base="http://127.0.0.1:3000")
+
+    assert report["ok"] is True
+    assert report["degraded"] is True
+    assert report["artist_source"] == "fallback-cache"
+    assert report["artist_cache_key"] == fp
+    assert report["artist_count"] == 1
+    assert report["diagnostics"] == []
+    assert any(c["endpoint"] == "/album" and c["ok"] for c in report["checks"])
+
+    md = engine.redacted_error_text(ci_scan._build_probe_summary_md(report))
+    assert "降级：使用艺人缓存" in md
+    assert "代理：`未配置`" in md
+    assert "fallback_tok_888" not in md
 
 

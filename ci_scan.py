@@ -278,12 +278,17 @@ def _build_scan_summary_md(
 
 
 def _build_probe_summary_md(report: Dict[str, Any]) -> str:
-    status_line = "✅ 接口探测通过" if report.get("ok") else "❌ 接口探测失败"
+    if report.get("ok") and report.get("degraded"):
+        status_line = "✅ 接口探测通过（降级：使用艺人缓存）"
+    elif report.get("ok"):
+        status_line = "✅ 接口探测通过"
+    else:
+        status_line = "❌ 接口探测失败"
     transport = report.get("transport") or {}
     transport_desc = (
         f"realIP=`{transport.get('realIP') or '未设置'}` · "
         f"crypto=`{transport.get('crypto') or '默认'}` · "
-        f"proxy=`{'已配置' if transport.get('proxy_configured') else '未配置'}`"
+        f"代理：`{'已配置' if transport.get('proxy_configured') else '未配置'}`"
     )
     lines = [
         "## 网易云 API 探测报告",
@@ -292,13 +297,16 @@ def _build_probe_summary_md(report: Dict[str, Any]) -> str:
         "",
         f"**传输参数**：{transport_desc}",
         "",
-        "| 接口 | 状态 | 耗时 (ms) |",
-        "| --- | --- | --- |",
+        "| 接口 | 状态 | 耗时 (ms) | 说明 |",
+        "| --- | --- | --- | --- |",
     ]
     for chk in report.get("checks", []):
+        status_cell = "✅" if chk.get("ok") else "⚠️ (已回退缓存)"
         lines.append(
-            f"| `{chk.get('endpoint', '')}` | {'✅' if chk.get('ok') else '❌'} | {chk.get('elapsed_ms', '—')} |"
+            f"| `{chk.get('endpoint', '')}` | {status_cell} | {chk.get('elapsed_ms', '—')} | {_md_escape(chk.get('detail') or '—')} |"
         )
+    if report.get("warning"):
+        lines.extend(["", f"> ⚠️ {_md_escape(report['warning'])}"])
     if report.get("error"):
         lines.extend(["", f"> ❌ {_md_escape(report['error'])}"])
     diagnostics = report.get("diagnostics") or []

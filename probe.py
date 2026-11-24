@@ -34,12 +34,43 @@ def _extract_error_detail(response, scrub_fn):
     return scrub_fn(" · ".join(parts))
 
 
-def _resolve_sample_artist_id(config):
+def _load_fallback_artists(config, cookie, count):
+    candidates = [engine.cookie_fingerprint(cookie)]
     try:
-        cfg = config.read()
-        key = str(cfg.get("artist_cache_key") or "").strip()
-        if key:
-            artists = engine.load_artist_cache_by_key(key)
+        cfg_key = str(config.read().get("artist_cache_key") or "").strip().lower()
+        if cfg_key and cfg_key not in candidates:
+            candidates.append(cfg_key)
+    except Exception:
+        pass
+    try:
+        if engine.ARTIST_CACHE_DIR.is_dir():
+            files = sorted(
+                engine.ARTIST_CACHE_DIR.glob("artists_*.json"),
+                key=lambda p: p.stat().st_mtime,
+                reverse=True,
+            )
+            for path in files:
+                key = path.stem.removeprefix("artists_")
+                if key not in candidates:
+                    candidates.append(key)
+    except Exception:
+        pass
+    for key in candidates:
+        artists = engine.load_artist_cache_by_key(key)
+        if artists:
+            return artists[:count], key
+    return [], ""
+
+
+def _resolve_sample_artist_id(config, cookie=""):
+    if cookie:
+        artists, _ = _load_fallback_artists(config, cookie, 1)
+        if artists:
+            return str(artists[0]["id"])
+    try:
+        cfg_key = str(config.read().get("artist_cache_key") or "").strip()
+        if cfg_key:
+            artists = engine.load_artist_cache_by_key(cfg_key)
             if artists:
                 return str(artists[0]["id"])
     except Exception:
@@ -64,7 +95,7 @@ def _run_diagnostics(base, cookie, config, overrides, scrub_fn):
     """Read-only sweep across transport modes when primary probe fails."""
     results = []
     proxy_extra = {"proxy": overrides["proxy"]} if overrides.get("proxy") else {}
-    sample_artist_id = _resolve_sample_artist_id(config)
+    sample_artist_id = _resolve_sample_artist_id(config, cookie)
     sample_album_id = None
 
     modes = (
@@ -94,7 +125,14 @@ def _run_diagnostics(base, cookie, config, overrides, scrub_fn):
         }
         parsed = None
         try:
-            resp = requests.request("POST", base + endpoint, data=req_params, timeout=8)
+            # Bust NeteaseCloudMusicApi's 2-minute URL apicache across diagnostic modes.
+            resp = requests.request(
+                "POST",
+                base + endpoint,
+                params={"_diag": f"{mode_name}_{int(time.time() * 1000)}"},
+                data=req_params,
+                timeout=8,
+            )
             entry["http_status"] = resp.status_code
             try:
                 body = resp.json()
@@ -168,6 +206,8 @@ def probe(config=None, artist_count=3, api_base=None):
         },
         "checks": [],
         "diagnostics": [],
+        "degraded": False,
+        "warning": "",
         "ok": False,
     }
 
@@ -215,7 +255,24 @@ def probe(config=None, artist_count=3, api_base=None):
     try:
         verify_login(cookie, base)
         report["checks"].append({"endpoint": "/login/status", "ok": True})
-        artists = get("/artist/sublist", {"limit": artist_count, "offset": 0}).get("data", [])[:artist_count]
+        try:
+            artists = get("/artist/sublist", {"limit": artist_count, "offset": 0}).get("data", [])[:artist_count]
+            report["artist_source"] = "live"
+        except ValueError as sublist_err:
+            fallback_artists, fallback_key = _load_fallback_artists(config, cookie, artist_count)
+            if not fallback_artists:
+                raise
+            detail_msg = scrub_fn(str(sublist_err))
+            report["checks"].append({"endpoint": "/artist/sublist", "ok": False, "detail": detail_msg})
+            report["degraded"] = True
+            report["warning"] = (
+                f"实时 /artist/sublist 失败（{detail_msg}），"
+                f"已自动回退艺人缓存 {fallback_key} 继续验证歌曲与专辑接口。"
+            )
+            report["artist_source"] = "fallback-cache"
+            report["artist_cache_key"] = fallback_key
+            artists = fallback_artists
+
         if not artists:
             raise ValueError("关注艺人列表为空，无法验证歌曲与专辑接口")
         for artist in artists:
