@@ -634,6 +634,7 @@ def test_scan_workflow_respects_github_limits_and_shell_safety():
     assert "SMTP_USER:" in mail_match.group(1)
     assert "SMTP_PASS:" in mail_match.group(1)
     assert "MAIL_TO:" in mail_match.group(1)
+    assert "SITE_URL:" in mail_match.group(1)
 
 
 def test_engine_transport_overrides_and_proxy_redaction(monkeypatch):
@@ -2695,6 +2696,7 @@ def test_notify_email_infers_smtp_and_builds_html_attachments_and_scrubs(tmp_pat
     monkeypatch.delenv("MAIL_TO", raising=False)
     monkeypatch.delenv("SMTP_HOST", raising=False)
     monkeypatch.delenv("SMTP_PORT", raising=False)
+    monkeypatch.delenv("MAIL_ATTACH_CSV", raising=False)
 
     rc = notify_email.main([
         "--data-dir", str(data_dir),
@@ -2703,6 +2705,7 @@ def test_notify_email_infers_smtp_and_builds_html_attachments_and_scrubs(tmp_pat
         "--today-csv", str(today_csv),
         "--standalone-html", str(html_file),
         "--run-url", "https://github.com/owner/repo/actions/runs/12345",
+        "--site-url", "https://viewer.example.com",
     ])
     assert rc == 0
     assert sent["host"] == "smtp.gmail.com"
@@ -2717,15 +2720,34 @@ def test_notify_email_infers_smtp_and_builds_html_attachments_and_scrubs(tmp_pat
     html_part = msg.get_body(preferencelist=("html",)).get_content()
     assert "https://music.163.com/#/album?id=500" in html_part
     assert "https://github.com/owner/repo/actions/runs/12345" in html_part
+    assert "https://viewer.example.com" in plain_part and "https://viewer.example.com" in html_part
+    assert "overflow-x:auto" not in html_part
+    assert "<table" not in html_part
     assert "Shared VA" in html_part
+    assert "Alice" in html_part
     assert "Solo Release" in html_part
+    assert "Bob" in html_part
     assert "app-pass-secret-xyz" not in plain_part and "app-pass-secret-xyz" not in html_part
     assert "secret_ck_999" not in plain_part and "secret_ck_999" not in html_part
 
     att_names = [part.get_filename() for part in msg.iter_attachments()]
     assert "netease-report-2026-11-25.html" in att_names
-    assert "netease-today-2026-11-25.csv" in att_names
-    assert "netease-run-2026-11-25-0400.csv" in att_names
+    assert not any(name.endswith(".csv") for name in att_names)
+
+    # Explicit MAIL_ATTACH_CSV=1 re-enables CSV attachments when requested
+    sent.clear()
+    monkeypatch.setenv("MAIL_ATTACH_CSV", "1")
+    rc_csv = notify_email.main([
+        "--data-dir", str(data_dir),
+        "--result-json", str(result_json),
+        "--run-csv", str(run_csv),
+        "--today-csv", str(today_csv),
+        "--standalone-html", str(html_file),
+    ])
+    assert rc_csv == 0
+    att_names_csv = [part.get_filename() for part in sent["msg"].iter_attachments()]
+    assert "netease-today-2026-11-25.csv" in att_names_csv
+    assert "netease-run-2026-11-25-0400.csv" in att_names_csv
 
 
 def test_notify_email_skip_guards_and_starttls_and_dry_run_prefix(tmp_path, monkeypatch):

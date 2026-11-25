@@ -354,6 +354,7 @@ jobs:
           MAIL_ATTACH_HTML: ${{ vars.MAIL_ATTACH_HTML }}
           MAIL_ATTACH_CSV: ${{ vars.MAIL_ATTACH_CSV }}
           MAIL_ON_DRY_RUN: ${{ vars.MAIL_ON_DRY_RUN }}
+          SITE_URL: ${{ vars.SITE_URL }}
           GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         shell: bash
         run: |
@@ -363,7 +364,8 @@ jobs:
             --run-csv ./artifacts/run.csv \
             --today-csv ./artifacts/today.csv \
             --standalone-html ./artifacts/latest-report.html \
-            --run-url "$GITHUB_RUN_URL"
+            --run-url "$GITHUB_RUN_URL" \
+            --site-url "$SITE_URL"
 
       - name: Enforce scan status gate
         if: steps.ctx.outputs.action == 'scan' || steps.ctx.outputs.action == 'test_fresh_day'

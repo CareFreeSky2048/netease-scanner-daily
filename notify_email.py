@@ -261,11 +261,12 @@ def build_email_message(
     run_hits: List[Dict[str, Any]],
     day_hits: List[Dict[str, Any]],
     run_url: str = "",
+    site_url: str = "",
     standalone_html: Optional[Path] = None,
     run_csv: Optional[Path] = None,
     today_csv: Optional[Path] = None,
     attach_html: bool = True,
-    attach_csv: bool = True,
+    attach_csv: bool = False,
     secret_tokens: Iterable[str] = (),
 ) -> EmailMessage:
     status = str(result.get("status") or "unknown")
@@ -348,8 +349,10 @@ def build_email_message(
         plain_lines.extend(["", f"错误：{error}"])
     if warning:
         plain_lines.extend(["", f"告警：{warning}"])
+    if site_url:
+        plain_lines.extend(["", f"在线网页报告：{site_url}"])
     if run_url:
-        plain_lines.extend(["", f"Actions 运行详情：{run_url}"])
+        plain_lines.extend([f"Actions 运行详情：{run_url}"])
     if shown_albums:
         list_label = f"本次新增专辑（{len(albums)} 张）" if run_hits else f"今日累计新增专辑（{len(albums)} 张）"
         plain_lines.extend(["", f"--- {list_label} ---"])
@@ -363,51 +366,63 @@ def build_email_message(
             url = f"https://music.163.com/#/album?id={album['album_id']}" if re.fullmatch(r"\d+", album["album_id"]) else ""
             plain_lines.append(f"{heat_str} 《{album['album_name']}》 ({album['latest_date']}) - {artist_text or '—'} {url}".strip())
         if len(albums) > len(shown_albums):
-            plain_lines.append(f"... 正文仅展示前 {len(shown_albums)} 张专辑，完整结果请查看附件 HTML 或 CSV。")
+            plain_lines.append(f"... 正文仅展示前 {len(shown_albums)} 张专辑，完整结果请查看在线网页或附件离线报告。")
     else:
         plain_lines.extend(["", "本次扫描及今日暂无新增曲目。"])
     plain_text = "\n".join(plain_lines) + "\n"
 
-    # HTML body
+    # HTML body (mobile-first single-column vertical cards; zero horizontal scroll)
     alert_blocks: List[str] = []
     if dry_run:
         alert_blocks.append(
-            '<div style="margin:0 0 14px;padding:10px 14px;border-radius:8px;background:#eef6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:13px;">'
+            '<div style="margin:0 0 12px;padding:10px 12px;border-radius:8px;background:#eef6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:13px;line-height:1.45;word-break:break-word;">'
             "🧪 <strong>隔离试跑模式</strong>：结果仅用于验证，未写回生产 Release 与静态站点。"
             "</div>"
         )
     if error:
         alert_blocks.append(
-            '<div style="margin:0 0 14px;padding:10px 14px;border-radius:8px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;font-size:13px;word-break:break-word;">'
+            '<div style="margin:0 0 12px;padding:10px 12px;border-radius:8px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;font-size:13px;line-height:1.45;word-break:break-word;">'
             f"❌ <strong>错误：</strong>{html.escape(error)}"
             "</div>"
         )
     if warning:
         alert_blocks.append(
-            '<div style="margin:0 0 14px;padding:10px 14px;border-radius:8px;background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:13px;word-break:break-word;">'
+            '<div style="margin:0 0 12px;padding:10px 12px;border-radius:8px;background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:13px;line-height:1.45;word-break:break-word;">'
             f"⚠️ <strong>告警：</strong>{html.escape(warning)}"
             "</div>"
         )
 
-    album_rows_html: List[str] = []
+    album_cards_html: List[str] = []
     for album in shown_albums:
         heat = album["heat"]
         if heat >= 3:
-            heat_cell = f'<span style="display:inline-block;padding:2px 8px;border-radius:999px;background:#fef2f2;color:#b91c1c;font-weight:700;font-size:12px;">🔥 {heat}</span>'
+            heat_badge = (
+                f'<span style="display:inline-block;margin:0 6px 4px 0;padding:2px 8px;border-radius:999px;'
+                f'background:#fef2f2;color:#b91c1c;font-weight:700;font-size:12px;">🔥 {heat}</span>'
+            )
         elif heat > 0:
-            heat_cell = f'<span style="color:#475569;font-weight:600;font-size:12px;">{heat}</span>'
+            heat_badge = (
+                f'<span style="display:inline-block;margin:0 6px 4px 0;padding:2px 7px;border-radius:999px;'
+                f'background:#f1f5f9;color:#475569;font-weight:600;font-size:12px;">热度 {heat}</span>'
+            )
         else:
-            heat_cell = '<span style="color:#94a3b8;">—</span>'
+            heat_badge = ""
+
+        date_badge = (
+            f'<span style="display:inline-block;margin:0 6px 4px 0;padding:2px 6px;border-radius:4px;'
+            f'background:#f8fafc;border:1px solid #e2e8f0;color:#475569;font-family:monospace;font-size:12px;">'
+            f'{html.escape(album["latest_date"])}</span>'
+        )
 
         title_esc = html.escape(album["album_name"])
         if re.fullmatch(r"\d+", album["album_id"]):
-            title_cell = (
+            title_html = (
                 f'<a href="https://music.163.com/#/album?id={album["album_id"]}" '
-                'style="color:#1d4ed8;text-decoration:none;font-weight:600;" target="_blank">'
+                'style="color:#1d4ed8;text-decoration:none;font-weight:700;font-size:14px;line-height:1.4;" target="_blank">'
                 f"{title_esc}</a>"
             )
         else:
-            title_cell = f'<span style="font-weight:600;">{title_esc}</span>'
+            title_html = f'<span style="font-weight:700;font-size:14px;color:#0f172a;line-height:1.4;">{title_esc}</span>'
 
         artists = album.get("artists") or []
         if len(artists) > MAX_INLINE_ARTISTS:
@@ -415,13 +430,12 @@ def build_email_message(
         else:
             artists_text = "、".join(html.escape(a) for a in artists) or "—"
 
-        album_rows_html.append(
-            "<tr>"
-            f'<td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;text-align:center;white-space:nowrap;">{heat_cell}</td>'
-            f'<td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;line-height:1.4;">{title_cell}</td>'
-            f'<td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;white-space:nowrap;color:#475569;font-family:monospace;font-size:12px;">{html.escape(album["latest_date"])}</td>'
-            f'<td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:13px;line-height:1.45;">{artists_text}</td>'
-            "</tr>"
+        album_cards_html.append(
+            '<div style="margin:0 0 8px;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;background:#ffffff;word-break:break-word;">'
+            f'<div style="line-height:1.45;">{heat_badge}{date_badge}{title_html}</div>'
+            f'<div style="margin-top:5px;color:#334155;font-size:13px;line-height:1.5;word-break:break-word;">'
+            f'<span style="color:#64748b;">艺人：</span>{artists_text}</div>'
+            "</div>"
         )
 
     if shown_albums:
@@ -433,26 +447,17 @@ def build_email_message(
         trunc_note = ""
         if len(albums) > len(shown_albums):
             trunc_note = (
-                f'<p style="margin:10px 0 0;color:#64748b;font-size:12px;">'
-                f"ℹ️ 正文仅展示前 {len(shown_albums)} 张专辑以避免邮件被截断，完整结果请打开附件离线报告或 CSV。"
+                f'<p style="margin:8px 0 0;color:#64748b;font-size:12px;line-height:1.45;">'
+                f"ℹ️ 正文仅展示前 {len(shown_albums)} 张专辑以避免邮件被截断，完整结果请查看在线网页或附件离线报告。"
                 "</p>"
             )
         albums_section = (
-            f'<h3 style="margin:20px 0 10px;font-size:15px;color:#0f172a;">{html.escape(list_heading)}</h3>'
-            '<div style="overflow-x:auto;border:1px solid #e2e8f0;border-radius:8px;">'
-            '<table style="width:100%;border-collapse:collapse;background:#ffffff;font-size:13px;">'
-            '<thead><tr style="background:#f8fafc;color:#475569;text-align:left;font-size:12px;">'
-            '<th style="padding:8px 10px;border-bottom:1px solid #e2e8f0;text-align:center;width:58px;">热度</th>'
-            '<th style="padding:8px 10px;border-bottom:1px solid #e2e8f0;">专辑 / 企划</th>'
-            '<th style="padding:8px 10px;border-bottom:1px solid #e2e8f0;width:96px;">发行日期</th>'
-            '<th style="padding:8px 10px;border-bottom:1px solid #e2e8f0;">命中艺人</th>'
-            "</tr></thead>"
-            f"<tbody>{''.join(album_rows_html)}</tbody>"
-            "</table></div>"
+            f'<h3 style="margin:18px 0 10px;font-size:15px;color:#0f172a;">{html.escape(list_heading)}</h3>'
+            f"<div>{''.join(album_cards_html)}</div>"
             f"{trunc_note}"
         )
     else:
-        albums_section = '<p style="margin:16px 0;color:#64748b;font-size:14px;">本次扫描及今日暂无新增曲目。</p>'
+        albums_section = '<p style="margin:14px 0;color:#64748b;font-size:14px;">本次扫描及今日暂无新增曲目。</p>'
 
     endpoints = metrics.get("endpoints") or {}
     album_ep = endpoints.get("/album") or {}
@@ -466,31 +471,41 @@ def build_email_message(
             f"/album 请求 {int(album_ep.get('count') or 0)}（405: {int(album_ep.get('status_405') or 0)}）"
         )
     perf_footer = (
-        f'<p style="margin:12px 0 0;color:#64748b;font-size:12px;">性能概况：{" · ".join(perf_bits)}</p>'
+        f'<p style="margin:12px 0 0;color:#64748b;font-size:12px;line-height:1.45;">性能概况：{" · ".join(perf_bits)}</p>'
         if perf_bits
         else ""
     )
 
-    run_link_html = (
-        f'<a href="{html.escape(run_url)}" style="display:inline-block;margin-top:12px;padding:7px 14px;border-radius:6px;background:#0f172a;color:#ffffff;text-decoration:none;font-size:12px;font-weight:600;" target="_blank">查看 GitHub Actions 运行详情</a>'
-        if run_url
-        else ""
+    action_buttons: List[str] = []
+    if site_url:
+        action_buttons.append(
+            f'<a href="{html.escape(site_url)}" style="display:inline-block;margin:0 8px 6px 0;padding:7px 14px;border-radius:6px;background:#1d4ed8;color:#ffffff;text-decoration:none;font-size:12px;font-weight:600;" target="_blank">打开在线网页报告</a>'
+        )
+    if run_url:
+        action_buttons.append(
+            f'<a href="{html.escape(run_url)}" style="display:inline-block;margin:0 8px 6px 0;padding:7px 14px;border-radius:6px;background:#0f172a;color:#ffffff;text-decoration:none;font-size:12px;font-weight:600;" target="_blank">查看 GitHub Actions 详情</a>'
+        )
+    action_bar_html = f'<div style="margin-top:12px;">{"".join(action_buttons)}</div>' if action_buttons else ""
+
+    summary_rows_html = (
+        '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:2px 12px;font-size:13px;line-height:1.5;word-break:break-word;">'
+        f'<div style="padding:7px 0;border-bottom:1px solid #e2e8f0;"><span style="color:#64748b;">状态：</span><strong>{html.escape(status_label)}</strong></div>'
+        f'<div style="padding:7px 0;border-bottom:1px solid #e2e8f0;"><span style="color:#64748b;">本次 / 今日：</span>新增 <strong>{result_count}</strong> 条（已去重 {csv_skipped}） · 今日累计 <strong>{today_total}</strong> 条</div>'
+        f'<div style="padding:7px 0;border-bottom:1px solid #e2e8f0;"><span style="color:#64748b;">参数 / 耗时：</span><code>{html.escape(scan_mode)}</code> · {html.escape(threads)} 线程 · {elapsed_min} 分钟</div>'
+        f'<div style="padding:7px 0;border-bottom:1px solid #e2e8f0;"><span style="color:#64748b;">窗口：</span>合辑 <code>{html.escape(ext_win)}</code> · 新专 <code>{html.escape(new_win)}</code></div>'
+        f'<div style="padding:7px 0;border-bottom:1px solid #e2e8f0;"><span style="color:#64748b;">覆盖：</span>{int(summary.get("artists", 0))} 位艺人 / {int(summary.get("unique_albums", 0))} 张专辑</div>'
+        f'<div style="padding:7px 0;"><span style="color:#64748b;">失败计数：</span>{html.escape(failure_line)}</div>'
+        "</div>"
     )
 
     html_body = (
-        '<!doctype html><html><body style="margin:0;padding:16px;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',\'PingFang SC\',\'Microsoft YaHei\',sans-serif;color:#0f172a;">'
-        '<div style="max-width:860px;margin:0 auto;background:#ffffff;border-radius:12px;padding:20px 22px;border:1px solid #e2e8f0;">'
-        f'<h2 style="margin:0 0 12px;font-size:18px;color:#0f172a;">{"🧪 网易云新曲试跑简报" if dry_run else "网易云新曲扫描简报"} · {html.escape(today_str)} <span style="font-size:13px;font-weight:500;color:#64748b;">({html.escape(slot)})</span></h2>'
+        '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
+        '<body style="margin:0;padding:10px;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',\'PingFang SC\',\'Microsoft YaHei\',sans-serif;color:#0f172a;">'
+        '<div style="max-width:680px;width:100%;box-sizing:border-box;margin:0 auto;background:#ffffff;border-radius:12px;padding:14px 16px;border:1px solid #e2e8f0;">'
+        f'<h2 style="margin:0 0 12px;font-size:17px;line-height:1.35;color:#0f172a;">{"🧪 网易云新曲试跑简报" if dry_run else "网易云新曲扫描简报"} · {html.escape(today_str)} <span style="font-size:13px;font-weight:500;color:#64748b;">({html.escape(slot)})</span></h2>'
         f"{''.join(alert_blocks)}"
-        '<table style="width:100%;border-collapse:collapse;font-size:13px;background:#f8fafc;border-radius:8px;overflow:hidden;border:1px solid #e2e8f0;">'
-        f'<tr><td style="padding:7px 12px;border-bottom:1px solid #e2e8f0;color:#475569;width:140px;">状态</td><td style="padding:7px 12px;border-bottom:1px solid #e2e8f0;font-weight:600;">{html.escape(status_label)}</td></tr>'
-        f'<tr><td style="padding:7px 12px;border-bottom:1px solid #e2e8f0;color:#475569;">本次新增 / 今日累计</td><td style="padding:7px 12px;border-bottom:1px solid #e2e8f0;"><strong>{result_count}</strong> 条（CSV 去重 {csv_skipped} 条） / 今日累计 <strong>{today_total}</strong> 条</td></tr>'
-        f'<tr><td style="padding:7px 12px;border-bottom:1px solid #e2e8f0;color:#475569;">模式 / 线程 / 耗时</td><td style="padding:7px 12px;border-bottom:1px solid #e2e8f0;"><code>{html.escape(scan_mode)}</code> · {html.escape(threads)} 线程 · {elapsed_min} 分钟</td></tr>'
-        f'<tr><td style="padding:7px 12px;border-bottom:1px solid #e2e8f0;color:#475569;">外部 / 新专窗口</td><td style="padding:7px 12px;border-bottom:1px solid #e2e8f0;"><code>{html.escape(ext_win)}</code> / <code>{html.escape(new_win)}</code></td></tr>'
-        f'<tr><td style="padding:7px 12px;border-bottom:1px solid #e2e8f0;color:#475569;">覆蓋艺人 / 专辑</td><td style="padding:7px 12px;border-bottom:1px solid #e2e8f0;">{int(summary.get("artists", 0))} 位 / {int(summary.get("unique_albums", 0))} 张</td></tr>'
-        f'<tr><td style="padding:7px 12px;color:#475569;">失败计数</td><td style="padding:7px 12px;">{html.escape(failure_line)}</td></tr>'
-        "</table>"
-        f"{run_link_html}"
+        f"{summary_rows_html}"
+        f"{action_bar_html}"
         f"{albums_section}"
         f"{perf_footer}"
         "</div></body></html>"
@@ -568,6 +583,7 @@ def _parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument("--today-csv", type=Path, default=None)
     parser.add_argument("--standalone-html", type=Path, default=None)
     parser.add_argument("--run-url", default="")
+    parser.add_argument("--site-url", default="")
     return parser.parse_args(list(argv) if argv is not None else None)
 
 
@@ -643,11 +659,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             run_hits=run_hits,
             day_hits=day_hits,
             run_url=args.run_url.strip(),
+            site_url=(args.site_url or os.getenv("SITE_URL", "")).strip(),
             standalone_html=args.standalone_html,
             run_csv=args.run_csv,
             today_csv=args.today_csv,
             attach_html=_env_flag("MAIL_ATTACH_HTML", default=True),
-            attach_csv=_env_flag("MAIL_ATTACH_CSV", default=True),
+            attach_csv=_env_flag("MAIL_ATTACH_CSV", default=False),
             secret_tokens=(smtp_pass,),
         )
         t0 = time.monotonic()
