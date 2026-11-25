@@ -880,8 +880,8 @@ def fetch_artist_sublist(source_cookie: str) -> List[Dict[str, Any]]:
         """补探大页边界遗漏的尾页。
 
         网易云某些代理/版本在 limit=500 且 offset=4500 时会错误返回空页，
-        但同一 offset 用较小 limit 仍能返回尾部记录。只在服务器总数明确大于
-        当前数量时触发，最多尝试少量请求，以控制速度与风控成本。
+        但同一 offset 用较小 limit 仍能返回尾部记录（每页最多 200 条）。
+        当剩余数量超过 200（例如 4748 位关注艺人）时，需要按实际返回条数持续向后翻页补齐。
         """
         server_count = base_meta.get("server_count")
         if not isinstance(server_count, int) or server_count <= len(base_artists):
@@ -895,40 +895,72 @@ def fetch_artist_sublist(source_cookie: str) -> List[Dict[str, Any]]:
 
         merged = list(base_artists)
         seen = {str(a.get("id")) for a in merged if isinstance(a, dict) and a.get("id")}
-        deficit = max(1, server_count - len(merged))
-        limits = []
-        for value in (deficit, 100, 200, 50, 39):
-            value = max(1, min(200, int(value)))
-            if value not in limits:
-                limits.append(value)
         attempts = []
-        for tail_limit in limits:
-            try:
-                data = api_request("/artist/sublist", {
-                    "limit": tail_limit,
-                    "offset": boundary_offset,
-                    "cookie": source_cookie,
-                }, preferred=method, exact_method=True)
-                page = data.get("data") or []
-                gained = 0
-                for a in page if isinstance(page, list) else []:
-                    if not isinstance(a, dict) or not a.get("id") or not a.get("name"):
-                        continue
-                    sid = str(a["id"])
-                    if sid not in seen:
-                        merged.append({"id": sid, "name": str(a["name"])})
-                        seen.add(sid)
-                        gained += 1
-                attempts.append({"limit": tail_limit, "returned": len(page) if isinstance(page, list) else 0, "gained": gained})
-                emit({"type": "log", "level": "info", "text": f"尾页补偿探测 offset={boundary_offset}, limit={tail_limit}：返回 {len(page) if isinstance(page, list) else 0} 条，新增 {gained} 位，累计 {len(merged)} 位 / 服务器count≈{server_count}。"})
-                if len(merged) >= server_count:
-                    emit({"type": "log", "level": "success", "text": f"尾页补偿探测已补齐：累计 {len(merged)} 位，达到服务器count≈{server_count}。"})
-                    break
-                if gained > 0:
-                    # 已命中尾部时，后续更小 limit 只会重复同一尾页。
-                    break
-            except Exception as e:
-                attempts.append({"limit": tail_limit, "error": redacted_error_text(str(e))})
+        cur_offset = boundary_offset
+        max_tail_pages = 40
+
+        for _ in range(max_tail_pages):
+            if len(merged) >= server_count:
+                break
+            remaining = max(1, server_count - len(merged))
+            candidate_limits = []
+            for value in (min(200, remaining), 200, 100, 50):
+                clamped = max(1, min(200, int(value)))
+                if clamped not in candidate_limits:
+                    candidate_limits.append(clamped)
+
+            page_returned = 0
+            page_gained = 0
+            page_has_more = None
+            for tail_limit in candidate_limits:
+                try:
+                    data = api_request("/artist/sublist", {
+                        "limit": tail_limit,
+                        "offset": cur_offset,
+                        "cookie": source_cookie,
+                    }, preferred=method, exact_method=True)
+                    page = data.get("data") or []
+                    returned = len(page) if isinstance(page, list) else 0
+                    gained = 0
+                    for a in page if isinstance(page, list) else []:
+                        if not isinstance(a, dict) or not a.get("id") or not a.get("name"):
+                            continue
+                        sid = str(a["id"])
+                        if sid not in seen:
+                            merged.append({"id": sid, "name": str(a["name"])})
+                            seen.add(sid)
+                            gained += 1
+                    attempts.append({
+                        "offset": cur_offset,
+                        "limit": tail_limit,
+                        "returned": returned,
+                        "gained": gained,
+                    })
+                    emit({
+                        "type": "log",
+                        "level": "info",
+                        "text": f"尾页补偿探测 offset={cur_offset}, limit={tail_limit}：返回 {returned} 条，新增 {gained} 位，累计 {len(merged)} 位 / 服务器count≈{server_count}。",
+                    })
+                    if returned > 0:
+                        page_returned = returned
+                        page_gained = gained
+                        if data.get("hasMore") is False or data.get("more") is False:
+                            page_has_more = False
+                        break
+                except Exception as e:
+                    attempts.append({
+                        "offset": cur_offset,
+                        "limit": tail_limit,
+                        "error": redacted_error_text(str(e)),
+                    })
+
+            if len(merged) >= server_count:
+                emit({"type": "log", "level": "success", "text": f"尾页补偿探测已补齐：累计 {len(merged)} 位，达到服务器count≈{server_count}。"})
+                break
+            if page_gained <= 0 or page_returned <= 0 or page_has_more is False:
+                break
+            cur_offset += page_returned
+            time.sleep(0.2)
 
         if len(merged) > len(base_artists):
             base_meta = dict(base_meta)

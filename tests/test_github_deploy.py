@@ -1456,6 +1456,73 @@ def test_runtime_resolve_falls_back_to_configured_cache_key_on_incomplete_live_f
         rt.close()
 
 
+def test_fetch_artist_sublist_tail_probe_paginates_past_4700(monkeypatch):
+    all_artists = [{"id": str(i), "name": f"Artist {i}"} for i in range(1, 4749)]
+    calls = []
+    events = []
+
+    def fake_api_request(path, params=None, preferred="GET", exact_method=False, **kwargs):
+        assert path == "/artist/sublist"
+        offset = int(params["offset"])
+        limit = int(params["limit"])
+        method = preferred
+        calls.append((method, offset, limit))
+        if limit >= 500 and offset >= 4500:
+            return {"code": 200, "count": 4748, "data": [], "hasMore": False}
+        page = all_artists[offset : offset + limit]
+        return {
+            "code": 200,
+            "count": 4748,
+            "data": page,
+            "hasMore": (offset + len(page)) < len(all_artists),
+        }
+
+    monkeypatch.setattr(engine, "api_request", fake_api_request)
+    monkeypatch.setattr(engine, "emit", lambda msg: events.append(msg))
+    monkeypatch.setattr(engine.time, "sleep", lambda *a, **kw: None)
+
+    artists = engine.fetch_artist_sublist("MUSIC_U=tail_test;")
+    assert len(artists) == 4748
+    assert len({a["id"] for a in artists}) == 4748
+    meta = engine.fetch_artist_sublist.last_meta
+    assert meta["complete_confirmed"] is True
+    assert meta["end_reason"] == "tail_probe_server_count_reached"
+    # 9 full pages (0..4000) + 1 empty page at 4500 + 2 tail pages (4500/200, 4700/48)
+    assert len(calls) == 12
+    assert calls[-2:] == [("GET", 4500, 200), ("GET", 4700, 48)]
+    assert any("尾页补偿探测已补齐" in e.get("text", "") for e in events if e.get("type") == "log")
+
+
+def test_fetch_artist_sublist_tail_probe_stops_cleanly_on_eof_short_count(monkeypatch):
+    all_artists = [{"id": str(i), "name": f"Artist {i}"} for i in range(1, 4747)]
+    calls = []
+
+    def fake_api_request(path, params=None, preferred="GET", exact_method=False, **kwargs):
+        offset = int(params["offset"])
+        limit = int(params["limit"])
+        calls.append((preferred, offset, limit))
+        if preferred == "GET" and limit >= 500 and offset >= 4500:
+            return {"code": 200, "count": 4748, "data": []}
+        if preferred == "POST":
+            return {"code": 200, "count": 4748, "data": all_artists[:500]}
+        page = all_artists[offset : offset + limit]
+        return {"code": 200, "count": 4748, "data": page}
+
+    monkeypatch.setattr(engine, "api_request", fake_api_request)
+    monkeypatch.setattr(engine, "emit", lambda msg: None)
+    monkeypatch.setattr(engine.time, "sleep", lambda *a, **kw: None)
+
+    artists = engine.fetch_artist_sublist("MUSIC_U=tail_short;")
+    assert len(artists) == 4746
+    assert len({a["id"] for a in artists}) == 4746
+    meta = engine.fetch_artist_sublist.last_meta
+    assert meta["complete_confirmed"] is False
+    assert meta["end_reason"] == "tail_probe_partial"
+    assert ("GET", 4500, 200) in calls
+    assert ("GET", 4700, 48) in calls
+    assert ("GET", 4746, 2) in calls
+
+
 
 
 
