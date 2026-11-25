@@ -1832,6 +1832,7 @@ def test_session_bypasses_apicache_and_album_405_switches_immediately(tmp_path, 
     monkeypatch.setattr(engine, "ALBUM_CACHE_FILE", tmp_path / "VA_Album_Date_Cache.json")
     monkeypatch.setattr(engine, "ALBUM_CACHE", {})
     monkeypatch.setattr(engine, "METRICS", engine.Metrics())
+    engine._ALBUM_PACER.reset()
     with engine.METHOD_CACHE_LOCK:
         saved_methods = dict(engine.METHOD_CACHE)
         engine.METHOD_CACHE.clear()
@@ -1893,6 +1894,7 @@ def test_session_bypasses_apicache_and_album_405_switches_immediately(tmp_path, 
         with engine.METHOD_CACHE_LOCK:
             assert engine.METHOD_CACHE.get("/album") == "GET"
     finally:
+        engine._ALBUM_PACER.reset()
         with engine.METHOD_CACHE_LOCK:
             engine.METHOD_CACHE.clear()
             engine.METHOD_CACHE.update(saved_methods)
@@ -2486,6 +2488,65 @@ def test_probe_dual_cookie_separates_sublist_and_scan_cookies_and_scrubs(tmp_pat
 
     md = ci_scan._build_probe_summary_md(report)
     assert "双 Cookie（大号拉艺人 / 小号扫描）" in md
+
+
+def test_album_pacer_throttles_405_and_recovers_without_redundant_method_switch(tmp_path, monkeypatch):
+    # 1. Adaptive backoff & recovery behavior
+    pacer = engine._AlbumPacer(max_concurrency=2, base_interval_sec=0.1, max_interval_sec=1.0, cooldown_sec=0.05)
+    assert pacer.current_interval == 0.1
+    stretched = pacer.on_rate_limit()
+    assert stretched == pytest.approx(0.26)
+    for _ in range(10):
+        pacer.on_success()
+    assert pacer.current_interval < stretched
+    assert pacer.current_interval >= pacer.base_interval
+    pacer.reset()
+    assert pacer.current_interval == 0.1
+    assert pacer._next_allowed == 0.0
+    assert pacer._ok_streak == 0
+
+    # 2. Proven POST method encountering transient 405 cools down & retries POST in-place without falling over to GET
+    test_pacer = engine._AlbumPacer(max_concurrency=2, base_interval_sec=0.0, max_interval_sec=0.2, cooldown_sec=0.01)
+    monkeypatch.setattr(engine, "_ALBUM_PACER", test_pacer)
+    monkeypatch.setattr(engine, "ALBUM_CACHE_FILE", tmp_path / "VA_Album_Date_Cache.json")
+    monkeypatch.setattr(engine, "ALBUM_CACHE", {})
+    monkeypatch.setattr(engine, "METRICS", engine.Metrics())
+
+    with engine.METHOD_CACHE_LOCK:
+        saved_methods = dict(engine.METHOD_CACHE)
+        engine.METHOD_CACHE["/album"] = "POST"
+
+    methods_called = []
+
+    def fake_api_request(path, params=None, preferred=None, exact_method=False, **kwargs):
+        assert path == "/album"
+        assert exact_method is True
+        methods_called.append(preferred)
+        if len(methods_called) == 1:
+            raise engine.ApiError("/album", "405 rate limit", 405)
+        return {
+            "code": 200,
+            "album": {
+                "id": 777,
+                "name": "Album 777",
+                "publishTime": 1700000000000,
+                "artists": [],
+            },
+            "songs": [],
+        }
+
+    monkeypatch.setattr(engine, "api_request", fake_api_request)
+    try:
+        detail = engine.fetch_album_detail("777", "cookie-val")
+        assert detail["album_id"] == "777"
+        assert detail["album_name"] == "Album 777"
+        assert methods_called == ["POST", "POST"]
+        assert test_pacer._sem._value == 2
+    finally:
+        with engine.METHOD_CACHE_LOCK:
+            engine.METHOD_CACHE.clear()
+            engine.METHOD_CACHE.update(saved_methods)
+
 
 
 

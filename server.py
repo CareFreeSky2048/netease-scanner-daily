@@ -682,7 +682,7 @@ class Runtime:
             self.tokens = list(dict.fromkeys(tokens))
             verify_login(scan_cookie)
             if dual_cookie:
-                self.store.log(run_id, "info", "双 Cookie 模式已启用：大号用于拉取关注艺人列表，小号用于执行歌曲与专辑扫描。")
+                self.emit({"type": "log", "level": "info", "text": "双 Cookie 模式已启用：大号用于拉取关注艺人列表，小号用于执行歌曲与专辑扫描。"})
             # Refresh once per Shanghai calendar day, including legacy caches that
             # were copied preserving a recent mtime. A failed refresh stays visible.
             cache_key = engine.cookie_fingerprint(artist_cookie)

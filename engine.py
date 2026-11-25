@@ -75,6 +75,9 @@ MANUAL_THREAD_MAX = int(os.getenv("NETEASE_MANUAL_THREAD_MAX", "16"))
 API_TIMEOUT = float(os.getenv("NETEASE_API_TIMEOUT", "8"))
 API_RETRIES = int(os.getenv("NETEASE_API_RETRIES", "1"))
 ALBUM_MISMATCH_RETRIES = int(os.getenv("NETEASE_ALBUM_MISMATCH_RETRIES", "3"))
+ALBUM_MAX_CONCURRENCY = max(1, int(os.getenv("NETEASE_ALBUM_MAX_CONCURRENCY", "2")))
+ALBUM_MIN_INTERVAL_MS = max(0, int(os.getenv("NETEASE_ALBUM_MIN_INTERVAL_MS", "200")))
+ALBUM_405_RETRIES = max(0, int(os.getenv("NETEASE_ALBUM_405_RETRIES", "2")))
 ALLOW_ALBUM_FALLBACK_FROM_RECENT = os.getenv("NETEASE_ALLOW_ALBUM_FALLBACK_FROM_RECENT", "1") != "0"
 # User-confirmed nonexistent upstream albums never enter detail/retry queues.
 SKIP_ALBUM_DETAIL_IDS = frozenset({"141201113"})
@@ -1285,6 +1288,78 @@ def album_cache_needs_recheck(entry: Dict[str, Any]) -> bool:
     return False
 
 
+class _AlbumPacer:
+    """自适应 /album 节流器：限制并发并在触发 405 限流时全体协同降速冷却。"""
+
+    def __init__(
+        self,
+        max_concurrency: int = 2,
+        base_interval_sec: float = 0.2,
+        max_interval_sec: float = 1.5,
+        cooldown_sec: float = 1.5,
+    ) -> None:
+        self.max_concurrency = max(1, int(max_concurrency))
+        self.base_interval = max(0.0, float(base_interval_sec))
+        self.max_interval = max(self.base_interval, float(max_interval_sec))
+        self.cooldown_sec = max(0.0, float(cooldown_sec))
+        self._sem = threading.BoundedSemaphore(self.max_concurrency)
+        self._lock = threading.Lock()
+        self.current_interval = self.base_interval
+        self._next_allowed = 0.0
+        self._ok_streak = 0
+
+    def acquire_slot(self) -> None:
+        self._sem.acquire()
+        try:
+            while True:
+                if not wait_if_paused_or_stopped():
+                    raise ApiError("/album", "scan stopped")
+                with self._lock:
+                    now = time.monotonic()
+                    wait_sec = self._next_allowed - now
+                    if wait_sec <= 0:
+                        self._next_allowed = now + self.current_interval
+                        return
+                time.sleep(min(wait_sec, 0.25))
+        except BaseException:
+            self._sem.release()
+            raise
+
+    def release_slot(self) -> None:
+        self._sem.release()
+
+    def on_success(self) -> None:
+        with self._lock:
+            self._ok_streak += 1
+            if self._ok_streak >= 10:
+                self._ok_streak = 0
+                if self.current_interval > self.base_interval:
+                    self.current_interval = max(
+                        self.base_interval,
+                        round(self.current_interval * 0.85, 4),
+                    )
+
+    def on_rate_limit(self) -> float:
+        with self._lock:
+            self._ok_streak = 0
+            self.current_interval = min(
+                self.max_interval,
+                max(self.base_interval, round(self.current_interval * 1.6 + 0.1, 4)),
+            )
+            cooldown = self.cooldown_sec + (random.random() * 0.5 if self.cooldown_sec > 0 else 0.0)
+            self._next_allowed = max(self._next_allowed, time.monotonic() + cooldown)
+            return self.current_interval
+
+    def reset(self) -> None:
+        with self._lock:
+            self.current_interval = self.base_interval
+            self._next_allowed = 0.0
+            self._ok_streak = 0
+
+
+_ALBUM_PACER = _AlbumPacer(ALBUM_MAX_CONCURRENCY, ALBUM_MIN_INTERVAL_MS / 1000.0)
+
+
 def _lookup_album_cache_hit(album_id: str, need_songs: bool = False, expected_names: Optional[Iterable[str]] = None) -> Optional[Dict[str, Any]]:
     """纯只读校验（需在 ALBUM_CACHE_LOCK 内或单线程预过滤阶段调用）。"""
     sid = str(album_id)
@@ -1345,34 +1420,58 @@ def fetch_album_detail(album_id: str, cookie: str, need_songs: bool = False, exp
     last_err: Optional[Exception] = None
     data: Optional[Dict[str, Any]] = None
     with METHOD_CACHE_LOCK:
-        preferred_method = METHOD_CACHE.get("/album", "POST")
+        cached_method = METHOD_CACHE.get("/album")
+    cached_method_known = cached_method in ("GET", "POST")
+    preferred_method = cached_method or "POST"
     method_order = [preferred_method] + (["POST"] if preferred_method == "GET" else ["GET"])
     mismatch_seen = False
-    for round_no in range(max(1, ALBUM_MISMATCH_RETRIES)):
+    rate_limit_retries = 0
+    max_rounds = max(1, ALBUM_MISMATCH_RETRIES, 1 + ALBUM_405_RETRIES)
+    pacer = _ALBUM_PACER
+    for round_no in range(max_rounds):
         round_mismatch = False
-        for method in method_order:
-            try:
-                data = request_once(method, cookie, f"strict-{method.lower()}-{round_no+1}")
+        round_405 = False
+        pacer.acquire_slot()
+        try:
+            for method in method_order:
+                try:
+                    data = request_once(method, cookie, f"strict-{method.lower()}-{round_no+1}")
+                    pacer.on_success()
+                    break
+                except (AlbumIdMismatchError, AlbumNameMismatchError) as e:
+                    last_err = e
+                    round_mismatch = True
+                    mismatch_seen = True
+                except ApiError as e:
+                    last_err = e
+                    if e.status_code == 405:
+                        round_405 = True
+                        if cached_method_known:
+                            break
+            if data is None and round_mismatch:
+                try:
+                    data = request_once(method_order[0], "", f"strict-{method_order[0].lower()}-nocookie-{round_no+1}")
+                    pacer.on_success()
+                except (AlbumIdMismatchError, AlbumNameMismatchError) as e:
+                    last_err = e
+                    mismatch_seen = True
+                except ApiError as e:
+                    last_err = e
+                    if e.status_code == 405:
+                        round_405 = True
+        finally:
+            pacer.release_slot()
+        if data is not None:
+            break
+        if round_405 and not round_mismatch:
+            rate_limit_retries += 1
+            if rate_limit_retries > ALBUM_405_RETRIES:
                 break
-            except (AlbumIdMismatchError, AlbumNameMismatchError) as e:
-                last_err = e
-                round_mismatch = True
-                mismatch_seen = True
-            except ApiError as e:
-                last_err = e
-        if data is not None:
-            break
-        if round_mismatch:
-            try:
-                data = request_once(method_order[0], "", f"strict-{method_order[0].lower()}-nocookie-{round_no+1}")
-            except (AlbumIdMismatchError, AlbumNameMismatchError) as e:
-                last_err = e
-                mismatch_seen = True
-            except ApiError as e:
-                last_err = e
-        if data is not None:
-            break
+            pacer.on_rate_limit()
+            continue
         if not mismatch_seen:
+            break
+        if round_no + 1 >= max(1, ALBUM_MISMATCH_RETRIES):
             break
         time.sleep(0.15 + random.random() * 0.25)
     if data is None:
@@ -1695,6 +1794,8 @@ def scan_worker(scan_cookie: str, artist_source_input: str, external_start_dt: d
     try:
         init_csv_and_seen(reset_current_scan=reset_seen)
         load_album_cache(force=reset_seen)
+        if reset_seen:
+            _ALBUM_PACER.reset()
         CONTROL.resume()
         METRICS.set_phase("resolve_artist_list")
         emit({"type": "log", "level": "info", "text": "正在解析艺人列表来源：可使用大号 Cookie 或缓存指纹。"})
