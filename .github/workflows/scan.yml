@@ -212,6 +212,7 @@ jobs:
           THREADS="${INPUT_THREADS:-${VAR_THREADS:-8}}"
           SCAN_MODE="${INPUT_SCAN_MODE:-auto}"
           PROBE_LIMIT="${NEW_ALBUM_PROBE_LIMIT:-20}"
+          SLOW_RETRY_ROUNDS=""
           ARGS=(
             --data-dir ./data
             --api-base http://127.0.0.1:3000
@@ -236,6 +237,7 @@ jobs:
               else
                 ARGS+=(--source scheduled --schedule-slot 00:03 --skip-if-slot-exists)
                 PROBE_LIMIT="0"
+                SLOW_RETRY_ROUNDS="1"
               fi
             elif [ "$EVENT_NAME" = "repository_dispatch" ]; then
               if [ "${EVENT_ACTION:-}" = "scan_0400" ]; then
@@ -243,6 +245,7 @@ jobs:
               else
                 ARGS+=(--source scheduled --schedule-slot 00:03 --skip-if-slot-exists)
                 PROBE_LIMIT="0"
+                SLOW_RETRY_ROUNDS="1"
               fi
             else
               ARGS+=(--source manual)
@@ -256,6 +259,7 @@ jobs:
           if [ -n "${RECENT_LIMIT:-}" ]; then ARGS+=(--recent-limit "$RECENT_LIMIT"); fi
           if [ -n "${OWNED_LIMIT:-}" ]; then ARGS+=(--owned-limit "$OWNED_LIMIT"); fi
           ARGS+=(--new-album-probe-limit "$PROBE_LIMIT")
+          if [ -n "${SLOW_RETRY_ROUNDS:-}" ]; then ARGS+=(--slow-retry-rounds "$SLOW_RETRY_ROUNDS"); fi
           if [ -n "${M3_DEFAULT_UNTIL:-}" ]; then ARGS+=(--m3-default-until "$M3_DEFAULT_UNTIL"); fi
           if [ -n "${M3_SECOND_ROUND_RECENT_LIMIT:-}" ]; then ARGS+=(--m3-second-round-recent-limit "$M3_SECOND_ROUND_RECENT_LIMIT"); fi
           if [ -n "${INPUT_DEBUG_ALBUM:-}" ]; then ARGS+=(--debug-album "$INPUT_DEBUG_ALBUM"); fi

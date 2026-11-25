@@ -81,6 +81,12 @@ ALBUM_405_RETRIES = max(0, int(os.getenv("NETEASE_ALBUM_405_RETRIES", "2")))
 ALLOW_ALBUM_FALLBACK_FROM_RECENT = os.getenv("NETEASE_ALLOW_ALBUM_FALLBACK_FROM_RECENT", "1") != "0"
 # User-confirmed nonexistent upstream albums never enter detail/retry queues.
 SKIP_ALBUM_DETAIL_IDS = frozenset({"141201113"})
+DYNAMIC_SKIP_ALBUM_IDS: set = set()
+
+
+def is_skipped_album_id(album_id: Any) -> bool:
+    sid = str(album_id or "").strip()
+    return bool(sid) and (sid in SKIP_ALBUM_DETAIL_IDS or sid in DYNAMIC_SKIP_ALBUM_IDS)
 ARTIST_SUBLIST_SUSPECT_CAP = max(1000, int(os.getenv("NETEASE_ARTIST_SUBLIST_SUSPECT_CAP", "4500")))
 SUBLIST_LIMIT = max(20, min(int(os.getenv("NETEASE_SUBLIST_LIMIT", "500")), 500))
 SUBLIST_MAX_PAGES = max(1, int(os.getenv("NETEASE_SUBLIST_MAX_PAGES", "100")))
@@ -1789,7 +1795,7 @@ def scan_worker(scan_cookie: str, artist_source_input: str, external_start_dt: d
     all_results: List[Dict[str, Any]] = []
     retry_budget = RetryBudget()
     stopped = False
-    if str(debug_album_id) in SKIP_ALBUM_DETAIL_IDS:
+    if is_skipped_album_id(debug_album_id):
         debug_album_id = ""
     try:
         init_csv_and_seen(reset_current_scan=reset_seen)
@@ -1909,7 +1915,7 @@ def scan_worker(scan_cookie: str, artist_source_input: str, external_start_dt: d
         for c in new_album_candidates:
             new_album_by_id[c["album_id"]].append(c)
         album_candidate_ids = list(dict.fromkeys(list(by_album.keys()) + list(new_album_by_id.keys())))
-        album_ids = [aid for aid in album_candidate_ids if str(aid) not in SKIP_ALBUM_DETAIL_IDS]
+        album_ids = [aid for aid in album_candidate_ids if not is_skipped_album_id(aid)]
         METRICS.album_total = len(album_ids)
         emit({"type": "log", "level": "success", "text": f"recent 曲目采样完成：关系 {len(artist_relations)} 条；新专目录兜底命中 {len(new_album_candidates)} 条；唯一 album {len(album_ids)} 个；recent失败艺人 {len(artist_failures)} 位；新专兜底失败艺人 {len(new_album_probe_failures)} 位。"})
         if debug_album_id:
@@ -2234,6 +2240,7 @@ def scan_worker(scan_cookie: str, artist_source_input: str, external_start_dt: d
                     }
                    if include_merge_details else {}),
                 "round_artist_names": sorted({str(a.get("name", "")) for a in artists}),
+                **({"failed_album_ids": sorted(str(aid) for aid in album_errors.keys())} if album_errors else {}),
                 "failure_details": (
                     [{"stage": "/album", "item_id": aid, "error": err} for aid, err in list(album_errors.items())[:20]] +
                     [{"stage": "owned_verify", "item_id": aid, "error": err} for aid, err in list(owned_errors.items())[:20]] +

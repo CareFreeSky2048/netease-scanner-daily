@@ -1,10 +1,24 @@
 """Bounded, serial retries of failed scan objects; shares the scan's control lock."""
+import os
 import time
 from dataclasses import dataclass, field
 
 DELAYS = (30.0, 120.0, 300.0)
 SPACING = 1.0
 MAX_SECONDS = 1800.0
+MAX_ROUNDS = None
+
+
+def effective_delays(max_rounds=None):
+    """Return the active retry wait schedule, optionally capped to N rounds."""
+    limit = max_rounds if max_rounds is not None else MAX_ROUNDS
+    if limit is None:
+        raw = os.getenv("NETEASE_SLOW_RETRY_ROUNDS", "").strip()
+        if raw:
+            limit = int(raw)
+    if limit is None:
+        return tuple(DELAYS)
+    return tuple(DELAYS[:max(0, int(limit))])
 
 
 @dataclass
@@ -32,20 +46,21 @@ def _wait(engine, seconds, budget):
     return engine.wait_if_paused_or_stopped() and budget.spent < MAX_SECONDS
 
 
-def retry_failed(items, func, succeeded, stage, item_id, budget):
+def retry_failed(items, func, succeeded, stage, item_id, budget, max_rounds=None):
     """Yield outcomes for failed objects only; never touches configured concurrency."""
     import engine
     pending = list(items)
-    if not pending:
+    rounds = effective_delays(max_rounds)
+    if not pending or not rounds:
         return
     stats = budget.stages.setdefault(stage, {'initial_failed': len(pending), 'attempted': 0, 'recovered': 0, 'remaining': len(pending)})
-    for round_no, delay in enumerate(DELAYS, 1):
+    for round_no, delay in enumerate(rounds, 1):
         if not pending or budget.spent >= MAX_SECONDS:
             break
         engine.METRICS.set_phase('slow_retry')
         engine.METRICS.set_phase_progress(0, len(pending))
         engine.emit({'type': 'log', 'level': 'info', 'text':
-                     f'{stage} 低速补扫第 {round_no}/{len(DELAYS)} 轮：剩余 {len(pending)} 项，等待 {delay:g} 秒后单线程重试。'})
+                     f'{stage} 低速补扫第 {round_no}/{len(rounds)} 轮：剩余 {len(pending)} 项，等待 {delay:g} 秒后单线程重试。'})
         if not _wait(engine, delay, budget):
             break
         next_pending = []

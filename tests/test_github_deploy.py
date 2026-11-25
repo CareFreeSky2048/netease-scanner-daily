@@ -595,6 +595,7 @@ def test_scan_workflow_respects_github_limits_and_shell_safety():
     assert slot_block is not None
     assert '--schedule-slot 00:03' in slot_block.group(1)
     assert 'PROBE_LIMIT="0"' in slot_block.group(1)
+    assert 'SLOW_RETRY_ROUNDS="1"' in slot_block.group(1)
 
     # External accurate trigger via repository_dispatch must route scan_0003 / scan_0400 cleanly.
     assert "repository_dispatch:" in text
@@ -611,6 +612,8 @@ def test_scan_workflow_respects_github_limits_and_shell_safety():
     assert '--schedule-slot 04:00' in dispatch_block.group(1)
     assert '--schedule-slot 00:03' in dispatch_block.group(1)
     assert 'PROBE_LIMIT="0"' in dispatch_block.group(1)
+    assert 'SLOW_RETRY_ROUNDS="1"' in dispatch_block.group(1)
+    assert '--slow-retry-rounds "$SLOW_RETRY_ROUNDS"' in text
 
     # Keep-Alive patcher must run right before starting NeteaseCloudMusicApi.
     start_match = re.search(
@@ -2830,6 +2833,208 @@ def test_notify_email_skip_guards_and_starttls_and_dry_run_prefix(tmp_path, monk
     assert notify_email.main(["--result-json", str(result_json)]) == 0
     assert len(smtp_calls) == 1
     assert smtp_calls[0]["msg"]["Subject"].startswith("[🧪 试跑·网易云新曲]")
+
+
+def test_slow_retry_round_limit_and_ci_scan_flag(tmp_path, monkeypatch):
+    import slow_retry
+
+    assert slow_retry.effective_delays(1) == (30.0,)
+    assert slow_retry.effective_delays(0) == ()
+    assert slow_retry.effective_delays(None) == slow_retry.DELAYS
+
+    monkeypatch.setattr(engine, "CONTROL", engine.ControlState(target_threads=2, baseline_threads=2))
+    monkeypatch.setattr(engine, "METRICS", engine.Metrics())
+    logs = []
+    monkeypatch.setattr(engine, "emit", logs.append)
+    monkeypatch.setattr(slow_retry, "DELAYS", (0.0, 0.0, 0.0))
+    monkeypatch.setattr(slow_retry, "SPACING", 0.0)
+    monkeypatch.setattr(slow_retry, "MAX_ROUNDS", 1)
+
+    budget = slow_retry.RetryBudget()
+    calls = []
+    outcomes = list(slow_retry.retry_failed(["item1"], lambda x: (calls.append(x), False)[1], bool, "/album", str, budget))
+    assert calls == ["item1"]
+    assert len(outcomes) == 1
+    assert budget.attempted == 1
+    assert budget.stages["/album"]["remaining"] == 1
+    assert any("第 1/1 轮" in msg.get("text", "") for msg in logs if msg.get("type") == "log")
+
+    # Verify ci_scan CLI flag sets slow_retry.MAX_ROUNDS during execute_scan and restores it afterward.
+    parsed = ci_scan._parse_args(["--data-dir", ".", "--slow-retry-rounds", "1"])
+    assert parsed.slow_retry_rounds == 1
+
+    data_dir = tmp_path / "retry_ci"
+    data_dir.mkdir(parents=True)
+    cfg_path = ci_scan._prepare_temp_config(
+        tmp_path / "sec_retry",
+        raw_cookie="MUSIC_U=retry_tok_123;",
+        threads=2,
+        recent_limit=50,
+        owned_limit=50,
+        new_album_probe_limit=0,
+        artist_cache_key="",
+    )
+    monkeypatch.setattr(engine, "SCRIPT_DIR", data_dir)
+    monkeypatch.setattr(engine, "CSV_FILE", data_dir / "VA_Tracks_Output.csv")
+    monkeypatch.setattr(server, "DATA", data_dir)
+    monkeypatch.setattr(server, "verify_login", lambda *a, **kw: None)
+
+    observed_rounds = []
+
+    def check_worker(*a, **kw):
+        observed_rounds.append(slow_retry.MAX_ROUNDS)
+        engine.emit({
+            "type": "done",
+            "results": [],
+            "summary": {"artists": 1},
+            "metrics": {"elapsed_sec": 0.1},
+        })
+
+    monkeypatch.setattr(slow_retry, "MAX_ROUNDS", None)
+    rt = server.Runtime(config=server.Config(cfg_path), db_path=data_dir / "scan_history.sqlite3", worker=check_worker)
+    try:
+        args = ci_scan._parse_args([
+            "--data-dir", str(data_dir),
+            "--slow-retry-rounds", "1",
+            "--result-json", str(tmp_path / "res.json"),
+        ])
+        assert ci_scan.execute_scan(rt, args, data_dir) == 0
+        assert observed_rounds == [1]
+        assert slow_retry.MAX_ROUNDS is None
+    finally:
+        rt.close()
+
+
+def test_album_auto_skipped_after_three_failed_workflows_and_outage_guarded(tmp_path, monkeypatch):
+    import slow_retry
+
+    data_dir = tmp_path / "auto_skip"
+    cache_dir = data_dir / "VA_Artist_Caches"
+    cache_dir.mkdir(parents=True)
+
+    monkeypatch.setattr(engine, "SCRIPT_DIR", data_dir)
+    monkeypatch.setattr(engine, "CSV_FILE", data_dir / "VA_Tracks_Output.csv")
+    monkeypatch.setattr(engine, "ALBUM_CACHE_FILE", data_dir / "VA_Album_Date_Cache.json")
+    monkeypatch.setattr(engine, "ARTIST_CACHE_DIR", cache_dir)
+    monkeypatch.setattr(engine, "METRICS_FILE", data_dir / "VA_Scan_Metrics.json")
+    monkeypatch.setattr(engine, "REPORT_FILE", data_dir / "VA_Scan_Tuning_Report.txt")
+    monkeypatch.setattr(engine, "ALBUM_CACHE", {})
+    monkeypatch.setattr(engine, "_ALBUM_CACHE_DIRTY", False)
+    monkeypatch.setattr(engine, "_ALBUM_CACHE_GEN", 0)
+    monkeypatch.setattr(engine, "_ALBUM_CACHE_LOADED_FILE", None)
+    monkeypatch.setattr(engine, "_SEEN_LOADED_CSV", None)
+    monkeypatch.setattr(engine, "DYNAMIC_SKIP_ALBUM_IDS", set())
+    monkeypatch.setattr(engine, "REFRESH_ARTIST_CACHE", False)
+    monkeypatch.setattr(server, "DATA", data_dir)
+    monkeypatch.setattr(server, "verify_login", lambda *a, **kw: None)
+    monkeypatch.setattr(slow_retry, "DELAYS", (0.0,))
+    monkeypatch.setattr(slow_retry, "SPACING", 0.0)
+
+    cfg_path = ci_scan._prepare_temp_config(
+        tmp_path / "sec_autoskip",
+        raw_cookie="MUSIC_U=autoskip_tok_123;",
+        threads=2,
+        recent_limit=50,
+        owned_limit=50,
+        new_album_probe_limit=0,
+        artist_cache_key="",
+    )
+    cfg = server.Config(cfg_path)
+    today_date = datetime.now(engine.CN_TZ).date()
+    today_ts = int(datetime(today_date.year, today_date.month, today_date.day, 12, tzinfo=engine.CN_TZ).timestamp() * 1000)
+
+    album_api_calls = []
+
+    def fake_api_request(path, params=None, **kwargs):
+        params = dict(params or {})
+        if path == "/artist/sublist":
+            return {"code": 200, "data": [{"id": 1, "name": "Artist 1"}], "count": 1, "hasMore": False}
+        if path == "/artist/songs":
+            return {
+                "code": 200,
+                "songs": [
+                    {"id": 1001, "name": "Good Track", "al": {"id": 200, "name": "Good Album"}, "ar": [{"id": 1, "name": "Artist 1"}]},
+                    {"id": 1002, "name": "Ghost Track", "al": {"id": 410860166, "name": "Ghost Album"}, "ar": [{"id": 1, "name": "Artist 1"}]},
+                ],
+            }
+        if path == "/artist/album":
+            return {"code": 200, "hotAlbums": [], "more": False}
+        if path == "/album":
+            aid = str(params["id"])
+            album_api_calls.append(aid)
+            if aid == "410860166":
+                raise engine.ApiError("/album", "返回码 404 [nonexistent]")
+            return {"code": 200, "album": {"id": 200, "name": "Good Album", "publishTime": today_ts, "artists": []}, "songs": []}
+        raise AssertionError(path)
+
+    monkeypatch.setattr(engine, "api_request", fake_api_request)
+
+    db_path = data_dir / "scan_history.sqlite3"
+    rt = server.Runtime(config=cfg, db_path=db_path)
+    try:
+        reg_params = rt.parameters({"scanMode": "regular", "threads": 2, "newAlbumProbeLimit": 0}, today_date)
+
+        # Workflows 1 & 2: 410860166 fails -> recorded in tracker, not skipped yet
+        for expected_count in (1, 2):
+            with rt.lock:
+                rid = rt.store.create(reg_params, source="manual")
+                rt._launch(rid, reg_params)
+            rt.thread.join()
+            run_rec = rt.store.get(rid)
+            assert run_rec["status"] == "partial"
+            assert run_rec["summary"]["album_errors"] == 1
+            tracker = rt.store.load_album_failure_tracker()
+            assert tracker["410860166"]["count"] == expected_count
+            assert tracker["410860166"]["skipped"] is False
+            assert "410860166" in album_api_calls
+
+        # Workflow 3: 3rd failure marks 410860166 as skipped going forward
+        album_api_calls.clear()
+        with rt.lock:
+            rid3 = rt.store.create(reg_params, source="manual")
+            rt._launch(rid3, reg_params)
+        rt.thread.join()
+        assert rt.store.get(rid3)["status"] == "partial"
+        tracker3 = rt.store.load_album_failure_tracker()
+        assert tracker3["410860166"]["count"] == 3
+        assert tracker3["410860166"]["skipped"] is True
+        assert "410860166" in rt.store.skipped_album_ids()
+        assert any("410860166" in row["text"] and "自动标记为不存在专辑" in row["text"] for row in rt.store.logs(rid3))
+
+        # Workflow 4: 410860166 is completely skipped before /album & never triggers slow_retry
+        album_api_calls.clear()
+        with rt.lock:
+            rid4 = rt.store.create(reg_params, source="manual")
+            rt._launch(rid4, reg_params)
+        rt.thread.join()
+        run4 = rt.store.get(rid4)
+        assert run4["status"] == "success"
+        assert run4["summary"]["album_errors"] == 0
+        assert run4["summary"]["slow_retry"]["attempted"] == 0
+        assert "410860166" not in album_api_calls
+        assert engine.DYNAMIC_SKIP_ALBUM_IDS == set()
+
+        # Recovery clears consecutive streak before threshold
+        rt.store.record_album_workflow_outcomes("rec_1", ["999001"], [])
+        assert rt.store.load_album_failure_tracker()["999001"]["count"] == 1
+        rt.store.record_album_workflow_outcomes("rec_2", [], ["999001"])
+        assert "999001" not in rt.store.load_album_failure_tracker()
+
+        # Outage guard ignores large mass failures (>50)
+        mass_ids = [str(700000 + i) for i in range(55)]
+        assert rt.store.record_album_workflow_outcomes("outage_run", mass_ids, []) == []
+        assert "700000" not in rt.store.load_album_failure_tracker()
+
+        # state_store.compact_sqlite preserves album_failure_tracker across pruning
+        rt.store.set_json("m3_match_report:old_1", {"a": 1})
+        rt.store.set_json("m3_match_report:old_2", {"a": 2})
+        compacted_db = tmp_path / "compacted.sqlite3"
+        state_store.compact_sqlite(db_path, compacted_db, keep_m3_reports=1)
+        assert server.Store(compacted_db).skipped_album_ids() == {"410860166"}
+    finally:
+        rt.close()
+
+
 
 
 

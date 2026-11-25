@@ -37,6 +37,9 @@ CSV_HEADER = ["艺人 (Artist)", "单曲名 (Track)", "企划/专辑名 (Album/V
               "发行日期 (Release Date)", "直达链接", "新歌标记 (Flag)"]
 DATE_KEYS = ("externalStartDate", "externalEndDate", "newStartDate", "newEndDate")
 FAILURE_KEYS = ("artist_failures", "new_album_probe_failures", "album_errors", "owned_errors")
+ALBUM_FAILURE_TRACKER_KEY = "album_failure_tracker"
+ALBUM_NONEXISTENT_THRESHOLD = max(1, int(os.getenv("NETEASE_ALBUM_NONEXISTENT_THRESHOLD", "3")))
+ALBUM_OUTAGE_FAILURE_GUARD = max(10, int(os.getenv("NETEASE_ALBUM_OUTAGE_FAILURE_GUARD", "50")))
 SCAN_MODES = {"auto", "regular", "m3", "m3_intersection"}
 CONFIG_SCAN_MODES = {"auto", "regular", "m3"}
 M3_DEFAULT_UNTIL = date(2026, 11, 25)
@@ -388,6 +391,67 @@ class Store:
         with self.connect() as db:
             return [self.decode(row) for row in db.execute("SELECT * FROM runs WHERE status='queued' ORDER BY created_at,rowid").fetchall()]
 
+    def load_album_failure_tracker(self):
+        data = self.get_json(ALBUM_FAILURE_TRACKER_KEY)
+        return dict(data) if isinstance(data, dict) else {}
+
+    def skipped_album_ids(self):
+        return {
+            str(aid)
+            for aid, rec in self.load_album_failure_tracker().items()
+            if isinstance(rec, dict) and rec.get("skipped")
+        }
+
+    def record_album_workflow_outcomes(
+        self,
+        run_id,
+        failed_album_ids,
+        cached_album_ids=(),
+        *,
+        threshold=None,
+        outage_guard=None,
+    ):
+        thresh = ALBUM_NONEXISTENT_THRESHOLD if threshold is None else max(1, int(threshold))
+        guard = ALBUM_OUTAGE_FAILURE_GUARD if outage_guard is None else max(1, int(outage_guard))
+        tracker = self.load_album_failure_tracker()
+        failed_set = {str(aid).strip() for aid in (failed_album_ids or ()) if str(aid).strip()}
+        cached_set = {str(aid).strip() for aid in (cached_album_ids or ()) if str(aid).strip()}
+        changed = False
+        newly_skipped = []
+
+        # If a previously failing (not yet skipped) album now resolves & caches cleanly, reset its streak.
+        for aid in list(tracker.keys()):
+            rec = tracker.get(aid)
+            if aid in cached_set and aid not in failed_set and not (isinstance(rec, dict) and rec.get("skipped")):
+                tracker.pop(aid, None)
+                changed = True
+
+        # Guard against transient mass API/network outages blacklisting legitimate albums.
+        if 0 < len(failed_set) <= guard:
+            ts = now_iso()
+            for aid in sorted(failed_set):
+                if aid in engine.SKIP_ALBUM_DETAIL_IDS:
+                    continue
+                rec = dict(tracker.get(aid) or {})
+                if rec.get("last_run_id") == run_id:
+                    continue
+                new_count = int(rec.get("count") or 0) + 1
+                was_skipped = bool(rec.get("skipped"))
+                now_skipped = was_skipped or (new_count >= thresh)
+                tracker[aid] = {
+                    "count": new_count,
+                    "skipped": now_skipped,
+                    "last_run_id": run_id,
+                    "last_failed_at": ts,
+                }
+                changed = True
+                if now_skipped and not was_skipped:
+                    newly_skipped.append(aid)
+
+        if changed:
+            self.set_json(ALBUM_FAILURE_TRACKER_KEY, tracker)
+        return newly_skipped
+
 
 class Broadcast:
     def __init__(self, capacity=128):
@@ -591,7 +655,7 @@ class Runtime:
         summaries = [message.get("summary", {}) for message in messages]
         merged = {}
         count_keys = set().union(*(summary.keys() for summary in summaries))
-        special = {"failure_details", "round_artist_names", "album_artist_names",
+        special = {"failure_details", "failed_album_ids", "round_artist_names", "album_artist_names",
                    "album_artist_counts", "slow_retry", "unique_album_ids",
                    "date_hit_album_ids", "verify_artist_ids"}
         for key in count_keys - special:
@@ -660,6 +724,14 @@ class Runtime:
                     failures.append(failure)
                     seen_failures.add(key)
         merged["failure_details"] = failures
+        failed_album_ids = sorted({
+            str(aid)
+            for summary in summaries
+            for aid in summary.get("failed_album_ids", [])
+            if aid
+        })
+        if failed_album_ids:
+            merged["failed_album_ids"] = failed_album_ids
         return merged
 
     def _run(self, run_id, params):
@@ -667,7 +739,11 @@ class Runtime:
         round_errors = []
         round_statuses = []
         m3_report = None
+        prev_dynamic_skips = set(engine.DYNAMIC_SKIP_ALBUM_IDS)
         try:
+            engine.DYNAMIC_SKIP_ALBUM_IDS = self.store.skipped_album_ids()
+            if engine.DYNAMIC_SKIP_ALBUM_IDS:
+                self.emit({"type": "log", "level": "info", "text": f"已加载自动跳过的不存在专辑黑名单（{len(engine.DYNAMIC_SKIP_ALBUM_IDS)} 个）。"})
             config = self.config.read()
             artist_cookie = self.config.cookie(config)
             scan_cookie = self.config.scan_cookie(config)
@@ -891,6 +967,7 @@ class Runtime:
             self.store.log(run_id, "error", self.fatal)
             logging.error("扫描任务 %s 失败：%s", run_id, self.fatal)
         finally:
+            engine.DYNAMIC_SKIP_ALBUM_IDS = prev_dynamic_skips
             engine.resolve_artist_list = self._original_resolve
             engine.METRICS.finish()
             metrics = self.scrub(engine.METRICS.snapshot())
@@ -918,6 +995,23 @@ class Runtime:
                 status = "partial"
             else:
                 status = "success"
+            if status in {"success", "partial"} and not stopped and not self.fatal:
+                try:
+                    failed_ids = {str(aid) for aid in (summary.get("failed_album_ids") or []) if aid}
+                    for detail in summary.get("failure_details") or []:
+                        if isinstance(detail, dict) and detail.get("stage") == "/album" and detail.get("item_id"):
+                            failed_ids.add(str(detail["item_id"]))
+                    with engine.ALBUM_CACHE_LOCK:
+                        cached_ids = set(engine.ALBUM_CACHE.keys())
+                    newly_skipped = self.store.record_album_workflow_outcomes(run_id, failed_ids, cached_ids)
+                    if newly_skipped:
+                        self.emit({
+                            "type": "log",
+                            "level": "info",
+                            "text": f"以下专辑已连续 {ALBUM_NONEXISTENT_THRESHOLD} 次扫描失败，自动标记为不存在专辑，后续将跳过：{', '.join(newly_skipped)}",
+                        })
+                except Exception as exc:
+                    logging.warning("记录专辑失败次数时出错：%s", type(exc).__name__)
             try:
                 self.store.update(run_id, status=status, ended_at=now_iso(), summary=summary,
                                   metrics=metrics, error=self.fatal, warning="\n".join(self.warnings[:10]))

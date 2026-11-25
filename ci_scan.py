@@ -44,6 +44,7 @@ def _parse_args(argv: Optional[Iterable[str]] = None) -> argparse.Namespace:
     parser.add_argument("--recent-limit", type=int, default=50)
     parser.add_argument("--owned-limit", type=int, default=50)
     parser.add_argument("--new-album-probe-limit", type=int, default=20)
+    parser.add_argument("--slow-retry-rounds", type=int, default=None)
     parser.add_argument("--m3-default-until", default="2026-12-25")
     parser.add_argument("--m3-second-round-recent-limit", type=int, default=30)
     parser.add_argument("--debug-album", default="")
@@ -726,6 +727,7 @@ def execute_scan(
 ) -> int:
     import engine
     import server
+    import slow_retry
 
     today_str = datetime.now(TZ).date().isoformat()
     fresh_today = bool(getattr(args, "fresh_today", False))
@@ -824,6 +826,9 @@ def execute_scan(
 
     monitor_thread = threading.Thread(target=monitor_events, name="ci-event-monitor", daemon=True)
     monitor_thread.start()
+    prev_max_rounds = slow_retry.MAX_ROUNDS
+    if getattr(args, "slow_retry_rounds", None) is not None:
+        slow_retry.MAX_ROUNDS = max(0, int(args.slow_retry_rounds))
 
     try:
         runtime.config.cookie()
@@ -845,6 +850,7 @@ def execute_scan(
         if runtime.thread:
             runtime.thread.join()
     finally:
+        slow_retry.MAX_ROUNDS = prev_max_rounds
         stop_monitor.set()
         monitor_thread.join(timeout=5)
         runtime.events.unsubscribe(client_queue)
