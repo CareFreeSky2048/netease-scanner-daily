@@ -226,6 +226,105 @@ def _group_albums(hits: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     )
 
 
+def _build_perf_summary_lines(metrics: Dict[str, Any]) -> List[str]:
+    if not isinstance(metrics, dict) or not metrics:
+        return []
+    endpoints = metrics.get("endpoints") or {}
+    events = [
+        e for e in (metrics.get("events") or [])
+        if isinstance(e, dict) and e.get("phase") and e.get("ts") is not None
+    ]
+    cache_hit = int(metrics.get("album_cache_hit") or 0)
+    cache_miss = int(metrics.get("album_cache_miss") or 0)
+    cache_recheck = int(metrics.get("album_cache_recheck") or 0)
+    id_mismatch = int(metrics.get("album_id_mismatch") or 0)
+    name_mismatch = int(metrics.get("album_name_mismatch") or 0)
+    has_cache = any((cache_hit, cache_miss, cache_recheck, id_mismatch, name_mismatch))
+
+    if not endpoints and not events and not has_cache:
+        return []
+
+    lines: List[str] = ["### 性能与接口统计", ""]
+    if has_cache:
+        cache_parts = [f"命中 {cache_hit}", f"未命中 {cache_miss}", f"复查 {cache_recheck}"]
+        if id_mismatch:
+            cache_parts.append(f"ID 错配 {id_mismatch}")
+        if name_mismatch:
+            cache_parts.append(f"名称错配 {name_mismatch}")
+        lines.append(f"- **专辑缓存**：{' · '.join(cache_parts)}")
+
+    if events:
+        phase_labels = {
+            "resolve_artist_list": "解析艺人列表",
+            "sample_recent_songs": "采样 recent 曲目",
+            "new_album_probe": "兜底扫描新专目录",
+            "album_detail_pool": "查询专辑详情",
+            "owned_verify": "验证专辑归属",
+            "emit_results": "比对筛选结果",
+            "slow_retry": "失败低速补扫",
+        }
+        phase_totals: Dict[str, float] = {}
+        started_at = metrics.get("started_at")
+        ended_at = metrics.get("ended_at")
+        if ended_at is None and started_at is not None and metrics.get("elapsed_sec") is not None:
+            ended_at = float(started_at) + float(metrics.get("elapsed_sec") or 0)
+        if started_at is not None:
+            lead_gap = float(events[0]["ts"]) - float(started_at)
+            if lead_gap > 0.5:
+                phase_totals["resolve_artist_list"] = phase_totals.get("resolve_artist_list", 0.0) + lead_gap
+        for idx, ev in enumerate(events):
+            start_ts = float(ev["ts"])
+            if idx + 1 < len(events):
+                next_ts = float(events[idx + 1]["ts"])
+            elif ended_at is not None:
+                next_ts = float(ended_at)
+            else:
+                next_ts = start_ts
+            dur = max(0.0, next_ts - start_ts)
+            phase = str(ev["phase"])
+            phase_totals[phase] = phase_totals.get(phase, 0.0) + dur
+        phase_parts = [
+            f"{phase_labels.get(phase, _md_escape(phase))} {secs:.1f}s"
+            for phase, secs in phase_totals.items()
+            if phase != "idle"
+        ]
+        if phase_parts:
+            lines.append(f"- **分阶段耗时**：{' · '.join(phase_parts)}")
+
+    if isinstance(endpoints, dict) and endpoints:
+        if len(lines) > 2:
+            lines.append("")
+        preferred_order = ("/artist/sublist", "/artist/songs", "/artist/album", "/album")
+        ordered_paths = [p for p in preferred_order if p in endpoints] + sorted(
+            p for p in endpoints if p not in preferred_order
+        )
+        lines.extend(
+            [
+                "| 接口 | 请求数 | 成功 | 405 | 其他错误 | 平均耗时 | P95 |",
+                "| --- | --- | --- | --- | --- | --- | --- |",
+            ]
+        )
+        for path in ordered_paths:
+            rec = endpoints.get(path) or {}
+            count = int(rec.get("count") or 0)
+            ok = int(rec.get("ok") or 0)
+            s405 = int(rec.get("status_405") or 0)
+            other_err = (
+                int(rec.get("status_460") or 0)
+                + int(rec.get("timeout") or 0)
+                + int(rec.get("conn_error") or 0)
+                + int(rec.get("error") or 0)
+            )
+            avg_ms = float(rec.get("avg_ms") or 0)
+            p95_ms = float(rec.get("p95_ms") or 0)
+            lines.append(
+                f"| `{_md_escape(path)}` | {count} | {ok} | {s405} | {other_err} | {avg_ms:.1f} ms | {p95_ms:.1f} ms |"
+            )
+
+    lines.append("")
+    return lines
+
+
 def _build_scan_summary_md(
     run: Dict[str, Any],
     today_str: str,
@@ -300,6 +399,10 @@ def _build_scan_summary_md(
         lines.extend(["### 错误信息", "", f"> ❌ {scrub_fn(run['error'])}", ""])
     if run.get("warning"):
         lines.extend(["### 告警信息", "", f"> ⚠️ {scrub_fn(run['warning'])}", ""])
+
+    perf_lines = _build_perf_summary_lines(metrics)
+    if perf_lines:
+        lines.extend(perf_lines)
 
     display_hits = run_hits if run_hits else day_hits
     albums = _group_albums(display_hits)

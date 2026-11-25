@@ -1828,6 +1828,399 @@ def test_patch_api_keepalive_factory_inline_and_idempotent(tmp_path):
     assert patch_api_keepalive.patch_request_js(missing) == "skipped"
 
 
+def test_session_bypasses_apicache_and_album_405_switches_immediately(tmp_path, monkeypatch):
+    monkeypatch.setattr(engine, "ALBUM_CACHE_FILE", tmp_path / "VA_Album_Date_Cache.json")
+    monkeypatch.setattr(engine, "ALBUM_CACHE", {})
+    monkeypatch.setattr(engine, "METRICS", engine.Metrics())
+    with engine.METHOD_CACHE_LOCK:
+        saved_methods = dict(engine.METHOD_CACHE)
+        engine.METHOD_CACHE.clear()
+    had_session = hasattr(engine._thread_local, "session")
+    prev_session = getattr(engine._thread_local, "session", None)
+    if had_session:
+        delattr(engine._thread_local, "session")
+
+    try:
+        sess = engine.get_session()
+        assert sess.headers.get("X-Apicache-Bypass") == "true"
+
+        post_calls = []
+        get_calls = []
+        sleep_calls = []
+
+        class FakeResp:
+            def __init__(self, status_code, payload):
+                self.status_code = status_code
+                self._payload = payload
+
+            def json(self):
+                return self._payload
+
+            def raise_for_status(self):
+                if self.status_code >= 400:
+                    raise requests.HTTPError(f"HTTP {self.status_code}")
+
+        def fake_post(url, data=None, timeout=None):
+            post_calls.append((url, dict(data or {})))
+            return FakeResp(405, {"code": 405, "msg": "Method Not Allowed"})
+
+        def fake_get(url, params=None, timeout=None):
+            get_calls.append((url, dict(params or {})))
+            return FakeResp(
+                200,
+                {
+                    "code": 200,
+                    "album": {
+                        "id": 555,
+                        "name": "Album 555",
+                        "publishTime": 1700000000000,
+                        "artists": [],
+                    },
+                    "songs": [],
+                },
+            )
+
+        monkeypatch.setattr(sess, "post", fake_post)
+        monkeypatch.setattr(sess, "get", fake_get)
+        monkeypatch.setattr(engine.time, "sleep", lambda s: sleep_calls.append(s))
+
+        detail = engine.fetch_album_detail("555", "cookie-val")
+        assert detail["album_id"] == "555"
+        assert detail["album_name"] == "Album 555"
+        assert len(post_calls) == 1  # POST tried first, NOT retried twice after 405
+        assert len(get_calls) == 1
+        assert sleep_calls == []
+        with engine.METHOD_CACHE_LOCK:
+            assert engine.METHOD_CACHE.get("/album") == "GET"
+    finally:
+        with engine.METHOD_CACHE_LOCK:
+            engine.METHOD_CACHE.clear()
+            engine.METHOD_CACHE.update(saved_methods)
+        if had_session:
+            engine._thread_local.session = prev_session
+        elif hasattr(engine._thread_local, "session"):
+            delattr(engine._thread_local, "session")
+
+
+def test_phase2_prefilters_album_cache_hits_before_thread_pool(tmp_path, monkeypatch):
+    data_dir = tmp_path / "prefilter"
+    (data_dir / "VA_Artist_Caches").mkdir(parents=True)
+
+    monkeypatch.setattr(engine, "SCRIPT_DIR", data_dir)
+    monkeypatch.setattr(engine, "CSV_FILE", data_dir / "VA_Tracks_Output.csv")
+    monkeypatch.setattr(engine, "ALBUM_CACHE_FILE", data_dir / "VA_Album_Date_Cache.json")
+    monkeypatch.setattr(engine, "ARTIST_CACHE_DIR", data_dir / "VA_Artist_Caches")
+    monkeypatch.setattr(engine, "METRICS_FILE", data_dir / "VA_Scan_Metrics.json")
+    monkeypatch.setattr(engine, "REPORT_FILE", data_dir / "VA_Scan_Tuning_Report.txt")
+    monkeypatch.setattr(engine, "ALBUM_CACHE", {})
+    monkeypatch.setattr(engine, "_ALBUM_CACHE_DIRTY", False)
+    monkeypatch.setattr(engine, "_ALBUM_CACHE_GEN", 0)
+    monkeypatch.setattr(engine, "_ALBUM_CACHE_LOADED_FILE", None)
+    monkeypatch.setattr(engine, "_SEEN_LOADED_CSV", None)
+    monkeypatch.setattr(engine, "CONTROL", engine.ControlState(target_threads=2, baseline_threads=2))
+    monkeypatch.setattr(engine, "METRICS", engine.Metrics())
+
+    events = []
+    monkeypatch.setattr(engine, "emit", lambda msg: events.append(msg))
+
+    now_cn = datetime.now(engine.CN_TZ).replace(hour=12, minute=0, second=0, microsecond=0)
+    now_naive = now_cn.replace(tzinfo=None)
+    old_cn = now_cn - timedelta(days=10)
+    old_date = old_cn.date().isoformat()
+    old_ts = int(old_cn.timestamp() * 1000)
+
+    engine.ALBUM_CACHE_FILE.write_text(
+        json.dumps(
+            {
+                "200": {
+                    "album_id": "200",
+                    "album_name": "Cached VA",
+                    "date_str": old_date,
+                    "publish_ts": old_ts,
+                    "artist_ids": [],
+                    "artist_names": [],
+                    "size": 2,
+                    "cached_at": time.time(),
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    rels = [
+        {
+            "artist_id": "1",
+            "artist_name": "Artist 1",
+            "song_id": "1001",
+            "song_name": "Cached Song",
+            "album_id": "200",
+            "album_name": "Cached VA",
+            "song_publish_ts": old_ts,
+            "song_artist_ids": ["1"],
+            "song_artist_names": ["Artist 1"],
+            "link": "https://music.163.com/#/song?id=1001",
+        },
+        {
+            "artist_id": "1",
+            "artist_name": "Artist 1",
+            "song_id": "1002",
+            "song_name": "Uncached Song",
+            "album_id": "201",
+            "album_name": "Uncached VA",
+            "song_publish_ts": old_ts,
+            "song_artist_ids": ["1"],
+            "song_artist_names": ["Artist 1"],
+            "link": "https://music.163.com/#/song?id=1002",
+        },
+    ]
+    monkeypatch.setattr(
+        engine,
+        "fetch_recent_songs_for_artist",
+        lambda artist, cookie, limit: (rels, {"ok": True, "duration": 0.01}),
+    )
+    monkeypatch.setattr(
+        engine,
+        "fetch_owned_album_ids_shallow",
+        lambda artist_id, cookie, limit: (set(), {}),
+    )
+    album_api_calls = []
+
+    def fake_api_request(path, params=None, **kwargs):
+        if path == "/album":
+            aid = str(params["id"])
+            album_api_calls.append(aid)
+            return {
+                "code": 200,
+                "album": {"id": int(aid), "name": "Uncached VA", "publishTime": old_ts, "artists": []},
+                "songs": [],
+            }
+        raise AssertionError(f"Unexpected api_request: {path}")
+
+    monkeypatch.setattr(engine, "api_request", fake_api_request)
+
+    pool_calls = []
+    orig_pool = engine.run_dynamic_pool
+
+    def spy_pool(items, func, phase_label, progress_cb=None):
+        pool_calls.append((phase_label, list(items)))
+        return orig_pool(items, func, phase_label, progress_cb)
+
+    monkeypatch.setattr(engine, "run_dynamic_pool", spy_pool)
+
+    artists = [{"id": "1", "name": "Artist 1"}]
+    engine.scan_worker(
+        scan_cookie="cookie",
+        artist_source_input="",
+        external_start_dt=now_naive - timedelta(days=30),
+        external_end_dt=now_naive,
+        new_start_dt=now_naive - timedelta(days=1),
+        new_end_dt=now_naive + timedelta(days=2),
+        recent_limit=30,
+        owned_verify_limit=50,
+        new_album_probe_limit=0,
+        artists_override=artists,
+    )
+
+    album_pool_batches = [items for phase, items in pool_calls if phase == "album_detail_pool"]
+    assert album_pool_batches == [["201"]]
+    assert album_api_calls == ["201"]
+    assert engine.METRICS.album_cache_hit >= 1
+    assert engine.METRICS.album_total == 2
+    assert engine.METRICS.album_done == 2
+    done_ev = next(e for e in events if e.get("type") == "done")
+    assert {h["album_id"] for h in done_ev["results"]} == {"200", "201"}
+
+    # Second run: both 200 and 201 are cached -> album_detail_pool skips ThreadPoolExecutor completely.
+    pool_calls.clear()
+    album_api_calls.clear()
+    events.clear()
+    monkeypatch.setattr(engine, "METRICS", engine.Metrics())
+    engine.scan_worker(
+        scan_cookie="cookie",
+        artist_source_input="",
+        external_start_dt=now_naive - timedelta(days=30),
+        external_end_dt=now_naive,
+        new_start_dt=now_naive - timedelta(days=1),
+        new_end_dt=now_naive + timedelta(days=2),
+        recent_limit=30,
+        owned_verify_limit=50,
+        new_album_probe_limit=0,
+        artists_override=artists,
+    )
+    assert [phase for phase, _ in pool_calls if phase == "album_detail_pool"] == []
+    assert album_api_calls == []
+    assert engine.METRICS.album_total == 2
+    assert engine.METRICS.album_done == 2
+    assert engine.METRICS.album_cache_hit == 2
+
+
+def test_album_cache_dirty_flag_and_round2_skips_redundant_disk_reload(tmp_path, monkeypatch):
+    data_dir = tmp_path / "dirty_flag"
+    data_dir.mkdir(parents=True)
+    cache_file = data_dir / "VA_Album_Date_Cache.json"
+    csv_file = data_dir / "VA_Tracks_Output.csv"
+
+    monkeypatch.setattr(engine, "CSV_FILE", csv_file)
+    monkeypatch.setattr(engine, "ALBUM_CACHE_FILE", cache_file)
+    monkeypatch.setattr(engine, "ALBUM_CACHE", {})
+    monkeypatch.setattr(engine, "_ALBUM_CACHE_DIRTY", False)
+    monkeypatch.setattr(engine, "_ALBUM_CACHE_GEN", 0)
+    monkeypatch.setattr(engine, "_ALBUM_CACHE_LOADED_FILE", None)
+    monkeypatch.setattr(engine, "_SEEN_LOADED_CSV", None)
+    monkeypatch.setattr(engine, "METRICS", engine.Metrics())
+
+    cache_file.write_text(
+        json.dumps(
+            {
+                "300": {
+                    "album_id": "300",
+                    "album_name": "Existing 300",
+                    "date_str": "2026-11-01",
+                    "publish_ts": 1793462400000,
+                    "cached_at": time.time(),
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    engine.load_album_cache()
+
+    dump_calls = 0
+    orig_dump = engine.json.dump
+
+    def spy_dump(*args, **kwargs):
+        nonlocal dump_calls
+        dump_calls += 1
+        return orig_dump(*args, **kwargs)
+
+    monkeypatch.setattr(engine.json, "dump", spy_dump)
+
+    # Clean cache -> force=False skips rewriting disk
+    assert engine.save_album_cache(force=False) is False
+    assert dump_calls == 0
+
+    # Fetching a new album marks ALBUM_CACHE dirty
+    monkeypatch.setattr(
+        engine,
+        "api_request",
+        lambda path, params=None, **kwargs: {
+            "code": 200,
+            "album": {"id": 301, "name": "New 301", "publishTime": 1793462400000, "artists": []},
+            "songs": [],
+        },
+    )
+    engine.fetch_album_detail("301", "cookie")
+    assert engine.save_album_cache(force=False) is True
+    assert dump_calls == 1
+    saved = json.loads(cache_file.read_text(encoding="utf-8"))
+    assert set(saved.keys()) == {"300", "301"}
+
+    # Clean again after save -> second save(force=False) skips disk write
+    assert engine.save_album_cache(force=False) is False
+    assert dump_calls == 1
+
+    # Round 2 (reset_seen=False / force=False) skips redundant CSV & album cache disk reloads
+    engine.init_csv_and_seen(reset_current_scan=True)
+    engine.write_hit_if_new({
+        "name": "Artist A",
+        "song_name": "Track A",
+        "album_name": "Existing 300",
+        "date_str": "2026-11-01",
+        "link": "https://music.163.com/#/song?id=7001",
+        "flag": 0,
+    })
+
+    csv_reads = 0
+    json_loads = 0
+    orig_csv_reader = engine.csv.reader
+    orig_json_load = engine.json.load
+
+    def spy_csv_reader(*args, **kwargs):
+        nonlocal csv_reads
+        csv_reads += 1
+        return orig_csv_reader(*args, **kwargs)
+
+    def spy_json_load(*args, **kwargs):
+        nonlocal json_loads
+        json_loads += 1
+        return orig_json_load(*args, **kwargs)
+
+    monkeypatch.setattr(engine.csv, "reader", spy_csv_reader)
+    monkeypatch.setattr(engine.json, "load", spy_json_load)
+
+    engine.init_csv_and_seen(reset_current_scan=False)
+    engine.load_album_cache(force=False)
+    assert csv_reads == 0
+    assert json_loads == 0
+    assert "https://music.163.com/#/song?id=7001" in engine.SEEN_LINKS
+    assert set(engine.ALBUM_CACHE.keys()) == {"300", "301"}
+
+    # Explicit reload (reset_current_scan=True / force=True) still reloads from disk
+    engine.init_csv_and_seen(reset_current_scan=True)
+    engine.load_album_cache(force=True)
+    assert csv_reads == 1
+    assert json_loads == 1
+
+
+def test_scan_summary_renders_endpoint_and_phase_perf_section():
+    run = {
+        "id": "r_perf",
+        "status": "success",
+        "source": "manual",
+        "params": {"scanMode": "m3", "threads": 7, "newAlbumProbeLimit": 20},
+        "summary": {"artists": 4749, "unique_albums": 47621},
+        "metrics": {
+            "started_at": 1000.0,
+            "ended_at": 2036.0,
+            "elapsed_sec": 1036.0,
+            "album_cache_hit": 48654,
+            "album_cache_miss": 859,
+            "album_cache_recheck": 0,
+            "album_id_mismatch": 194,
+            "album_name_mismatch": 0,
+            "endpoints": {
+                "/artist/songs": {"count": 4749, "ok": 4749, "status_405": 0, "status_460": 0, "timeout": 0, "conn_error": 0, "error": 0, "avg_ms": 420.4, "p95_ms": 594.1},
+                "/album": {"count": 1686, "ok": 1053, "status_405": 632, "status_460": 0, "timeout": 0, "conn_error": 0, "error": 1, "avg_ms": 252.8, "p95_ms": 445.2},
+            },
+            "events": [
+                {"ts": 1015.8, "phase": "resolve_artist_list"},
+                {"ts": 1016.0, "phase": "sample_recent_songs"},
+                {"ts": 1049.0, "phase": "new_album_probe"},
+                {"ts": 1094.0, "phase": "album_detail_pool"},
+                {"ts": 1134.0, "phase": "owned_verify"},
+                {"ts": 1137.0, "phase": "emit_results"},
+                {"ts": 1139.0, "phase": "resolve_artist_list"},
+                {"ts": 1140.0, "phase": "sample_recent_songs"},
+                {"ts": 1408.0, "phase": "new_album_probe"},
+                {"ts": 1881.0, "phase": "album_detail_pool"},
+                {"ts": 1982.0, "phase": "owned_verify"},
+                {"ts": 2032.0, "phase": "emit_results"},
+            ],
+        },
+    }
+    md = ci_scan._build_scan_summary_md(run, "2026-11-25", [], [], lambda s: s)
+    assert "### 性能与接口统计" in md
+    assert "**专辑缓存**：命中 48654 · 未命中 859 · 复查 0 · ID 错配 194" in md
+    assert "**分阶段耗时**：" in md
+    assert "解析艺人列表 17.0s" in md
+    assert "采样 recent 曲目 301.0s" in md
+    assert "查询专辑详情 141.0s" in md
+    assert "| 接口 | 请求数 | 成功 | 405 | 其他错误 | 平均耗时 | P95 |" in md
+    assert "| `/artist/songs` | 4749 | 4749 | 0 | 0 | 420.4 ms | 594.1 ms |" in md
+    assert "| `/album` | 1686 | 1053 | 632 | 1 | 252.8 ms | 445.2 ms |" in md
+
+    empty_md = ci_scan._build_scan_summary_md(
+        {"id": "r_empty", "status": "success", "source": "manual", "params": {}, "summary": {}, "metrics": {}},
+        "2026-11-25",
+        [],
+        [],
+        lambda s: s,
+    )
+    assert "### 性能与接口统计" not in empty_md
+
+
+
 
 
 

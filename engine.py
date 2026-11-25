@@ -416,14 +416,19 @@ SEEN_SONG_IDS: set = set()
 # de-duplication state without re-reading or appending the same song twice.
 CURRENT_SCAN_LINKS: set = set()
 SEEN_LOCK = threading.Lock()
+_SEEN_LOADED_CSV: Optional[Path] = None
 
 ALBUM_CACHE_LOCK = threading.Lock()
 ALBUM_CACHE: Dict[str, Dict[str, Any]] = {}
+_ALBUM_CACHE_DIRTY: bool = False
+_ALBUM_CACHE_GEN: int = 0
+_ALBUM_CACHE_LOADED_FILE: Optional[Path] = None
 ARTIST_ALBUM_CACHE_LOCK = threading.Lock()
 ARTIST_ALBUM_PAGE_CACHE: Dict[Tuple[str, str], Dict[str, Any]] = {}
 
 
 def init_csv_and_seen(reset_current_scan: bool = True) -> None:
+    global _SEEN_LOADED_CSV
     with CSV_LOCK:
         if not CSV_FILE.exists():
             with CSV_FILE.open("w", newline="", encoding="utf-8-sig") as f:
@@ -432,6 +437,8 @@ def init_csv_and_seen(reset_current_scan: bool = True) -> None:
                     "发行日期 (Release Date)", "直达链接", "新歌标记 (Flag)"
                 ])
         with SEEN_LOCK:
+            if not reset_current_scan and _SEEN_LOADED_CSV == CSV_FILE:
+                return
             SEEN_LINKS.clear()
             SEEN_SONG_IDS.clear()
             if reset_current_scan:
@@ -446,6 +453,7 @@ def init_csv_and_seen(reset_current_scan: bool = True) -> None:
                         m = re.search(r"id=(\d+)", link or "")
                         if m:
                             SEEN_SONG_IDS.add(m.group(1))
+            _SEEN_LOADED_CSV = CSV_FILE
 
 
 def write_hit_if_new(hit: Dict[str, Any]) -> bool:
@@ -481,10 +489,18 @@ def is_valid_album_cache_entry(album_id: str, entry: Any) -> bool:
     return True
 
 
-def load_album_cache() -> None:
-    global ALBUM_CACHE
+def load_album_cache(force: bool = True) -> None:
+    global ALBUM_CACHE, _ALBUM_CACHE_DIRTY, _ALBUM_CACHE_GEN, _ALBUM_CACHE_LOADED_FILE
+    if not force:
+        with ALBUM_CACHE_LOCK:
+            if _ALBUM_CACHE_LOADED_FILE == ALBUM_CACHE_FILE:
+                return
     if not ALBUM_CACHE_FILE.exists():
-        ALBUM_CACHE = {}
+        with ALBUM_CACHE_LOCK:
+            ALBUM_CACHE = {}
+            _ALBUM_CACHE_LOADED_FILE = ALBUM_CACHE_FILE
+            _ALBUM_CACHE_DIRTY = False
+            _ALBUM_CACHE_GEN += 1
         return
     try:
         with ALBUM_CACHE_FILE.open("r", encoding="utf-8") as f:
@@ -501,22 +517,42 @@ def load_album_cache() -> None:
                     cleaned[key] = v
                 else:
                     dropped += 1
-            ALBUM_CACHE = cleaned
+            with ALBUM_CACHE_LOCK:
+                ALBUM_CACHE = cleaned
+                _ALBUM_CACHE_LOADED_FILE = ALBUM_CACHE_FILE
+                _ALBUM_CACHE_DIRTY = bool(dropped)
+                _ALBUM_CACHE_GEN += 1
             if dropped:
                 emit({"type": "log", "level": "error", "text": f"album 缓存清理：丢弃 {dropped} 条 album_id 不匹配或空壳记录。"})
         else:
-            ALBUM_CACHE = {}
+            with ALBUM_CACHE_LOCK:
+                ALBUM_CACHE = {}
+                _ALBUM_CACHE_LOADED_FILE = ALBUM_CACHE_FILE
+                _ALBUM_CACHE_DIRTY = False
+                _ALBUM_CACHE_GEN += 1
     except Exception:
-        ALBUM_CACHE = {}
+        with ALBUM_CACHE_LOCK:
+            ALBUM_CACHE = {}
+            _ALBUM_CACHE_LOADED_FILE = ALBUM_CACHE_FILE
+            _ALBUM_CACHE_DIRTY = False
+            _ALBUM_CACHE_GEN += 1
 
 
-def save_album_cache() -> None:
-    tmp = ALBUM_CACHE_FILE.with_suffix(".json.tmp")
+def save_album_cache(force: bool = True) -> bool:
+    global _ALBUM_CACHE_DIRTY
     with ALBUM_CACHE_LOCK:
+        if not force and not _ALBUM_CACHE_DIRTY:
+            return False
         data = dict(ALBUM_CACHE)
+        snap_gen = _ALBUM_CACHE_GEN
+    tmp = ALBUM_CACHE_FILE.with_suffix(".json.tmp")
     with tmp.open("w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
     tmp.replace(ALBUM_CACHE_FILE)
+    with ALBUM_CACHE_LOCK:
+        if _ALBUM_CACHE_GEN == snap_gen:
+            _ALBUM_CACHE_DIRTY = False
+    return True
 
 
 def artist_cache_path(key: str) -> Path:
@@ -640,7 +676,10 @@ def get_session() -> requests.Session:
     if not hasattr(_thread_local, "session"):
         sess = requests.Session()
         sess.headers.update({
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
+            # NeteaseCloudMusicApi apicache keys POST requests by originalUrl+cookies without body,
+            # causing concurrent POST /album calls to collide on "127.0.0.1/album{}" and retain heap bloat.
+            "X-Apicache-Bypass": "true",
         })
         _thread_local.session = sess
     return _thread_local.session
@@ -661,7 +700,7 @@ class AlbumNameMismatchError(ApiError):
     """专辑详情接口返回的专辑名与采样关系明显冲突。"""
 
 
-def api_request(path: str, params: Optional[Dict[str, Any]] = None, preferred: Optional[str] = None, timeout: Optional[float] = None, exact_method: bool = False) -> Dict[str, Any]:
+def api_request(path: str, params: Optional[Dict[str, Any]] = None, preferred: Optional[str] = None, timeout: Optional[float] = None, exact_method: bool = False, retries: Optional[int] = None) -> Dict[str, Any]:
     if not wait_if_paused_or_stopped():
         raise ApiError(path, "scan stopped")
     params = dict(params or {})
@@ -674,8 +713,9 @@ def api_request(path: str, params: Optional[Dict[str, Any]] = None, preferred: O
         method = preferred or METHOD_CACHE.get(path, "GET")
     methods = [method] if exact_method else [method] + (["POST" if method == "GET" else "GET"] if path in ("/artist/sublist", "/artist/songs", "/artist/album", "/album") else [])
     last_err: Optional[Exception] = None
+    max_retries = API_RETRIES if retries is None else max(0, int(retries))
 
-    for attempt in range(API_RETRIES + 1):
+    for attempt in range(max_retries + 1):
         for m in methods:
             if not wait_if_paused_or_stopped():
                 raise ApiError(path, "scan stopped")
@@ -727,7 +767,9 @@ def api_request(path: str, params: Optional[Dict[str, Any]] = None, preferred: O
             except Exception as e:
                 METRICS.record_endpoint(path, time.time() - start, ok=False, error_kind="error")
                 last_err = e
-        if attempt < API_RETRIES:
+        if exact_method and isinstance(last_err, ApiError) and last_err.status_code == 405:
+            break
+        if attempt < max_retries:
             time.sleep(0.8 + attempt * 0.8 + random.random() * 0.5)
     # 保留 405 等结构化信息，让上层可以选择性地切换方法，避免每次
     # album 请求都重复走一轮必然失败的 GET。
@@ -1243,26 +1285,41 @@ def album_cache_needs_recheck(entry: Dict[str, Any]) -> bool:
     return False
 
 
+def _lookup_album_cache_hit(album_id: str, need_songs: bool = False, expected_names: Optional[Iterable[str]] = None) -> Optional[Dict[str, Any]]:
+    """纯只读校验（需在 ALBUM_CACHE_LOCK 内或单线程预过滤阶段调用）。"""
+    sid = str(album_id)
+    cached = ALBUM_CACHE.get(sid)
+    if cached is None or not is_valid_album_cache_entry(sid, cached):
+        return None
+    if (not need_songs or cached.get("songs")) and not album_cache_needs_recheck(cached) and album_name_matches_expected(cached.get("album_name"), expected_names):
+        return cached
+    return None
+
+
 def fetch_album_detail(album_id: str, cookie: str, need_songs: bool = False, expected_names: Optional[Iterable[str]] = None) -> Dict[str, Any]:
     """严格获取 album 详情。
 
     NeteaseCloudMusicApi 在高并发/缓存异常时偶尔会出现：请求 A album_id，返回 B album.id。
     旧逻辑直接抛错，导致整张合辑在日期过滤阶段消失。这里改成：
     1) 缓存校验；
-    2) GET/POST/无 cookie 多路径强制重试；
+    2) POST/GET/无 cookie 多路径强制重试；
     3) 仍错配才上抛，让上层可用 recent 关系做 fallback。
     """
+    global _ALBUM_CACHE_DIRTY, _ALBUM_CACHE_GEN
     album_id = str(album_id)
     with ALBUM_CACHE_LOCK:
         cached = ALBUM_CACHE.get(album_id)
         if cached is not None:
             if is_valid_album_cache_entry(album_id, cached):
-                if (not need_songs or cached.get("songs")) and not album_cache_needs_recheck(cached) and album_name_matches_expected(cached.get("album_name"), expected_names):
+                hit = _lookup_album_cache_hit(album_id, need_songs=need_songs, expected_names=expected_names)
+                if hit is not None:
                     METRICS.inc("album_cache_hit")
-                    return cached
+                    return hit
                 METRICS.inc("album_cache_recheck")
             else:
                 ALBUM_CACHE.pop(album_id, None)
+                _ALBUM_CACHE_DIRTY = True
+                _ALBUM_CACHE_GEN += 1
                 METRICS.inc("album_cache_corrupt")
     METRICS.inc("album_cache_miss")
 
@@ -1288,7 +1345,7 @@ def fetch_album_detail(album_id: str, cookie: str, need_songs: bool = False, exp
     last_err: Optional[Exception] = None
     data: Optional[Dict[str, Any]] = None
     with METHOD_CACHE_LOCK:
-        preferred_method = METHOD_CACHE.get("/album", "GET")
+        preferred_method = METHOD_CACHE.get("/album", "POST")
     method_order = [preferred_method] + (["POST"] if preferred_method == "GET" else ["GET"])
     mismatch_seen = False
     for round_no in range(max(1, ALBUM_MISMATCH_RETRIES)):
@@ -1341,7 +1398,12 @@ def fetch_album_detail(album_id: str, cookie: str, need_songs: bool = False, exp
         if old and isinstance(old, dict) and old.get("songs") and not payload.get("songs"):
             payload["songs"] = old.get("songs")
         ALBUM_CACHE[album_id] = payload
+        _ALBUM_CACHE_DIRTY = True
+        _ALBUM_CACHE_GEN += 1
     return payload
+
+
+_DEFAULT_FETCH_ALBUM_DETAIL = fetch_album_detail
 
 
 def build_album_detail_fallback_from_relations(album_id: str, rels: List[Dict[str, Any]], new_candidates: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
@@ -1616,7 +1678,7 @@ def autosave_if_needed(force: bool = False, reason: str = "autosave") -> None:
     now = time.time()
     if force or now - METRICS.last_autosave > 20:
         try:
-            save_album_cache()
+            save_album_cache(force=False)
             save_metrics_and_report(reason)
             METRICS.last_autosave = now
         except Exception:
@@ -1632,7 +1694,7 @@ def scan_worker(scan_cookie: str, artist_source_input: str, external_start_dt: d
         debug_album_id = ""
     try:
         init_csv_and_seen(reset_current_scan=reset_seen)
-        load_album_cache()
+        load_album_cache(force=reset_seen)
         CONTROL.resume()
         METRICS.set_phase("resolve_artist_list")
         emit({"type": "log", "level": "info", "text": "正在解析艺人列表来源：可使用大号 Cookie 或缓存指纹。"})
@@ -1758,6 +1820,35 @@ def scan_worker(scan_cookie: str, artist_source_input: str, external_start_dt: d
         # 阶段 2：全局 album_id 去重查详情，先按日期过滤
         album_details: Dict[str, Dict[str, Any]] = {}
         album_errors: Dict[str, str] = {}
+        uncached_album_ids: List[str] = []
+        pre_hit_count = 0
+
+        METRICS.set_phase("album_detail_pool")
+        METRICS.set_phase_progress(0, len(album_ids))
+
+        if fetch_album_detail is _DEFAULT_FETCH_ALBUM_DETAIL:
+            with ALBUM_CACHE_LOCK:
+                for aid in album_ids:
+                    s_aid = str(aid)
+                    expected_names = [r.get("album_name") for r in by_album.get(s_aid, [])]
+                    expected_names.extend(c.get("album_name") for c in new_album_by_id.get(s_aid, []))
+                    hit = _lookup_album_cache_hit(
+                        s_aid,
+                        need_songs=(s_aid in new_album_by_id),
+                        expected_names=expected_names,
+                    )
+                    if hit is not None:
+                        album_details[aid] = hit
+                        pre_hit_count += 1
+                    else:
+                        uncached_album_ids.append(aid)
+            if pre_hit_count > 0:
+                METRICS.inc("album_cache_hit", pre_hit_count)
+                METRICS.album_done = pre_hit_count
+                METRICS.set_phase_progress(pre_hit_count, len(album_ids))
+                emit({"type": "log", "level": "info", "text": f"album 缓存预命中 {pre_hit_count} / {len(album_ids)} 个，待联网查询 {len(uncached_album_ids)} 个。"})
+        else:
+            uncached_album_ids = list(album_ids)
 
         def album_task(album_id: str) -> Tuple[str, Optional[Dict[str, Any]], Optional[str]]:
             try:
@@ -1769,36 +1860,44 @@ def scan_worker(scan_cookie: str, artist_source_input: str, external_start_dt: d
                 return album_id, None, redacted_error_text(str(e))
 
         def album_progress(done: int, total: int, item: Any) -> None:
-            METRICS.album_done = done
-            if done % 20 == 0 or done == total:
-                emit({"type": "progress", "phase": "查询 album 日期候选池", "current": done, "total": total, "state": CONTROL.snapshot(), "metrics": METRICS.snapshot()})
+            overall_done = pre_hit_count + done
+            METRICS.album_done = overall_done
+            METRICS.set_phase_progress(overall_done, len(album_ids))
+            if done % 20 == 0 or overall_done == len(album_ids):
+                emit({"type": "progress", "phase": "查询 album 日期候选池", "current": overall_done, "total": len(album_ids), "state": CONTROL.snapshot(), "metrics": METRICS.snapshot()})
                 autosave_if_needed(reason="album_pool")
 
-        album_outputs = run_dynamic_pool(album_ids, album_task, "album_detail_pool", album_progress)
-        for out in album_outputs:
-            if isinstance(out, Exception):
-                continue
-            aid, detail, err = out
-            if detail:
-                album_details[aid] = detail
-            elif err:
-                # /album 偶发返回错 album_id 时，用 recent 采样中的 song.publishTime + al.name 做保守兜底，
-                # 避免整张当天合辑因为详情接口串包而漏掉。
-                fallback = build_album_detail_fallback_from_relations(aid, by_album.get(aid, []), new_album_by_id.get(aid, []))
-                if fallback:
-                    album_details[aid] = fallback
-                    album_errors[aid] = f"{err}；已用recent采样fallback"
+        if uncached_album_ids:
+            album_outputs = run_dynamic_pool(uncached_album_ids, album_task, "album_detail_pool", album_progress)
+            for out in album_outputs:
+                if isinstance(out, Exception):
+                    continue
+                aid, detail, err = out
+                if detail:
+                    album_details[aid] = detail
+                elif err:
+                    # /album 偶发返回错 album_id 时，用 recent 采样中的 song.publishTime + al.name 做保守兜底，
+                    # 避免整张当天合辑因为详情接口串包而漏掉。
+                    fallback = build_album_detail_fallback_from_relations(aid, by_album.get(aid, []), new_album_by_id.get(aid, []))
+                    if fallback:
+                        album_details[aid] = fallback
+                        album_errors[aid] = f"{err}；已用recent采样fallback"
+                    else:
+                        album_errors[aid] = err
+            for aid, out in retry_failed(list(album_errors), album_task, lambda x: bool(x[1]),
+                                         "/album", str, retry_budget):
+                if not isinstance(out, Exception) and out[1]:
+                    album_details[aid] = out[1]
+                    album_errors.pop(aid, None)
                 else:
-                    album_errors[aid] = err
-        for aid, out in retry_failed(list(album_errors), album_task, lambda x: bool(x[1]),
-                                     "/album", str, retry_budget):
-            if not isinstance(out, Exception) and out[1]:
-                album_details[aid] = out[1]
-                album_errors.pop(aid, None)
-            else:
-                err = redacted_error_text(str(out)) if isinstance(out, Exception) else out[2] or "unknown"
-                album_errors[aid] = err + ("；已用recent采样fallback" if aid in album_details else "")
-        save_album_cache()
+                    err = redacted_error_text(str(out)) if isinstance(out, Exception) else out[2] or "unknown"
+                    album_errors[aid] = err + ("；已用recent采样fallback" if aid in album_details else "")
+            save_album_cache(force=False)
+        else:
+            METRICS.album_done = pre_hit_count
+            METRICS.set_phase_progress(pre_hit_count, len(album_ids))
+            emit({"type": "progress", "phase": "查询 album 日期候选池", "current": pre_hit_count, "total": len(album_ids), "state": CONTROL.snapshot(), "metrics": METRICS.snapshot()})
+            save_album_cache(force=False)
         if CONTROL.snapshot()["stop_requested"]:
             stopped = True
             emit({"type": "log", "level": "error", "text": "已停止：album 候选池阶段收到停止信号。"})
