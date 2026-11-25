@@ -341,6 +341,30 @@ jobs:
           retention-days: 30
           if-no-files-found: ignore
 
+      - name: Send email notification
+        if: always() && (steps.ctx.outputs.action == 'scan' || steps.ctx.outputs.action == 'test_fresh_day') && steps.run-meta.outputs.skipped != 'true'
+        continue-on-error: true
+        env:
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          SMTP_HOST: ${{ vars.SMTP_HOST }}
+          SMTP_PORT: ${{ vars.SMTP_PORT }}
+          MAIL_SEND_EMPTY: ${{ vars.MAIL_SEND_EMPTY }}
+          MAIL_ATTACH_HTML: ${{ vars.MAIL_ATTACH_HTML }}
+          MAIL_ATTACH_CSV: ${{ vars.MAIL_ATTACH_CSV }}
+          MAIL_ON_DRY_RUN: ${{ vars.MAIL_ON_DRY_RUN }}
+          GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: bash
+        run: |
+          python notify_email.py \
+            --data-dir ./data \
+            --result-json ./artifacts/run_result.json \
+            --run-csv ./artifacts/run.csv \
+            --today-csv ./artifacts/today.csv \
+            --standalone-html ./artifacts/latest-report.html \
+            --run-url "$GITHUB_RUN_URL"
+
       - name: Enforce scan status gate
         if: steps.ctx.outputs.action == 'scan' || steps.ctx.outputs.action == 'test_fresh_day'
         env:

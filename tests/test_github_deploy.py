@@ -622,6 +622,19 @@ def test_scan_workflow_respects_github_limits_and_shell_safety():
     assert "patch_api_keepalive.py" in start_match.group(1)
     assert start_match.group(1).index("patch_api_keepalive.py") < start_match.group(1).index("NeteaseCloudMusicApi/app.js")
 
+    # Email notification step must tolerate missing secrets/SMTP errors cleanly without blocking status gate.
+    mail_match = re.search(
+        r"- name: Send email notification\s*\n(.*?)(?=\n      - name: |\Z)",
+        text,
+        flags=re.DOTALL,
+    )
+    assert mail_match is not None
+    assert "notify_email.py" in mail_match.group(1)
+    assert "continue-on-error: true" in mail_match.group(1)
+    assert "SMTP_USER:" in mail_match.group(1)
+    assert "SMTP_PASS:" in mail_match.group(1)
+    assert "MAIL_TO:" in mail_match.group(1)
+
 
 def test_engine_transport_overrides_and_proxy_redaction(monkeypatch):
     monkeypatch.delenv("NETEASE_REAL_IP", raising=False)
@@ -2546,6 +2559,256 @@ def test_album_pacer_throttles_405_and_recovers_without_redundant_method_switch(
         with engine.METHOD_CACHE_LOCK:
             engine.METHOD_CACHE.clear()
             engine.METHOD_CACHE.update(saved_methods)
+
+
+def test_notify_email_infers_smtp_and_builds_html_attachments_and_scrubs(tmp_path, monkeypatch):
+    import notify_email
+
+    assert notify_email.infer_smtp_config("sender@gmail.com") == ("smtp.gmail.com", 465)
+    assert notify_email.infer_smtp_config("user@qq.com") == ("smtp.qq.com", 465)
+    assert notify_email.infer_smtp_config("user@163.com") == ("smtp.163.com", 465)
+    assert notify_email.infer_smtp_config("user@outlook.com") == ("smtp-mail.outlook.com", 587)
+    assert notify_email.infer_smtp_config("custom@example.com", "smtp.example.org", "2525") == ("smtp.example.org", 2525)
+    with pytest.raises(ValueError):
+        notify_email.infer_smtp_config("user@unknown-domain.example")
+
+    data_dir = tmp_path / "mail_data"
+    data_dir.mkdir(parents=True)
+    store = server.Store(data_dir / "scan_history.sqlite3")
+    run_id = store.create(
+        {
+            "scanMode": "m3",
+            "threads": 7,
+            "externalStartDate": "2026-10-24",
+            "externalEndDate": "2026-11-25",
+            "newStartDate": "2026-11-24",
+            "newEndDate": "2026-11-28",
+        },
+        source="scheduled",
+        schedule_time="04:00",
+        schedule_date="2026-11-25",
+    )
+    store.update(
+        run_id,
+        status="partial",
+        summary={"artists": 4700, "unique_albums": 47124, "album_errors": 0},
+        metrics={
+            "elapsed_sec": 600.0,
+            "csv_skipped": 100,
+            "album_cache_hit": 48000,
+            "album_cache_miss": 800,
+            "endpoints": {"/album": {"count": 800, "status_405": 0}},
+        },
+        warning="fallback MUSIC_U=secret_ck_999; pass=app-pass-secret-xyz",
+    )
+    store.hit(
+        run_id,
+        {
+            "name": "Alice",
+            "song_name": "Track One",
+            "album_name": "Shared VA",
+            "date_str": "2026-11-25",
+            "link": "https://music.163.com/#/song?id=10",
+            "flag": 1,
+            "album_id": "500",
+            "album_count": 3,
+        },
+    )
+    store.hit(
+        run_id,
+        {
+            "name": "Alice",
+            "song_name": "【新专辑】Shared VA",
+            "album_name": "Shared VA",
+            "date_str": "2026-11-25",
+            "link": "https://music.163.com/#/album?id=500",
+            "flag": 1,
+            "album_id": "500",
+            "album_count": 3,
+        },
+    )
+    store.hit(
+        run_id,
+        {
+            "name": "Bob",
+            "song_name": "Solo EP",
+            "album_name": "Solo Release",
+            "date_str": "2026-11-24",
+            "link": "https://music.163.com/#/song?id=11",
+            "flag": 1,
+            "album_id": "501",
+            "album_count": 1,
+        },
+    )
+
+    art_dir = tmp_path / "artifacts"
+    art_dir.mkdir(parents=True)
+    result_json = art_dir / "run_result.json"
+    result_json.write_text(
+        json.dumps(
+            {
+                "run_id": run_id,
+                "status": "partial",
+                "skipped": False,
+                "dry_run": False,
+                "date": "2026-11-25",
+                "source": "scheduled",
+                "schedule_slot": "04:00",
+                "result_count": 2,
+                "today_total": 5,
+                "elapsed_sec": 600.0,
+                "warning": "fallback MUSIC_U=secret_ck_999; pass=app-pass-secret-xyz",
+                "error": "",
+            }
+        ),
+        encoding="utf-8",
+    )
+    html_file = art_dir / "latest-report.html"
+    html_file.write_text("<html><body>Offline Report</body></html>", encoding="utf-8")
+    today_csv = art_dir / "today.csv"
+    today_csv.write_text("Artist,Track,Album,Date,Link,Flag\nAlice,Track One,Shared VA,2026-11-25,https://music.163.com/#/song?id=10,1\n", encoding="utf-8-sig")
+    run_csv = art_dir / "run.csv"
+    run_csv.write_text("Artist,Track,Album,Date,Link,Flag\nAlice,Track One,Shared VA,2026-11-25,https://music.163.com/#/song?id=10,1\n", encoding="utf-8-sig")
+
+    sent = {}
+
+    class DummySSLServer:
+        def __init__(self, host, port, timeout=30, context=None):
+            sent["host"] = host
+            sent["port"] = port
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def login(self, user, pwd):
+            sent["login"] = (user, pwd)
+
+        def send_message(self, msg):
+            sent["msg"] = msg
+
+    monkeypatch.setattr(notify_email.smtplib, "SMTP_SSL", DummySSLServer)
+    monkeypatch.setenv("SMTP_USER", "sender@gmail.com")
+    monkeypatch.setenv("SMTP_PASS", "app-pass-secret-xyz")
+    monkeypatch.delenv("MAIL_TO", raising=False)
+    monkeypatch.delenv("SMTP_HOST", raising=False)
+    monkeypatch.delenv("SMTP_PORT", raising=False)
+
+    rc = notify_email.main([
+        "--data-dir", str(data_dir),
+        "--result-json", str(result_json),
+        "--run-csv", str(run_csv),
+        "--today-csv", str(today_csv),
+        "--standalone-html", str(html_file),
+        "--run-url", "https://github.com/owner/repo/actions/runs/12345",
+    ])
+    assert rc == 0
+    assert sent["host"] == "smtp.gmail.com"
+    assert sent["port"] == 465
+    assert sent["login"] == ("sender@gmail.com", "app-pass-secret-xyz")
+
+    msg = sent["msg"]
+    assert msg["To"] == "sender@gmail.com"
+    assert "[网易云新曲] · ⚠️ 告警 2026-11-25 (04:00) 新增 2 条（2 张专辑）" == msg["Subject"]
+
+    plain_part = msg.get_body(preferencelist=("plain",)).get_content()
+    html_part = msg.get_body(preferencelist=("html",)).get_content()
+    assert "https://music.163.com/#/album?id=500" in html_part
+    assert "https://github.com/owner/repo/actions/runs/12345" in html_part
+    assert "Shared VA" in html_part
+    assert "Solo Release" in html_part
+    assert "app-pass-secret-xyz" not in plain_part and "app-pass-secret-xyz" not in html_part
+    assert "secret_ck_999" not in plain_part and "secret_ck_999" not in html_part
+
+    att_names = [part.get_filename() for part in msg.iter_attachments()]
+    assert "netease-report-2026-11-25.html" in att_names
+    assert "netease-today-2026-11-25.csv" in att_names
+    assert "netease-run-2026-11-25-0400.csv" in att_names
+
+
+def test_notify_email_skip_guards_and_starttls_and_dry_run_prefix(tmp_path, monkeypatch):
+    import notify_email
+
+    art_dir = tmp_path / "mail_guards"
+    art_dir.mkdir(parents=True)
+    result_json = art_dir / "run_result.json"
+
+    def write_result(payload):
+        result_json.write_text(json.dumps(payload), encoding="utf-8")
+
+    smtp_calls = []
+
+    class DummySTARTTLSServer:
+        def __init__(self, host, port, timeout=30):
+            smtp_calls.append({"mode": "starttls", "host": host, "port": port, "tls": False})
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def ehlo(self):
+            return (250, b"OK")
+
+        def starttls(self, context=None):
+            smtp_calls[-1]["tls"] = True
+
+        def login(self, user, pwd):
+            smtp_calls[-1]["login"] = (user, pwd)
+
+        def send_message(self, msg):
+            smtp_calls[-1]["msg"] = msg
+
+    monkeypatch.setattr(notify_email.smtplib, "SMTP", DummySTARTTLSServer)
+
+    # 1. Missing SMTP secrets -> graceful skip
+    monkeypatch.delenv("SMTP_USER", raising=False)
+    monkeypatch.delenv("SMTP_PASS", raising=False)
+    write_result({"status": "success", "skipped": False, "result_count": 1, "today_total": 1, "date": "2026-11-25"})
+    assert notify_email.main(["--result-json", str(result_json)]) == 0
+    assert smtp_calls == []
+
+    # Configure Outlook SMTP (587 STARTTLS) + explicit MAIL_TO
+    monkeypatch.setenv("SMTP_USER", "sender@outlook.com")
+    monkeypatch.setenv("SMTP_PASS", "outlook-pass")
+    monkeypatch.setenv("MAIL_TO", "dest1@example.com, dest2@example.com")
+
+    # 2. Skipped slot -> skip
+    write_result({"status": "skipped", "skipped": True, "result_count": 0, "today_total": 0, "date": "2026-11-25"})
+    assert notify_email.main(["--result-json", str(result_json)]) == 0
+    assert smtp_calls == []
+
+    # 3. MAIL_SEND_EMPTY=0 skips clean empty run, but still sends warning/partial alert
+    monkeypatch.setenv("MAIL_SEND_EMPTY", "0")
+    write_result({"status": "success", "skipped": False, "result_count": 0, "today_total": 2, "date": "2026-11-25", "warning": "", "error": ""})
+    assert notify_email.main(["--result-json", str(result_json)]) == 0
+    assert smtp_calls == []
+
+    write_result({"status": "partial", "skipped": False, "result_count": 0, "today_total": 2, "date": "2026-11-25", "schedule_slot": "00:03", "warning": "sublist 301 fallback"})
+    assert notify_email.main(["--result-json", str(result_json)]) == 0
+    assert len(smtp_calls) == 1
+    assert smtp_calls[0]["host"] == "smtp-mail.outlook.com"
+    assert smtp_calls[0]["port"] == 587
+    assert smtp_calls[0]["tls"] is True
+    assert smtp_calls[0]["msg"]["To"] == "dest1@example.com, dest2@example.com"
+    assert "⚠️ 告警" in smtp_calls[0]["msg"]["Subject"]
+
+    # 4. Dry-run toggle and subject prefix
+    smtp_calls.clear()
+    monkeypatch.setenv("MAIL_SEND_EMPTY", "1")
+    monkeypatch.setenv("MAIL_ON_DRY_RUN", "0")
+    write_result({"status": "success", "skipped": False, "dry_run": True, "result_count": 1, "today_total": 1, "date": "2026-11-25", "source": "manual"})
+    assert notify_email.main(["--result-json", str(result_json)]) == 0
+    assert smtp_calls == []
+
+    monkeypatch.setenv("MAIL_ON_DRY_RUN", "1")
+    assert notify_email.main(["--result-json", str(result_json)]) == 0
+    assert len(smtp_calls) == 1
+    assert smtp_calls[0]["msg"]["Subject"].startswith("[🧪 试跑·网易云新曲]")
+
 
 
 
