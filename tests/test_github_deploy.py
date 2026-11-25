@@ -10,6 +10,7 @@ import shutil
 import sqlite3
 import subprocess
 import tarfile
+import time
 from contextlib import closing
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -20,6 +21,7 @@ import requests
 import build_site
 import ci_scan
 import engine
+import patch_api_keepalive
 import server
 import state_store
 
@@ -609,6 +611,16 @@ def test_scan_workflow_respects_github_limits_and_shell_safety():
     assert '--schedule-slot 04:00' in dispatch_block.group(1)
     assert '--schedule-slot 00:03' in dispatch_block.group(1)
     assert 'PROBE_LIMIT="0"' in dispatch_block.group(1)
+
+    # Keep-Alive patcher must run right before starting NeteaseCloudMusicApi.
+    start_match = re.search(
+        r"- name: Start NeteaseCloudMusicApi service\s*\n(.*?)(?=\n      - name: |\Z)",
+        text,
+        flags=re.DOTALL,
+    )
+    assert start_match is not None
+    assert "patch_api_keepalive.py" in start_match.group(1)
+    assert start_match.group(1).index("patch_api_keepalive.py") < start_match.group(1).index("NeteaseCloudMusicApi/app.js")
 
 
 def test_engine_transport_overrides_and_proxy_redaction(monkeypatch):
@@ -1521,6 +1533,300 @@ def test_fetch_artist_sublist_tail_probe_stops_cleanly_on_eof_short_count(monkey
     assert ("GET", 4500, 200) in calls
     assert ("GET", 4700, 48) in calls
     assert ("GET", 4746, 2) in calls
+
+
+def test_album_cache_recheck_narrowed_to_3_days():
+    now_cn = datetime.now(engine.CN_TZ)
+    now_ts = time.time()
+
+    ts_1d = int((now_cn - timedelta(days=1)).timestamp() * 1000)
+    ts_5d = int((now_cn - timedelta(days=5)).timestamp() * 1000)
+
+    assert engine.album_cache_needs_recheck({"publish_ts": ts_1d, "date_str": "recent", "cached_at": now_ts - 13 * 3600}) is True
+    assert engine.album_cache_needs_recheck({"publish_ts": ts_1d, "date_str": "recent", "cached_at": now_ts - 2 * 3600}) is False
+    assert engine.album_cache_needs_recheck({"publish_ts": ts_5d, "date_str": "older", "cached_at": now_ts - 13 * 3600}) is False
+    assert engine.album_cache_needs_recheck({"publish_ts": 0, "date_str": "未知日期", "cached_at": now_ts - 7 * 3600}) is True
+
+
+def test_scan_worker_skips_owned_verify_for_seen_and_new_only_artists(tmp_path, monkeypatch):
+    data_dir = tmp_path / "skip_verify"
+    (data_dir / "VA_Artist_Caches").mkdir(parents=True)
+
+    monkeypatch.setattr(engine, "SCRIPT_DIR", data_dir)
+    monkeypatch.setattr(engine, "CSV_FILE", data_dir / "VA_Tracks_Output.csv")
+    monkeypatch.setattr(engine, "ALBUM_CACHE_FILE", data_dir / "VA_Album_Date_Cache.json")
+    monkeypatch.setattr(engine, "ARTIST_CACHE_DIR", data_dir / "VA_Artist_Caches")
+    monkeypatch.setattr(engine, "METRICS_FILE", data_dir / "VA_Scan_Metrics.json")
+    monkeypatch.setattr(engine, "REPORT_FILE", data_dir / "VA_Scan_Tuning_Report.txt")
+    monkeypatch.setattr(engine, "CONTROL", engine.ControlState(target_threads=2, baseline_threads=2))
+    monkeypatch.setattr(engine, "METRICS", engine.Metrics())
+
+    events = []
+    monkeypatch.setattr(engine, "emit", lambda msg: events.append(msg))
+
+    now_cn = datetime.now(engine.CN_TZ).replace(hour=12, minute=0, second=0, microsecond=0)
+    now_naive = now_cn.replace(tzinfo=None)
+    ext_cn = now_cn - timedelta(days=10)
+    future_cn = now_cn + timedelta(days=1)
+    ext_date = ext_cn.date().isoformat()
+    future_date = future_cn.date().isoformat()
+    ext_ts = int(ext_cn.timestamp() * 1000)
+    future_ts = int(future_cn.timestamp() * 1000)
+
+    # Pre-seed Artist 2's song on external album 8001 in CSV so it is already seen.
+    engine.init_csv_and_seen()
+    assert engine.write_hit_if_new({
+        "name": "Artist 2",
+        "song_name": "Seen Ext Song",
+        "album_name": "Shared Ext VA",
+        "date_str": ext_date,
+        "link": "https://music.163.com/#/song?id=9102",
+        "flag": 0,
+    }) is True
+
+    songs_by_artist = {
+        "1": [{
+            "artist_id": "1",
+            "artist_name": "Artist 1",
+            "song_id": "9101",
+            "song_name": "Unseen Ext Song",
+            "album_id": "8001",
+            "album_name": "Shared Ext VA",
+            "song_publish_ts": ext_ts,
+            "song_artist_ids": ["1"],
+            "song_artist_names": ["Artist 1"],
+            "link": "https://music.163.com/#/song?id=9101",
+        }],
+        "2": [{
+            "artist_id": "2",
+            "artist_name": "Artist 2",
+            "song_id": "9102",
+            "song_name": "Seen Ext Song",
+            "album_id": "8001",
+            "album_name": "Shared Ext VA",
+            "song_publish_ts": ext_ts,
+            "song_artist_ids": ["2"],
+            "song_artist_names": ["Artist 2"],
+            "link": "https://music.163.com/#/song?id=9102",
+        }],
+        "3": [{
+            "artist_id": "3",
+            "artist_name": "Artist 3",
+            "song_id": "9103",
+            "song_name": "Today New Song",
+            "album_id": "8002",
+            "album_name": "Today Single",
+            "song_publish_ts": future_ts,
+            "song_artist_ids": ["3"],
+            "song_artist_names": ["Artist 3"],
+            "link": "https://music.163.com/#/song?id=9103",
+        }],
+    }
+    monkeypatch.setattr(
+        engine,
+        "fetch_recent_songs_for_artist",
+        lambda artist, cookie, limit: (songs_by_artist[artist["id"]], {"ok": True, "duration": 0.01}),
+    )
+    monkeypatch.setattr(
+        engine,
+        "fetch_album_detail",
+        lambda aid, cookie, need_songs=False, expected_names=None: {
+            "8001": {
+                "album_id": "8001",
+                "album_name": "Shared Ext VA",
+                "date_str": ext_date,
+                "publish_ts": ext_ts,
+                "artist_ids": [],
+                "artist_names": [],
+            },
+            "8002": {
+                "album_id": "8002",
+                "album_name": "Today Single",
+                "date_str": future_date,
+                "publish_ts": future_ts,
+                "artist_ids": ["3"],
+                "artist_names": ["Artist 3"],
+            },
+        }[str(aid)],
+    )
+
+    verified_ids = []
+
+    def fake_owned(aid, cookie, limit):
+        verified_ids.append(str(aid))
+        return set(), {}
+
+    monkeypatch.setattr(engine, "fetch_owned_album_ids_shallow", fake_owned)
+
+    engine.scan_worker(
+        "MUSIC_U=skip_verify_tok;",
+        "",
+        now_naive - timedelta(days=30),
+        now_naive,
+        now_naive - timedelta(days=1),
+        now_naive + timedelta(days=3),
+        50,
+        50,
+        0,
+        artists_override=[
+            {"id": "1", "name": "Artist 1"},
+            {"id": "2", "name": "Artist 2"},
+            {"id": "3", "name": "Artist 3"},
+        ],
+    )
+
+    # Only Artist 1 (unseen external candidate) requires owned_verify; Artists 2 & 3 are skipped.
+    assert verified_ids == ["1"]
+    done_ev = next(e for e in events if e.get("type") == "done")
+    assert done_ev["summary"]["verify_artists"] == 1
+    assert done_ev["metrics"]["csv_skipped"] == 1
+    assert {h["song_name"] for h in done_ev["results"]} == {"Unseen Ext Song", "Today New Song"}
+    # Heat for Shared Ext VA must still include Artist 2 even though owned_verify was skipped for Artist 2.
+    assert done_ev["summary"]["album_artist_counts"]["8001"] == 2
+    ext_hit = next(h for h in done_ev["results"] if h["song_name"] == "Unseen Ext Song")
+    assert ext_hit["album_count"] == 2
+    assert any("跳过已入库/新专免验证艺人 2 位" in e.get("text", "") for e in events if e.get("type") == "log")
+
+
+def test_m3_two_round_split_window_and_second_round_recent_limit(tmp_path, monkeypatch):
+    data_dir = tmp_path / "m3_split"
+    cache_dir = data_dir / "VA_Artist_Caches"
+    cache_dir.mkdir(parents=True)
+
+    m3_file = tmp_path / "m3_names.json"
+    m3_file.write_text(
+        json.dumps({"artists": [{"m3_artist_id": "m3_alpha", "name": "Alpha"}]}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(engine, "SCRIPT_DIR", data_dir)
+    monkeypatch.setattr(engine, "CSV_FILE", data_dir / "VA_Tracks_Output.csv")
+    monkeypatch.setattr(engine, "ARTIST_CACHE_DIR", cache_dir)
+    monkeypatch.setattr(server, "DATA", data_dir)
+    monkeypatch.setattr(server, "verify_login", lambda *a, **kw: None)
+
+    cfg_path = ci_scan._prepare_temp_config(
+        tmp_path / "sec_m3_split",
+        raw_cookie="MUSIC_U=m3_split_tok;",
+        threads=4,
+        recent_limit=50,
+        owned_limit=50,
+        new_album_probe_limit=20,
+        artist_cache_key="",
+    )
+    cfg_data = json.loads(cfg_path.read_text(encoding="utf-8"))
+    cfg_data["m3_artist_file"] = str(m3_file)
+    cfg_path.write_text(json.dumps(cfg_data), encoding="utf-8")
+
+    followed = [{"id": "1", "name": "Alpha"}, {"id": "2", "name": "NonM3"}]
+    monkeypatch.setattr(engine, "resolve_artist_list", lambda *a: (followed, "1234567890abcdef", "live"))
+
+    calls = []
+
+    def round_worker(*args, artists_override=None, artist_source_label="", **kwargs):
+        calls.append({
+            "label": artist_source_label,
+            "artist_ids": [a["id"] for a in artists_override],
+            "ext_start": args[2].date().isoformat(),
+            "ext_end": args[3].date().isoformat(),
+            "new_start": args[4].date().isoformat(),
+            "new_end": args[5].date().isoformat(),
+            "recent_limit": args[6],
+        })
+        engine.emit({
+            "type": "done",
+            "results": [],
+            "summary": {
+                "artists": len(artists_override),
+                "relations": 0,
+                "unique_albums": 0,
+                "date_hit_albums": 0,
+                "verify_artists": 0,
+                "artist_failures": 0,
+                "new_album_probe_failures": 0,
+                "album_errors": 0,
+                "owned_errors": 0,
+                "round_artist_names": [a["name"] for a in artists_override],
+            },
+            "metrics": {"elapsed_sec": 0.2, "results": 0, "csv_skipped": 0},
+        })
+
+    rt = server.Runtime(
+        config=server.Config(cfg_path),
+        db_path=data_dir / "scan_history.sqlite3",
+        worker=round_worker,
+    )
+    rt.use_m3_rounds = True
+    try:
+        dec10_params = rt.parameters({"scanMode": "auto"}, date(2026, 12, 10))
+        dec26_params = rt.parameters({"scanMode": "auto"}, date(2026, 12, 26))
+        assert dec10_params["scanMode"] == "m3"
+        assert dec26_params["scanMode"] == "regular"
+
+        with rt.lock:
+            run_id = rt.store.create(dec10_params, source="manual")
+            rt._launch(run_id, dec10_params)
+        rt.thread.join()
+
+        assert len(calls) == 2
+        r1, r2 = calls
+        assert r1["artist_ids"] == ["1"]
+        assert r1["ext_start"] == "2026-10-24"
+        assert r1["ext_end"] == "2026-12-10"
+        assert r1["new_start"] == "2026-10-24"
+        assert r1["new_end"] == "2026-12-13"
+        assert r1["recent_limit"] == 50
+
+        assert r2["artist_ids"] == ["2"]
+        assert r2["ext_start"] == "2026-11-10"
+        assert r2["ext_end"] == "2026-12-10"
+        assert r2["new_start"] == "2026-12-09"
+        assert r2["new_end"] == "2026-12-13"
+        assert r2["recent_limit"] == 30
+        assert rt.store.get(run_id)["status"] == "success"
+    finally:
+        rt.close()
+
+
+def test_patch_api_keepalive_factory_inline_and_idempotent(tmp_path):
+    factory_js = tmp_path / "factory_request.js"
+    factory_js.write_text(
+        "const http = require('http')\n"
+        "const https = require('https')\n"
+        "const createHttpAgent = () => new http.Agent({ keepAlive: true })\n"
+        "const createHttpsAgent = () => new https.Agent({ keepAlive: true })\n"
+        "module.exports = { httpAgent: createHttpAgent(), httpsAgent: createHttpsAgent() }\n",
+        encoding="utf-8",
+    )
+    assert patch_api_keepalive.patch_request_js(factory_js) == "patched"
+    patched_text = factory_js.read_text(encoding="utf-8")
+    assert patch_api_keepalive.MARKER in patched_text
+    assert "_sharedHttpAgent" in patched_text
+    assert "_sharedHttpsAgent" in patched_text
+    assert "() => _sharedHttpsAgent" in patched_text
+    assert patch_api_keepalive.patch_request_js(factory_js) == "already-patched"
+    proc1 = subprocess.run(["node", "--check", str(factory_js)], capture_output=True, text=True, check=False)
+    assert proc1.returncode == 0, proc1.stderr
+
+    inline_js = tmp_path / "inline_request.js"
+    inline_js.write_text(
+        "const http = require('http')\n"
+        "const https = require('https')\n"
+        "const settings = { httpAgent: new http.Agent({ keepAlive: true }), httpsAgent: new https.Agent({ keepAlive: true }) }\n"
+        "module.exports = settings\n",
+        encoding="utf-8",
+    )
+    assert patch_api_keepalive.patch_request_js(inline_js) == "patched"
+    inline_text = inline_js.read_text(encoding="utf-8")
+    assert patch_api_keepalive.MARKER in inline_text
+    assert "httpAgent: _sharedHttpAgent" in inline_text
+    assert "httpsAgent: _sharedHttpsAgent" in inline_text
+    proc2 = subprocess.run(["node", "--check", str(inline_js)], capture_output=True, text=True, check=False)
+    assert proc2.returncode == 0, proc2.stderr
+
+    missing = tmp_path / "does_not_exist.js"
+    assert patch_api_keepalive.patch_request_js(missing) == "skipped"
+
 
 
 

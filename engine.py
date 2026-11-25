@@ -68,6 +68,7 @@ DEFAULT_RECENT_LIMIT = int(os.getenv("NETEASE_RECENT_LIMIT", "50"))
 DEFAULT_OWNED_VERIFY_LIMIT = int(os.getenv("NETEASE_OWNED_VERIFY_LIMIT", "50"))
 DEFAULT_NEW_ALBUM_PROBE_LIMIT = int(os.getenv("NETEASE_NEW_ALBUM_PROBE_LIMIT", "20"))
 ALBUM_CACHE_RECENT_RECHECK_HOURS = float(os.getenv("NETEASE_ALBUM_CACHE_RECENT_RECHECK_HOURS", "12"))
+ALBUM_CACHE_RECENT_RECHECK_DAYS = int(os.getenv("NETEASE_ALBUM_CACHE_RECENT_RECHECK_DAYS", "3"))
 ALBUM_CACHE_UNKNOWN_RECHECK_HOURS = float(os.getenv("NETEASE_ALBUM_CACHE_UNKNOWN_RECHECK_HOURS", "6"))
 DEFAULT_THREADS = int(os.getenv("NETEASE_SCANNER_THREADS", "5"))
 MANUAL_THREAD_MAX = int(os.getenv("NETEASE_MANUAL_THREAD_MAX", "16"))
@@ -1237,7 +1238,7 @@ def album_cache_needs_recheck(entry: Dict[str, Any]) -> bool:
     _, dt = parse_cn_date_from_ms(publish_ts)
     if not dt:
         return age_hours >= ALBUM_CACHE_UNKNOWN_RECHECK_HOURS
-    if abs((now - dt).days) <= 14:
+    if abs((now - dt).days) <= ALBUM_CACHE_RECENT_RECHECK_DAYS:
         return age_hours >= ALBUM_CACHE_RECENT_RECHECK_HOURS
     return False
 
@@ -1827,8 +1828,21 @@ def scan_worker(scan_cookie: str, artist_source_input: str, external_start_dt: d
             else:
                 emit({"type": "log", "level": "error", "text": f"[漏扫诊断] album {debug_album_id}：album详情未成功；error={err or '未进入album候选池/未返回详情'}"})
 
-        # 阶段 3：只对日期命中 album 涉及的艺人做 shallow owned 验证。
-        # 新专本身不依赖 owned 验证，但外部合辑检测仍需要 owned_ids；为了保持结果列表一致，统一验证候选涉及艺人。
+        # 阶段 3：只对确实存在未入库外部合辑候选的艺人做 shallow owned 验证。
+        # 新专窗口曲目以及已存在于 CSV 中的历史曲目无需浪费 /artist/album 请求；全部候选关系仍保留用于统计专辑热度。
+        with SEEN_LOCK:
+            seen_snapshot = set(SEEN_LINKS)
+
+        def _needs_owned_verify(aid: str, link: str) -> bool:
+            if debug_album_id and aid == debug_album_id:
+                return True
+            if aid not in external_range_albums:
+                return False
+            if HIDE_EXISTING_CSV_HITS and link in seen_snapshot:
+                return False
+            return True
+
+        all_candidate_artist_ids: set = set()
         verify_artist_map: Dict[str, Dict[str, Any]] = {}
         candidate_relations: List[Dict[str, Any]] = []
         existing_relation_keys = set()
@@ -1837,7 +1851,8 @@ def scan_worker(scan_cookie: str, artist_source_input: str, external_start_dt: d
                 key = (r["album_id"], r["artist_id"], r["song_id"])
                 existing_relation_keys.add(key)
                 candidate_relations.append(r)
-                if r["artist_id"] not in verify_artist_map:
+                all_candidate_artist_ids.add(r["artist_id"])
+                if r["artist_id"] not in verify_artist_map and _needs_owned_verify(aid, r.get("link", "")):
                     verify_artist_map[r["artist_id"]] = {"id": r["artist_id"], "name": r["artist_name"]}
             # 新专窗口内的 album 如果尚未同步进 /artist/songs，则从 /artist/album + /album songs 构造关系。
             if aid in new_release_albums:
@@ -1845,9 +1860,11 @@ def scan_worker(scan_cookie: str, artist_source_input: str, external_start_dt: d
                 for c in new_album_by_id.get(aid, []):
                     for r in build_new_album_relations(c, detail, existing_relation_keys):
                         candidate_relations.append(r)
-                        if r["artist_id"] not in verify_artist_map:
+                        all_candidate_artist_ids.add(r["artist_id"])
+                        if r["artist_id"] not in verify_artist_map and _needs_owned_verify(aid, r.get("link", "")):
                             verify_artist_map[r["artist_id"]] = {"id": r["artist_id"], "name": r["artist_name"]}
         verify_artists = list(verify_artist_map.values())
+        skipped_verify_artists = len(all_candidate_artist_ids) - len(verify_artist_map)
         # Server memory: only date-matching relations are needed from this point.
         relation_count = len(artist_relations)
         artist_relations.clear()
@@ -1855,7 +1872,7 @@ def scan_worker(scan_cookie: str, artist_source_input: str, external_start_dt: d
         new_album_candidates.clear()
         new_album_by_id.clear()
         METRICS.verify_total = len(verify_artists)
-        emit({"type": "log", "level": "info", "text": f"进入归属验证：候选关系 {len(candidate_relations)} 条，需验证艺人 {len(verify_artists)} 位。"})
+        emit({"type": "log", "level": "info", "text": f"进入归属验证：候选关系 {len(candidate_relations)} 条，需验证艺人 {len(verify_artists)} 位（跳过已入库/新专免验证艺人 {skipped_verify_artists} 位）。"})
         if debug_album_id:
             dbg_cands = [x for x in candidate_relations if x.get('album_id') == debug_album_id]
             sample = ", ".join([f"{x.get('artist_name')}《{x.get('song_name')}》" for x in dbg_cands[:8]]) or "无"

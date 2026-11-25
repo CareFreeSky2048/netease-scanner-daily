@@ -148,6 +148,7 @@ jobs:
         if: steps.ctx.outputs.action != 'rebuild_site'
         shell: bash
         run: |
+          python patch_api_keepalive.py /tmp/netease-api/node_modules/NeteaseCloudMusicApi/util/request.js || true
           NODE_ENV=production HOST=127.0.0.1 PORT=3000 TZ=Asia/Shanghai \
             node /tmp/netease-api/node_modules/NeteaseCloudMusicApi/app.js \
             >/tmp/netease_api.log 2>&1 &
@@ -175,6 +176,8 @@ jobs:
           RECENT_LIMIT: ${{ vars.RECENT_LIMIT }}
           OWNED_LIMIT: ${{ vars.OWNED_LIMIT }}
           NEW_ALBUM_PROBE_LIMIT: ${{ vars.NEW_ALBUM_PROBE_LIMIT }}
+          M3_DEFAULT_UNTIL: ${{ vars.M3_DEFAULT_UNTIL }}
+          M3_SECOND_ROUND_RECENT_LIMIT: ${{ vars.M3_SECOND_ROUND_RECENT_LIMIT }}
           EVENT_NAME: ${{ github.event_name }}
           EVENT_SCHEDULE: ${{ github.event.schedule }}
           EVENT_ACTION: ${{ github.event.action }}
@@ -252,6 +255,8 @@ jobs:
           if [ -n "${RECENT_LIMIT:-}" ]; then ARGS+=(--recent-limit "$RECENT_LIMIT"); fi
           if [ -n "${OWNED_LIMIT:-}" ]; then ARGS+=(--owned-limit "$OWNED_LIMIT"); fi
           ARGS+=(--new-album-probe-limit "$PROBE_LIMIT")
+          if [ -n "${M3_DEFAULT_UNTIL:-}" ]; then ARGS+=(--m3-default-until "$M3_DEFAULT_UNTIL"); fi
+          if [ -n "${M3_SECOND_ROUND_RECENT_LIMIT:-}" ]; then ARGS+=(--m3-second-round-recent-limit "$M3_SECOND_ROUND_RECENT_LIMIT"); fi
           if [ -n "${INPUT_DEBUG_ALBUM:-}" ]; then ARGS+=(--debug-album "$INPUT_DEBUG_ALBUM"); fi
           if [ -n "${INPUT_RETRY_OF:-}" ]; then ARGS+=(--retry-of "$INPUT_RETRY_OF"); fi
 

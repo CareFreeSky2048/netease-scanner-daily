@@ -43,6 +43,8 @@ def _parse_args(argv: Optional[Iterable[str]] = None) -> argparse.Namespace:
     parser.add_argument("--recent-limit", type=int, default=50)
     parser.add_argument("--owned-limit", type=int, default=50)
     parser.add_argument("--new-album-probe-limit", type=int, default=20)
+    parser.add_argument("--m3-default-until", default="2026-12-25")
+    parser.add_argument("--m3-second-round-recent-limit", type=int, default=30)
     parser.add_argument("--debug-album", default="")
     parser.add_argument("--retry-of", default="")
 
@@ -415,6 +417,9 @@ def _prepare_temp_config(
     owned_limit: int,
     new_album_probe_limit: int,
     artist_cache_key: str,
+    *,
+    m3_default_until: str = "2026-12-25",
+    m3_second_round_recent_limit: int = 30,
 ) -> Path:
     import engine
 
@@ -441,8 +446,9 @@ def _prepare_temp_config(
         "artist_cache_key": artist_cache_key.strip(),
         "scan_mode": "auto",
         "m3_artist_file": str(ROOT / "m3_artist_names.json"),
-        "m3_default_until": "2026-11-25",
+        "m3_default_until": m3_default_until.strip() or "2026-12-25",
         "m3_external_start_date": "2026-10-24",
+        "m3_second_round_recent_limit": int(m3_second_round_recent_limit),
     }
     cfg_path = temp_dir / "config.json"
     cfg_path.write_text(json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -817,6 +823,8 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
             owned_limit=args.owned_limit,
             new_album_probe_limit=args.new_album_probe_limit,
             artist_cache_key=artist_cache_key,
+            m3_default_until=args.m3_default_until,
+            m3_second_round_recent_limit=args.m3_second_round_recent_limit,
         )
 
         if args.probe_only:

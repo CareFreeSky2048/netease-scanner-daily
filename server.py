@@ -102,7 +102,8 @@ class Config:
                     "artist_cache_key": "", "scan_mode": "auto",
                     "m3_artist_file": str(ROOT / "m3_artist_names.json"),
                     "m3_default_until": M3_DEFAULT_UNTIL.isoformat(),
-                    "m3_external_start_date": M3_EXTERNAL_START_DATE.isoformat()}
+                    "m3_external_start_date": M3_EXTERNAL_START_DATE.isoformat(),
+                    "m3_second_round_recent_limit": 0}
         if self.path.exists():
             data = json.loads(self.path.read_text(encoding="utf-8-sig"))
             if not isinstance(data, dict):
@@ -151,6 +152,10 @@ class Config:
             raise ValueError("m3_external_start_date 必须使用 YYYY-MM-DD")
         if not isinstance(defaults.get("m3_artist_file"), str) or not defaults["m3_artist_file"].strip():
             raise ValueError("m3_artist_file 必须为文件路径")
+        second_recent = int(defaults.get("m3_second_round_recent_limit") or 0)
+        if second_recent != 0 and not 10 <= second_recent <= 200:
+            raise ValueError("m3_second_round_recent_limit 必须为 0 或在 10 至 200 之间")
+        defaults["m3_second_round_recent_limit"] = second_recent
         return defaults
 
     def cookie(self, config=None):
@@ -762,16 +767,31 @@ class Runtime:
                     self.done_message = None
                     self.fatal = ""
                     final_round = index == last_nonempty_index
+                    end_day_defaults = default_dates(date.fromisoformat(params["externalEndDate"]))
                     round_dates = list(dates)
+                    round_recent_limit = params["recentLimit"]
                     if (params.get("scanMode") == "m3" and index == 0
                             and not params.get("retry_of")
-                            and params.get("newStartDate") == default_dates(
-                                date.fromisoformat(params["externalEndDate"]))["newStartDate"]):
+                            and params.get("newStartDate") == end_day_defaults["newStartDate"]):
                         m3_new_start = min(config["m3_external_start_date"], params["newEndDate"])
                         round_dates[2] = datetime.combine(date.fromisoformat(m3_new_start), time.min)
-                    self.store.log(run_id, "info", f"开始 {round_name}：{len(group)} 位艺人。")
+                    elif params.get("scanMode") == "m3" and index == 1:
+                        m3_ext_default = min(config["m3_external_start_date"], params["externalEndDate"])
+                        if not params.get("retry_of") and params.get("externalStartDate") == m3_ext_default:
+                            round_dates[0] = datetime.combine(
+                                date.fromisoformat(end_day_defaults["externalStartDate"]), time.min
+                            )
+                        second_round_recent = int(config.get("m3_second_round_recent_limit") or 0)
+                        if second_round_recent > 0:
+                            round_recent_limit = min(params["recentLimit"], second_round_recent)
+                    self.store.log(
+                        run_id,
+                        "info",
+                        f"开始 {round_name}：{len(group)} 位艺人（外部合辑 {round_dates[0]:%Y-%m-%d}~{round_dates[1]:%Y-%m-%d}，"
+                        f"新专/新歌 {round_dates[2]:%Y-%m-%d}~{round_dates[3]:%Y-%m-%d}，recent{round_recent_limit}）。",
+                    )
                     source_label = "M3-intersection" if intersection_only else f"M3-{index + 1}"
-                    self.worker(cookie, "", *round_dates, params["recentLimit"], params["ownedLimit"],
+                    self.worker(cookie, "", *round_dates, round_recent_limit, params["ownedLimit"],
                                 params["newAlbumProbeLimit"], params["debugAlbum"],
                                 artists_override=group, artist_source_label=source_label,
                                 finalize=final_round, reset_seen=not scan_started,
