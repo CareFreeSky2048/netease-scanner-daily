@@ -28,6 +28,7 @@ def _parse_args(argv: Optional[Iterable[str]] = None) -> argparse.Namespace:
     parser.add_argument("--api-base", default="http://127.0.0.1:3000")
     parser.add_argument("--max-threads", type=int, default=16)
     parser.add_argument("--cookie-env", default="MUSIC_COOKIE")
+    parser.add_argument("--scan-cookie-env", default="SCAN_COOKIE")
     parser.add_argument("--artist-cache-key", default=None)
 
     parser.add_argument("--source", choices=("manual", "scheduled"), default="manual")
@@ -332,6 +333,7 @@ def _build_scan_summary_md(
     day_hits: List[Dict[str, Any]],
     scrub_fn: Any,
     fresh_today_rollback: Optional[Dict[str, Any]] = None,
+    dual_cookie: bool = False,
 ) -> str:
     status = run.get("status", "unknown")
     badges = {
@@ -383,6 +385,11 @@ def _build_scan_summary_md(
             + " |",
             f"| 扫描模式 | `{params.get('scanMode', '')}` |",
             f"| 并发线程 | `{params.get('threads', '')}` |",
+            *(
+                ["| Cookie 模式 | 双 Cookie（大号拉艺人 / 小号扫描） |"]
+                if dual_cookie
+                else []
+            ),
             f"| 新专目录兜底 | {probe_desc} |",
             f"| 外部合辑窗口 | `{params.get('externalStartDate', '')}` ~ `{params.get('externalEndDate', '')}` |",
             f"| 新专/新歌窗口 | `{params.get('newStartDate', '')}` ~ `{params.get('newEndDate', '')}` |",
@@ -478,6 +485,11 @@ def _build_probe_summary_md(report: Dict[str, Any]) -> str:
         f"**结果**：{status_line}（耗时 {report.get('elapsed_sec', 0)} 秒，采样艺人 {report.get('artist_count', 0)} 位）",
         "",
         f"**传输参数**：{transport_desc}",
+        *(
+            ["", "**Cookie 模式**：双 Cookie（大号拉艺人 / 小号扫描）"]
+            if report.get("cookie_mode") == "dual"
+            else []
+        ),
         "",
         "| 接口 | 状态 | 耗时 (ms) | 说明 |",
         "| --- | --- | --- | --- |",
@@ -521,6 +533,7 @@ def _prepare_temp_config(
     new_album_probe_limit: int,
     artist_cache_key: str,
     *,
+    raw_scan_cookie: str = "",
     m3_default_until: str = "2026-12-25",
     m3_second_round_recent_limit: int = 30,
 ) -> Path:
@@ -538,9 +551,23 @@ def _prepare_temp_config(
     except OSError:
         pass
 
+    scan_cookie_path_str = ""
+    if raw_scan_cookie and raw_scan_cookie.strip():
+        normalized_scan = engine.normalize_cookie(raw_scan_cookie)
+        if not normalized_scan or normalized_scan.startswith("REPLACE_"):
+            raise ValueError("SCAN_COOKIE is empty or placeholder")
+        scan_cookie_path = temp_dir / "scan_cookie.txt"
+        scan_cookie_path.write_text(normalized_scan, encoding="utf-8")
+        try:
+            os.chmod(scan_cookie_path, 0o600)
+        except OSError:
+            pass
+        scan_cookie_path_str = str(scan_cookie_path)
+
     cfg = {
         "schedule_enabled": False,
         "cookie_file": str(cookie_path),
+        "scan_cookie_file": scan_cookie_path_str,
         "recentLimit": recent_limit,
         "ownedLimit": owned_limit,
         "newAlbumProbeLimit": new_album_probe_limit,
@@ -855,6 +882,15 @@ def execute_scan(
     def scrub_all(text: str) -> str:
         return engine.redacted_error_text(runtime.scrub(text))
 
+    dual_cookie = False
+    try:
+        cfg_obj = runtime.config.read()
+        scan_fn = getattr(runtime.config, "scan_cookie", None)
+        if callable(scan_fn):
+            dual_cookie = scan_fn(cfg_obj) != runtime.config.cookie(cfg_obj)
+    except Exception:
+        dual_cookie = False
+
     summary_md = _build_scan_summary_md(
         run,
         today_str,
@@ -862,6 +898,7 @@ def execute_scan(
         day_hits,
         scrub_all,
         fresh_today_rollback=fresh_today_rollback,
+        dual_cookie=dual_cookie,
     )
     _write_text(args.summary_md, summary_md)
 
@@ -910,6 +947,7 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
     raw_cookie = os.getenv(args.cookie_env, "")
     if not raw_cookie.strip():
         raise SystemExit(f"Environment variable {args.cookie_env} is empty or not set.")
+    raw_scan_cookie = os.getenv(args.scan_cookie_env, "")
 
     artist_cache_key = (
         args.artist_cache_key
@@ -921,6 +959,7 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
         cfg_path = _prepare_temp_config(
             Path(tmp_secret),
             raw_cookie=raw_cookie,
+            raw_scan_cookie=raw_scan_cookie,
             threads=args.threads,
             recent_limit=args.recent_limit,
             owned_limit=args.owned_limit,
@@ -933,8 +972,16 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
         if args.probe_only:
             cfg = server.Config(cfg_path)
             report = probe.probe(config=cfg, artist_count=args.probe_artists, api_base=args.api_base)
-            raw_norm = engine.normalize_cookie(raw_cookie)
-            token_vals = [t for t in (raw_cookie.strip(), raw_norm, raw_norm.removeprefix("MUSIC_U=").rstrip(";")) if t]
+            token_vals = []
+            for raw_val in (raw_cookie, raw_scan_cookie):
+                stripped = str(raw_val or "").strip()
+                if not stripped:
+                    continue
+                norm = engine.normalize_cookie(stripped)
+                for tok in (stripped, norm, norm.removeprefix("MUSIC_U=").rstrip(";")):
+                    if tok:
+                        token_vals.append(tok)
+            token_vals = list(dict.fromkeys(token_vals))
 
             def _scrub_probe(text: str) -> str:
                 for tok in sorted(token_vals, key=len, reverse=True):

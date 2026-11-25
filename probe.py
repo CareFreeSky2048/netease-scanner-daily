@@ -13,7 +13,17 @@ DIAGNOSTIC_REAL_IP = "116.25.146.177"
 
 def _scrub_text(text, cookie, proxy=""):
     result = str(text or "")
-    for token in (cookie, cookie.removeprefix("MUSIC_U=").rstrip(";"), proxy):
+    raw_cookies = [cookie] if isinstance(cookie, str) else list(cookie or [])
+    tokens = []
+    for ck in raw_cookies:
+        if ck:
+            tokens.append(ck)
+            bare = ck.removeprefix("MUSIC_U=").rstrip(";")
+            if bare:
+                tokens.append(bare)
+    if proxy:
+        tokens.append(proxy)
+    for token in sorted(set(tokens), key=len, reverse=True):
         if token:
             result = result.replace(token, "<redacted>")
     return engine.redacted_error_text(result)
@@ -163,6 +173,7 @@ def _probe_endpoint(
             base + endpoint,
             params={"_diag": f"{mode_name}_{int(time.time() * 1000)}"},
             data=req_params,
+            headers={"X-Apicache-Bypass": "true"},
             timeout=8,
         )
         parsed = _parse_probe_response(entry, resp, scrub_fn, endpoint)
@@ -270,10 +281,11 @@ def _run_sublist_protocol_sweep(base, cookie, overrides, scrub_fn, *, delay=0.15
     return results
 
 
-def _run_diagnostics(base, cookie, config, overrides, scrub_fn):
+def _run_diagnostics(base, cookie, config, overrides, scrub_fn, artist_cookie=""):
     """Read-only sweep across transport modes when primary probe fails."""
-    results = _run_sublist_protocol_sweep(base, cookie, overrides, scrub_fn)
-    sample_artist_id = _resolve_sample_artist_id(config, cookie)
+    sublist_cookie = artist_cookie or cookie
+    results = _run_sublist_protocol_sweep(base, sublist_cookie, overrides, scrub_fn)
+    sample_artist_id = _resolve_sample_artist_id(config, sublist_cookie)
     sample_album_id = None
 
     modes = (
@@ -333,17 +345,20 @@ def _run_diagnostics(base, cookie, config, overrides, scrub_fn):
 
 def probe(config=None, artist_count=3, api_base=None):
     config = config or Config()
-    cookie = config.cookie()
+    artist_cookie = config.cookie()
+    scan_cookie = config.scan_cookie()
+    dual_cookie = scan_cookie != artist_cookie
     base = (api_base or engine.API_BASE).rstrip("/")
     overrides = engine.api_transport_overrides()
     proxy_val = overrides.get("proxy", "")
 
     def scrub_fn(text):
-        return _scrub_text(text, cookie, proxy_val)
+        return _scrub_text(text, (artist_cookie, scan_cookie), proxy_val)
 
     report = {
         "api_base": base,
         "started_at": time.time(),
+        "cookie_mode": "dual" if dual_cookie else "single",
         "transport": {
             "realIP": overrides.get("realIP", ""),
             "crypto": overrides.get("crypto", ""),
@@ -356,14 +371,14 @@ def probe(config=None, artist_count=3, api_base=None):
         "ok": False,
     }
 
-    def get(path, params):
+    def get(path, params, *, use_cookie=None):
         start = time.monotonic()
         # POST keeps credentials out of URL/access logs. Try GET only on 405,
         # matching the scanner's existing endpoint compatibility behaviour.
         req_params = {
             **params,
             **overrides,
-            "cookie": cookie,
+            "cookie": use_cookie or scan_cookie,
             "timestamp": int(time.time() * 1000),
         }
         last_405 = ""
@@ -373,6 +388,7 @@ def probe(config=None, artist_count=3, api_base=None):
                 base + path,
                 data=req_params if method == "POST" else None,
                 params=req_params if method == "GET" else None,
+                headers={"X-Apicache-Bypass": "true"},
                 timeout=8,
             )
             if response.status_code == 405:
@@ -398,13 +414,23 @@ def probe(config=None, artist_count=3, api_base=None):
         raise ValueError(f"{path} GET/POST 均返回 405（{last_405 or '405'}）")
 
     try:
-        verify_login(cookie, base)
-        report["checks"].append({"endpoint": "/login/status", "ok": True})
+        verify_login(scan_cookie, base)
+        report["checks"].append(
+            {"endpoint": "/login/status (小号)" if dual_cookie else "/login/status", "ok": True}
+        )
+        if dual_cookie:
+            try:
+                verify_login(artist_cookie, base)
+                report["checks"].append({"endpoint": "/login/status (大号)", "ok": True})
+            except Exception as exc:
+                report["checks"].append(
+                    {"endpoint": "/login/status (大号)", "ok": False, "detail": scrub_fn(str(exc))}
+                )
         try:
-            artists = get("/artist/sublist", {"limit": artist_count, "offset": 0}).get("data", [])[:artist_count]
+            artists = get("/artist/sublist", {"limit": artist_count, "offset": 0}, use_cookie=artist_cookie).get("data", [])[:artist_count]
             report["artist_source"] = "live"
         except ValueError as sublist_err:
-            fallback_artists, fallback_key = _load_fallback_artists(config, cookie, artist_count)
+            fallback_artists, fallback_key = _load_fallback_artists(config, artist_cookie, artist_count)
             if not fallback_artists:
                 raise
             detail_msg = scrub_fn(str(sublist_err))
@@ -416,7 +442,7 @@ def probe(config=None, artist_count=3, api_base=None):
             )
             report["artist_source"] = "fallback-cache"
             report["artist_cache_key"] = fallback_key
-            report["diagnostics"] = _run_sublist_protocol_sweep(base, cookie, overrides, scrub_fn)
+            report["diagnostics"] = _run_sublist_protocol_sweep(base, artist_cookie, overrides, scrub_fn)
             artists = fallback_artists
 
         if not artists:
@@ -443,7 +469,7 @@ def probe(config=None, artist_count=3, api_base=None):
             if type(exc) is ValueError
             else f"接口请求失败（{type(exc).__name__}）"
         )
-        report["diagnostics"] = _run_diagnostics(base, cookie, config, overrides, scrub_fn)
+        report["diagnostics"] = _run_diagnostics(base, scan_cookie, config, overrides, scrub_fn, artist_cookie=artist_cookie)
     report["elapsed_sec"] = round(time.time() - report["started_at"], 2)
     return report
 

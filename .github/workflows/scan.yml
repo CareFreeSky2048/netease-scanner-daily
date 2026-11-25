@@ -168,6 +168,7 @@ jobs:
         if: steps.ctx.outputs.action != 'rebuild_site'
         env:
           MUSIC_COOKIE: ${{ secrets.MUSIC_COOKIE }}
+          SCAN_COOKIE: ${{ secrets.SCAN_COOKIE }}
           ARTIST_CACHE_KEY: ${{ vars.ARTIST_CACHE_KEY }}
           NETEASE_REAL_IP: ${{ vars.NETEASE_REAL_IP || 'auto' }}
           NETEASE_API_CRYPTO: ${{ vars.NETEASE_API_CRYPTO || '' }}

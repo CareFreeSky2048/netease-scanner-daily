@@ -99,6 +99,7 @@ class Config:
                     "schedule_times": ["00:03"], "schedule_start_dates": {},
                     "schedule_modes": {}, "schedule_end_dates": {},
                     "cookie_file": str(ROOT / "secrets" / "music_cookie.txt"),
+                    "scan_cookie_file": "",
                     "artist_cache_key": "", "scan_mode": "auto",
                     "m3_artist_file": str(ROOT / "m3_artist_names.json"),
                     "m3_default_until": M3_DEFAULT_UNTIL.isoformat(),
@@ -156,6 +157,9 @@ class Config:
         if second_recent != 0 and not 10 <= second_recent <= 200:
             raise ValueError("m3_second_round_recent_limit 必须为 0 或在 10 至 200 之间")
         defaults["m3_second_round_recent_limit"] = second_recent
+        if not isinstance(defaults.get("scan_cookie_file", ""), str):
+            raise ValueError("scan_cookie_file 必须为文件路径")
+        defaults["scan_cookie_file"] = defaults.get("scan_cookie_file", "").strip()
         return defaults
 
     def cookie(self, config=None):
@@ -166,6 +170,19 @@ class Config:
         raw = path.read_text(encoding="utf-8-sig").strip() if path.is_file() else ""
         if not raw or raw.startswith("REPLACE_"):
             raise ValueError("尚未配置有效 Cookie，请更新服务器凭据文件")
+        return engine.normalize_cookie(raw)
+
+    def scan_cookie(self, config=None):
+        config = config or self.read()
+        scan_path_raw = str(config.get("scan_cookie_file") or "").strip()
+        if not scan_path_raw:
+            return self.cookie(config)
+        path = Path(scan_path_raw)
+        if not path.is_absolute():
+            path = self.path.parent / path
+        raw = path.read_text(encoding="utf-8-sig").strip() if path.is_file() else ""
+        if not raw or raw.startswith("REPLACE_"):
+            raise ValueError("尚未配置有效扫描小号 Cookie，请更新扫描凭据文件")
         return engine.normalize_cookie(raw)
 
 
@@ -652,21 +669,33 @@ class Runtime:
         m3_report = None
         try:
             config = self.config.read()
-            cookie = self.config.cookie(config)
-            self.tokens = [cookie, cookie.removeprefix("MUSIC_U=").rstrip(";")]
-            verify_login(cookie)
+            artist_cookie = self.config.cookie(config)
+            scan_cookie = self.config.scan_cookie(config)
+            dual_cookie = scan_cookie != artist_cookie
+            tokens = []
+            for ck in (artist_cookie, scan_cookie):
+                if ck:
+                    tokens.append(ck)
+                    bare = ck.removeprefix("MUSIC_U=").rstrip(";")
+                    if bare:
+                        tokens.append(bare)
+            self.tokens = list(dict.fromkeys(tokens))
+            verify_login(scan_cookie)
+            if dual_cookie:
+                self.store.log(run_id, "info", "双 Cookie 模式已启用：大号用于拉取关注艺人列表，小号用于执行歌曲与专辑扫描。")
             # Refresh once per Shanghai calendar day, including legacy caches that
             # were copied preserving a recent mtime. A failed refresh stays visible.
-            cache_key = engine.cookie_fingerprint(cookie)
+            cache_key = engine.cookie_fingerprint(artist_cookie)
             today = datetime.now(TZ).date().isoformat()
             meta = engine.load_artist_cache_meta(cache_key)
             engine.REFRESH_ARTIST_CACHE = meta.get("server_refresh_date") != today
             fallback_key = str(config.get("artist_cache_key", "")).strip()
             if fallback_key and not re.fullmatch(r"[0-9a-f]{16}", fallback_key):
                 raise ValueError("artist_cache_key 必须为迁移缓存的 16 位指纹")
-            def resolve(scan_cookie, source_input):
+            artist_source_arg = artist_cookie if dual_cookie else ""
+            def resolve(scan_cookie_arg, source_input):
                 try:
-                    artists, key, mode = self._original_resolve(scan_cookie, "")
+                    artists, key, mode = self._original_resolve(scan_cookie_arg, source_input or artist_source_arg)
                 except Exception:
                     artists = engine.load_artist_cache_by_key(fallback_key) if fallback_key else None
                     if not artists:
@@ -704,7 +733,7 @@ class Runtime:
             # the M3 round arguments and owns the shared CSV state.
             if params.get("scanMode") in {"m3", "m3_intersection"} and self.use_m3_rounds:
                 intersection_only = params["scanMode"] == "m3_intersection"
-                artists, artist_key, artist_source_mode = engine.resolve_artist_list(cookie, "")
+                artists, artist_key, artist_source_mode = engine.resolve_artist_list(scan_cookie, artist_source_arg)
                 if not artists:
                     raise ValueError("关注艺人列表为空，M3 扫描无法继续")
                 config = self.config.read()
@@ -791,7 +820,7 @@ class Runtime:
                         f"新专/新歌 {round_dates[2]:%Y-%m-%d}~{round_dates[3]:%Y-%m-%d}，recent{round_recent_limit}）。",
                     )
                     source_label = "M3-intersection" if intersection_only else f"M3-{index + 1}"
-                    self.worker(cookie, "", *round_dates, round_recent_limit, params["ownedLimit"],
+                    self.worker(scan_cookie, artist_source_arg, *round_dates, round_recent_limit, params["ownedLimit"],
                                 params["newAlbumProbeLimit"], params["debugAlbum"],
                                 artists_override=group, artist_source_label=source_label,
                                 finalize=final_round, reset_seen=not scan_started,
@@ -855,7 +884,7 @@ class Runtime:
                 if round_errors:
                     self.warnings.append("M3 扫描有轮次未正常完成，结果可能不完整")
             else:
-                self.worker(cookie, "", *dates, params["recentLimit"], params["ownedLimit"],
+                self.worker(scan_cookie, artist_source_arg, *dates, params["recentLimit"], params["ownedLimit"],
                             params["newAlbumProbeLimit"], params["debugAlbum"])
         except Exception as exc:
             self.fatal = self.scrub(str(exc))

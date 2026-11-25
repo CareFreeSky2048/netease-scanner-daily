@@ -2220,6 +2220,275 @@ def test_scan_summary_renders_endpoint_and_phase_perf_section():
     assert "### 性能与接口统计" not in empty_md
 
 
+def test_dual_cookie_uses_main_for_sublist_and_alt_for_scanning_and_scrubs_both(tmp_path, monkeypatch):
+    data_dir = tmp_path / "dual_cookie"
+    cache_dir = data_dir / "VA_Artist_Caches"
+    cache_dir.mkdir(parents=True)
+
+    main_raw = "MUSIC_U=main_secret_token_111;"
+    alt_raw = "MUSIC_U=alt_secret_token_222;"
+
+    monkeypatch.setattr(engine, "SCRIPT_DIR", data_dir)
+    monkeypatch.setattr(engine, "CSV_FILE", data_dir / "VA_Tracks_Output.csv")
+    monkeypatch.setattr(engine, "ALBUM_CACHE_FILE", data_dir / "VA_Album_Date_Cache.json")
+    monkeypatch.setattr(engine, "ARTIST_CACHE_DIR", cache_dir)
+    monkeypatch.setattr(engine, "METRICS_FILE", data_dir / "VA_Scan_Metrics.json")
+    monkeypatch.setattr(engine, "REPORT_FILE", data_dir / "VA_Scan_Tuning_Report.txt")
+    monkeypatch.setattr(engine, "ALBUM_CACHE", {})
+    monkeypatch.setattr(engine, "_ALBUM_CACHE_DIRTY", False)
+    monkeypatch.setattr(engine, "_ALBUM_CACHE_GEN", 0)
+    monkeypatch.setattr(engine, "_ALBUM_CACHE_LOADED_FILE", None)
+    monkeypatch.setattr(engine, "_SEEN_LOADED_CSV", None)
+    monkeypatch.setattr(server, "DATA", data_dir)
+
+    m3_file = tmp_path / "m3_names.json"
+    m3_file.write_text(
+        json.dumps({"artists": [{"m3_artist_id": "m3_alpha", "name": "Alpha"}]}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+
+    single_cfg_path = ci_scan._prepare_temp_config(
+        tmp_path / "single_sec",
+        raw_cookie=main_raw,
+        threads=2,
+        recent_limit=50,
+        owned_limit=50,
+        new_album_probe_limit=20,
+        artist_cache_key="",
+    )
+    single_cfg = server.Config(single_cfg_path)
+    assert single_cfg.cookie() == main_raw
+    assert single_cfg.scan_cookie() == main_raw
+
+    dual_cfg_path = ci_scan._prepare_temp_config(
+        tmp_path / "dual_sec",
+        raw_cookie=main_raw,
+        raw_scan_cookie=alt_raw,
+        threads=2,
+        recent_limit=50,
+        owned_limit=50,
+        new_album_probe_limit=20,
+        artist_cache_key="",
+    )
+    cfg_data = json.loads(dual_cfg_path.read_text(encoding="utf-8"))
+    cfg_data["m3_artist_file"] = str(m3_file)
+    dual_cfg_path.write_text(json.dumps(cfg_data), encoding="utf-8")
+
+    dual_cfg = server.Config(dual_cfg_path)
+    assert dual_cfg.cookie() == main_raw
+    assert dual_cfg.scan_cookie() == alt_raw
+
+    verified_cookies = []
+    monkeypatch.setattr(server, "verify_login", lambda ck, *a, **kw: verified_cookies.append(ck))
+
+    now_cn = datetime.now(engine.CN_TZ).replace(hour=12, minute=0, second=0, microsecond=0)
+    today_date = now_cn.date()
+    ext_date_ts = int((now_cn - timedelta(days=10)).timestamp() * 1000)
+
+    api_cookie_log = []
+    scrubbed_during_run = []
+
+    def fake_api_request(path, params=None, **kwargs):
+        params = dict(params or {})
+        api_cookie_log.append((path, params.get("cookie")))
+        if not scrubbed_during_run:
+            scrubbed_during_run.append(
+                rt.scrub(f"err main=main_secret_token_111 alt=alt_secret_token_222 full={alt_raw} fullm={main_raw}")
+            )
+            engine.emit(
+                {
+                    "type": "log",
+                    "level": "info",
+                    "text": f"trace main=main_secret_token_111 alt=alt_secret_token_222",
+                }
+            )
+        if path == "/artist/sublist":
+            return {
+                "code": 200,
+                "data": [{"id": 1, "name": "Alpha"}, {"id": 2, "name": "Beta"}],
+                "count": 2,
+                "hasMore": False,
+            }
+        if path == "/artist/songs":
+            aid = str(params["id"])
+            return {
+                "code": 200,
+                "songs": [
+                    {
+                        "id": 9000 + int(aid),
+                        "name": f"Track {aid}",
+                        "al": {"id": 8000 + int(aid), "name": f"VA {aid}"},
+                        "ar": [{"id": int(aid), "name": "Alpha" if aid == "1" else "Beta"}],
+                        "publishTime": ext_date_ts,
+                    }
+                ],
+            }
+        if path == "/artist/album":
+            return {"code": 200, "hotAlbums": [], "more": False}
+        if path == "/album":
+            aid = int(params["id"])
+            return {
+                "code": 200,
+                "album": {
+                    "id": aid,
+                    "name": f"VA {aid - 8000}",
+                    "publishTime": ext_date_ts,
+                    "artists": [],
+                    "size": 1,
+                },
+                "songs": [],
+            }
+        raise AssertionError(f"Unexpected path: {path}")
+
+    monkeypatch.setattr(engine, "api_request", fake_api_request)
+
+    rt = server.Runtime(config=dual_cfg, db_path=data_dir / "scan_history.sqlite3")
+    try:
+        # 1. Regular mode
+        reg_params = rt.parameters(
+            {
+                "scanMode": "regular",
+                "threads": 2,
+                "recentLimit": 50,
+                "ownedLimit": 50,
+                "newAlbumProbeLimit": 20,
+            },
+            today_date,
+        )
+        with rt.lock:
+            reg_id = rt.store.create(reg_params, source="manual")
+            rt._launch(reg_id, reg_params)
+        rt.thread.join()
+        assert rt.store.get(reg_id)["status"] == "success"
+
+        assert verified_cookies == [alt_raw]
+        sublist_cookies = {ck for p, ck in api_cookie_log if p == "/artist/sublist"}
+        scan_cookies = {ck for p, ck in api_cookie_log if p in {"/artist/songs", "/artist/album", "/album"}}
+        assert sublist_cookies == {main_raw}
+        assert scan_cookies == {alt_raw}
+        assert {p for p, _ in api_cookie_log} == {"/artist/sublist", "/artist/songs", "/artist/album", "/album"}
+
+        main_key = engine.cookie_fingerprint(main_raw)
+        alt_key = engine.cookie_fingerprint(alt_raw)
+        assert (cache_dir / f"artists_{main_key}.json").is_file()
+        assert not (cache_dir / f"artists_{alt_key}.json").exists()
+
+        # Both tokens are scrubbed during run and never reach stored logs
+        assert len(scrubbed_during_run) == 1
+        assert "main_secret_token_111" not in scrubbed_during_run[0]
+        assert "alt_secret_token_222" not in scrubbed_during_run[0]
+        all_logs_text = "\n".join(row["text"] for row in rt.store.logs(reg_id))
+        assert "main_secret_token_111" not in all_logs_text
+        assert "alt_secret_token_222" not in all_logs_text
+
+        # 2. M3 two-round mode (remove main artist cache & CSV first so live sublist + album verify run cleanly)
+        (cache_dir / f"artists_{main_key}.json").unlink()
+        if engine.CSV_FILE.exists():
+            engine.CSV_FILE.unlink()
+        engine.ALBUM_CACHE.clear()
+        if engine.ALBUM_CACHE_FILE.exists():
+            engine.ALBUM_CACHE_FILE.unlink()
+        api_cookie_log.clear()
+        verified_cookies.clear()
+
+        m3_params = rt.parameters(
+            {
+                "externalStartDate": (today_date - timedelta(days=20)).isoformat(),
+                "externalEndDate": today_date.isoformat(),
+                "newStartDate": (today_date - timedelta(days=1)).isoformat(),
+                "newEndDate": today_date.isoformat(),
+                "scanMode": "m3",
+                "threads": 2,
+                "recentLimit": 50,
+                "ownedLimit": 50,
+                "newAlbumProbeLimit": 20,
+            },
+            today_date,
+        )
+        with rt.lock:
+            m3_id = rt.store.create(m3_params, source="manual")
+            rt._launch(m3_id, m3_params)
+        rt.thread.join()
+        assert rt.store.get(m3_id)["status"] == "success"
+        assert verified_cookies == [alt_raw]
+        assert {ck for p, ck in api_cookie_log if p == "/artist/sublist"} == {main_raw}
+        assert {ck for p, ck in api_cookie_log if p in {"/artist/songs", "/artist/album", "/album"}} == {alt_raw}
+
+        md = ci_scan._build_scan_summary_md(rt.store.get(reg_id), today_date.isoformat(), [], [], rt.scrub, dual_cookie=True)
+        assert "双 Cookie（大号拉艺人 / 小号扫描）" in md
+        assert "main_secret_token_111" not in md
+        assert "alt_secret_token_222" not in md
+    finally:
+        rt.close()
+
+
+def test_probe_dual_cookie_separates_sublist_and_scan_cookies_and_scrubs(tmp_path, monkeypatch):
+    import probe as probe_mod
+
+    main_raw = "MUSIC_U=probe_main_777;"
+    alt_raw = "MUSIC_U=probe_alt_888;"
+    cfg_path = ci_scan._prepare_temp_config(
+        tmp_path / "probe_dual_sec",
+        raw_cookie=main_raw,
+        raw_scan_cookie=alt_raw,
+        threads=2,
+        recent_limit=50,
+        owned_limit=50,
+        new_album_probe_limit=20,
+        artist_cache_key="",
+    )
+    cfg = server.Config(cfg_path)
+
+    login_checks = []
+    monkeypatch.setattr(probe_mod, "verify_login", lambda ck, base=None: login_checks.append(ck))
+
+    req_log = []
+
+    class FakeResp:
+        def __init__(self, payload):
+            self.status_code = 200
+            self.ok = True
+            self._payload = payload
+
+        def json(self):
+            return self._payload
+
+        def raise_for_status(self):
+            return None
+
+    def fake_request(method, url, data=None, params=None, headers=None, timeout=None, **kwargs):
+        req_params = dict(data if method == "POST" else params or {})
+        endpoint = "/" + url.split("http://127.0.0.1:3000/")[-1]
+        req_log.append((endpoint, req_params.get("cookie"), dict(headers or {})))
+        if endpoint == "/artist/sublist":
+            return FakeResp({"code": 200, "data": [{"id": 1, "name": "Artist 1"}], "count": 1})
+        if endpoint == "/artist/songs":
+            return FakeResp({"code": 200, "songs": [{"id": 10, "al": {"id": 500}}]})
+        if endpoint == "/artist/album":
+            return FakeResp({"code": 200, "hotAlbums": [{"id": 500}]})
+        if endpoint == "/album":
+            return FakeResp({"code": 200, "album": {"id": 500, "name": "VA 500"}})
+        raise AssertionError(f"Unexpected endpoint: {endpoint}")
+
+    monkeypatch.setattr(probe_mod.requests, "request", fake_request)
+
+    report = probe_mod.probe(config=cfg, artist_count=1, api_base="http://127.0.0.1:3000")
+    assert report["ok"] is True
+    assert report["cookie_mode"] == "dual"
+    assert login_checks == [alt_raw, main_raw]
+    assert {ck for ep, ck, _ in req_log if ep == "/artist/sublist"} == {main_raw}
+    assert {ck for ep, ck, _ in req_log if ep != "/artist/sublist"} == {alt_raw}
+    assert all(hdrs.get("X-Apicache-Bypass") == "true" for _, _, hdrs in req_log)
+
+    scrubbed = probe_mod._scrub_text("bad main=probe_main_777 alt=probe_alt_888", (main_raw, alt_raw))
+    assert "probe_main_777" not in scrubbed
+    assert "probe_alt_888" not in scrubbed
+
+    md = ci_scan._build_probe_summary_md(report)
+    assert "双 Cookie（大号拉艺人 / 小号扫描）" in md
+
+
+
 
 
 
